@@ -32,7 +32,8 @@ export class FileRepo implements Repo {
 
   constructor(private readonly file = DEFAULT_FILE) {
     // Hosted file systems are ephemeral or read-only: fail loudly instead of losing data.
-    if (process.env.NODE_ENV === "production") {
+    // ALLOW_LOCAL_FILE_STORE=1 is only for `next start` on a laptop (never set it on Vercel).
+    if (process.env.NODE_ENV === "production" && process.env.ALLOW_LOCAL_FILE_STORE !== "1") {
       throw new Error(
         "SUPABASE_SECRET_KEY (and NEXT_PUBLIC_SUPABASE_URL) must be set in production. The local file store is for development only.",
       );
