@@ -34,10 +34,11 @@ Vercel project settings: framework Next.js, root directory `web`, Node.js 22.x, 
 
 | Name | Effect when missing |
 |---|---|
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Trip Pool payments disabled |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Payments use the labelled demo checkout (no real money) |
 | `RAZORPAY_WEBHOOK_SECRET` | Razorpay webhooks not verified (webhook URL: `https://group-trip-ledger-six.vercel.app/api/webhooks/razorpay`) |
 | `ANTHROPIC_API_KEY` | "Ask the ledger" assistant runs in offline mode |
 | `NEXT_PUBLIC_AI_PROXY_URL` | Optional; defaults to `/api/ai` |
+| `DEMO_PAYMENTS` | Optional; deliberately not set. Set to `off` to disable the demo checkout when Razorpay keys are missing |
 
 Local source of values: `web/.env.local` (git-ignored). Note that some lines there have a space after `=`; don't `source` the file in a shell.
 
@@ -64,6 +65,8 @@ Applied to `mqfdrbxigeytgkeejcfi`, in order:
 1. `0001_grouptrip_ledger.sql` — `profiles`, `trips`, `trip_members`, `trip_events`; RLS via `auth.jwt()->>'sub'`; `trip_events` blocks UPDATE.
 2. `0002_trip_pool_payments.sql` — `pool_contributions`, `payment_webhook_events`, RLS.
 3. `0003_trip_events_block_delete.sql` — `trip_events` blocks direct DELETE and TRUNCATE; events are still removed when their trip is deleted (cascade). Verified in production: deleting a throwaway trip returned 200 and removed it.
+
+4. `0004_profile_preferences_cards.sql` — adds `profiles.interests`, `interests_asked`, `cards` and `pool_contributions.purpose`, `item_id`, `method_label`. A teammate committed it as `0003_…`; renumbered to 0004 (contents unchanged) because version 0003 was already applied.
 
 Triggers on `trip_events`: `trip_events_no_update`, `trip_events_no_delete`, `trip_events_no_truncate`.
 
@@ -93,12 +96,13 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 ## Changes after the first production deploy
 
 - `33177a5` — `web/components/app/EmailLogin.tsx`: the login page redirects if the user is already signed in; after verifying the code it calls `setActive` and navigates with `router.replace`, falling back to `window.location.assign` if the route doesn't change; Clerk's `session_exists` error now redirects instead of showing an error. Deployed with `vercel deploy --prod` (deployment `group-trip-ledger-e3nmp4vox`).
+- `ebfefdd` — merged `origin/main` `080f74a` (vendor UPI QR payments, AI plan assistant, demo checkout, QA fixes). No conflicts; 178 tests pass. `6765db5` renumbered its migration to 0004, applied to production, then deployed with `vercel deploy --prod` (deployment `group-trip-ledger-r0cnaymyd`). Signed-in check: `/api/me` returns the new profile fields, payments config reports `mode: demo`.
 
 ## Known issues
 
 - **No `/status` page.** It is listed as a public route but only `/api/status` exists.
 - **No delete-trip button in the UI.** `DELETE /api/trips/[id]` (owner only) works but nothing in the app calls it.
-- **Payments and assistant off** until the Razorpay and Anthropic keys are added (see above).
+- **Payments run in demo mode and the assistant is offline** until the Razorpay and Anthropic keys are added (see above).
 - **Next.js 14.2.35 security advisories** (npm audit: critical). Every fix requires Next 15+, a major upgrade we chose not to make. Advisories relevant to this app: denial of service in the App Router / Server Components / Server Actions, cache poisoning of middleware redirects and of React Server Component responses, and cache confusion of response bodies. Others (Image Optimizer, Pages Router i18n, Windows-hosted RCE, Edge Server Actions, custom servers) do not match this setup.
 - Other npm audit findings are dev/build-time only: `vitest` (critical) and `vite` (tests), `glob`, `eslint-config-next`, `@next/eslint-plugin-next` (lint), `postcss` (CSS build).
 - **PWA is minimal:** manifest and placeholder icons only, no service worker (no offline support).
