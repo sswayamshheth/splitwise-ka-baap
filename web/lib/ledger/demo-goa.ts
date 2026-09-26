@@ -75,13 +75,14 @@ export function buildGoaEvents(now = Date.now()): LedgerEvent[] {
     budgetSplit: { Stay: 45, Transport: 20, Food: 15, Activity: 15, Other: 5 },
   };
 
+  // Made-up UPI handles on a bank code no UPI app accepts, so a demo QR can never pay a real stranger.
   const people: ParticipantData[] = [
-    { id: P.aarav, name: "Aarav Shah", upiId: "aarav.shah@okhdfcbank", phone: "98200 41122", paymentMethods: [card("pm_aarav_regalia", "HDFC Regalia", "HDFC Bank", "Visa", "4417", 2_00_000_00)] },
-    { id: P.rohan, name: "Rohan Iyer", upiId: "rohan.iyer@okaxis", phone: "98330 56781", paymentMethods: [card("pm_rohan_atlas", "Axis Atlas", "Axis Bank", "Mastercard", "8821", 1_50_000_00)] },
-    { id: P.siya, name: "Siya Kapoor", upiId: "siya.k@ybl", paymentMethods: [card("pm_siya_amazon", "ICICI Amazon Pay", "ICICI Bank", "Visa", "6310", 60_000_00)] },
-    { id: P.kavya, name: "Kavya Menon", upiId: "kavyamenon@oksbi", paymentMethods: [card("pm_kavya_sbi", "SBI SimplyCLICK", "SBI", "Visa", "1177", 80_000_00)] },
-    { id: P.dev, name: "Dev Malhotra", upiId: "devm@paytm", phone: "99870 12345", paymentMethods: [card("pm_dev_millennia", "HDFC Millennia", "HDFC Bank", "Mastercard", "3390", 90_000_00)] },
-    { id: P.meera, name: "Meera Joshi", upiId: "meera.joshi@okicici", paymentMethods: [card("pm_meera_idfc", "IDFC FIRST Select", "IDFC FIRST", "RuPay", "9042", 70_000_00)] },
+    { id: P.aarav, name: "Aarav Shah", upiId: "aarav.shah@demo", phone: "98200 41122", paymentMethods: [card("pm_aarav_regalia", "HDFC Regalia", "HDFC Bank", "Visa", "4417", 2_00_000_00)] },
+    { id: P.rohan, name: "Rohan Iyer", upiId: "rohan.iyer@demo", phone: "98330 56781", paymentMethods: [card("pm_rohan_atlas", "Axis Atlas", "Axis Bank", "Mastercard", "8821", 1_50_000_00)] },
+    { id: P.siya, name: "Siya Kapoor", upiId: "siya.k@demo", paymentMethods: [card("pm_siya_amazon", "ICICI Amazon Pay", "ICICI Bank", "Visa", "6310", 60_000_00)] },
+    { id: P.kavya, name: "Kavya Menon", upiId: "kavyamenon@demo", paymentMethods: [card("pm_kavya_sbi", "SBI SimplyCLICK", "SBI", "Visa", "1177", 80_000_00)] },
+    { id: P.dev, name: "Dev Malhotra", upiId: "devm@demo", phone: "99870 12345", paymentMethods: [card("pm_dev_millennia", "HDFC Millennia", "HDFC Bank", "Mastercard", "3390", 90_000_00)] },
+    { id: P.meera, name: "Meera Joshi", upiId: "meera.joshi@demo", paymentMethods: [card("pm_meera_idfc", "IDFC FIRST Select", "IDFC FIRST", "RuPay", "9042", 70_000_00)] },
   ];
 
   const prefs: Record<string, Interests> = {

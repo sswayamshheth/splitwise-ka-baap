@@ -8,7 +8,7 @@ import { api } from "@/lib/client/api";
 import { formatDateRange } from "@/lib/dates";
 import { TripProvider, useTrip } from "@/lib/client/trip";
 import type { Interests } from "@/lib/interests";
-import { addPaymentMethod, setParticipantInterests } from "@/lib/ledger/commands";
+import { addPaymentMethod, isValidUpiId, setParticipantInterests, updateParticipant } from "@/lib/ledger/commands";
 import type { LedgerEvent } from "@/lib/ledger/types";
 import { Button, cx, Empty, Icon, initials, Page, Spinner, TopBar } from "./kit";
 
@@ -42,7 +42,7 @@ export function TripShell({ tripId, children }: { tripId: string; children: Reac
   );
 }
 
-type Profile = { interests?: Interests; cards?: { label: string; bank: string; network?: "Visa" | "Mastercard" | "RuPay" | "Amex"; kind: "credit-card" | "debit-card" | "netbanking" | "upi" }[] };
+type Profile = { upiId?: string; interests?: Interests; cards?: { label: string; bank: string; network?: "Visa" | "Mastercard" | "RuPay" | "Amex"; kind: "credit-card" | "debit-card" | "netbanking" | "upi" }[] };
 
 /**
  * Brings my saved preferences and card names into this trip (once per visit),
@@ -62,10 +62,16 @@ function useProfileSync() {
         const wantsInterests = profile.interests && JSON.stringify(profile.interests) !== JSON.stringify(mine.interests ?? null);
         const have = new Set((mine.paymentMethods ?? []).map((m) => m.label.toLowerCase()));
         const newCards = (profile.cards ?? []).filter((c) => !have.has(c.label.toLowerCase()));
-        if (!wantsInterests && newCards.length === 0) return;
+        // My UPI ID from Profile is where the group pays me (and the pool, when I'm the organiser).
+        const wantsUpi = !!profile.upiId && isValidUpiId(profile.upiId) && profile.upiId.trim() !== (mine.upiId ?? "");
+        if (!wantsInterests && newCards.length === 0 && !wantsUpi) return;
         await trip.run((state, ctx) => {
           const out: LedgerEvent[] = [];
           if (wantsInterests) out.push(setParticipantInterests(state, ctx.actor, profile.interests, ctx));
+          if (wantsUpi) {
+            const me = state.participants.find((p) => p.id === ctx.actor)!;
+            out.push(updateParticipant(state, ctx.actor, { name: me.name, upiId: profile.upiId, phone: me.phone }, { ...ctx, now: Date.now() + out.length }));
+          }
           for (const c of newCards) {
             out.push(addPaymentMethod(state, ctx.actor, { label: c.label, bank: c.bank, network: c.network, kind: c.kind === "upi" ? "upi" : c.kind === "netbanking" ? "netbanking" : c.kind }, { ...ctx, now: Date.now() + out.length }));
           }
