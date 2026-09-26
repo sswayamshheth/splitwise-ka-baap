@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Button, cx, Field, Icon, inputCls, Notice, Sheet, useFeedback } from "@/components/app/kit";
 import { BudgetCard } from "@/components/app/trip/BudgetCard";
+import { ChainBadge } from "@/components/app/trip/ChainBadge";
 import { EventRow, HeroBadge, PhotoHero, Portrait, ProgressBar } from "@/components/app/trip/common";
 import { HarmonyCard } from "@/components/app/trip/HarmonyCard";
 import { errorText, useTrip } from "@/lib/client/trip";
@@ -88,6 +89,11 @@ export default function TripPage() {
           <Icon name="location_on" className="text-[18px]" />
           {t.destination} · {formatDateRange(t.startDate, t.endDate)}
         </p>
+        <Link href={`${base}/chain`} className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-container-lowest/95 py-0.5 pl-2 pr-0.5 font-label-sm text-label-sm text-on-surface shadow-sm">
+          <Icon name="deployed_code" className="text-[16px] text-primary" />
+          Blockchain
+          <ChainBadge />
+        </Link>
       </PhotoHero>
 
       <div className="flex flex-col gap-space-lg px-margin pt-space-md">
@@ -214,6 +220,20 @@ export default function TripPage() {
             <span className="font-body-md text-body-md text-on-tertiary-fixed-variant">Answers from the real ledger — every number comes from the engine.</span>
           </Link>
         </section>
+
+        <Link href={`${base}/chain`} className="flex items-center gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm transition-shadow hover:shadow-md">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant">
+            <Icon name="deployed_code" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-headline-sm text-headline-sm text-on-surface">Blockchain proof</span>
+            <span className="block font-body-md text-body-md text-on-surface-variant">Every change is a SHA-256 block; the chain is sealed on Ethereum.</span>
+            <span className="mt-1 block">
+              <ChainBadge />
+            </span>
+          </span>
+          <Icon name="chevron_right" className="text-on-surface-variant" />
+        </Link>
 
         <Members members={members} />
 

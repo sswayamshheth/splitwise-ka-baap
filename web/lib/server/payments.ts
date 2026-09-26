@@ -1,11 +1,11 @@
 import "server-only";
 
 import { newId } from "@/lib/id";
-import { addExpense, CommandError } from "@/lib/ledger/commands";
+import { addExpense, CommandError, validateSettlement } from "@/lib/ledger/commands";
 import { pricingOf } from "@/lib/ledger/policy";
 import { poolFunding, poolSummary } from "@/lib/ledger/pool";
 import { reduceEvents } from "@/lib/ledger/reduce";
-import type { ContributionData, LedgerEvent, TripState } from "@/lib/ledger/types";
+import type { ContributionData, LedgerEvent, SettlementData, TripState } from "@/lib/ledger/types";
 import { DemoGateway, gateway, GatewayUnavailable, type GatewayPayment } from "./razorpay";
 import { repo, type Contribution, type MemberRow, type PaymentStatus } from "./repo";
 import { HttpError, loadTripForUser, syncTripRow, validateAppend } from "./trips";
@@ -124,9 +124,30 @@ async function ensureVendorExpenseInLedger(c: Contribution) {
   });
 }
 
+/**
+ * A verified settle-up payment is a settlement that is already confirmed —
+ * the gateway saw the money move, so nobody has to mark or confirm anything.
+ * Deterministic ids → written once even if verify and polling both land.
+ */
+async function ensureSettlementInLedger(c: Contribution) {
+  if (!c.paymentId || c.status !== "VERIFIED" || !c.itemId) return false;
+  const settlementId = `st_pay_${c.id}`;
+  return appendLedger(c.tripId, await memberRowFor(c), (events) => {
+    if (events.some((e) => e.type === "SETTLEMENT_INITIATED" && e.settlement.id === settlementId)) return null;
+    const now = Date.now();
+    // The money has already moved, so the transfer is recorded even if balances shifted since the request.
+    const settlement: SettlementData = { id: settlementId, from: c.participantId, to: c.itemId!, amountPaise: c.amountPaise, method: "razorpay", reference: c.paymentId, initiatedTs: now, status: "initiated" };
+    return [
+      { id: `ev_pay_${c.id}`, ts: now, actor: c.participantId, type: "SETTLEMENT_INITIATED", settlement },
+      { id: `ev_payok_${c.id}`, ts: now + 1, actor: c.participantId, type: "SETTLEMENT_CONFIRMED", settlementId, confirmedTs: now + 1 },
+    ];
+  });
+}
+
 /** Writes the ledger event for a verified payment, exactly once. */
 async function ensureContributionInLedger(c: Contribution) {
   if (c.purpose === "vendor") return ensureVendorExpenseInLedger(c);
+  if (c.purpose === "settle") return ensureSettlementInLedger(c);
   if (!c.paymentId || (c.status !== "VERIFIED" && c.status !== "REFUND_PENDING" && c.status !== "REFUNDED")) return false;
   const dataId = ledgerContributionId(c.id);
   return appendLedger(c.tripId, await memberRowFor(c), (events) => {
@@ -163,10 +184,10 @@ async function recognise(c: Contribution, payment: GatewayPayment) {
 
 export async function createPaymentOrder(
   userId: string,
-  input: { tripId?: unknown; memberId?: unknown; amountPaise?: unknown; currency?: unknown; purpose?: unknown; itemId?: unknown; methodLabel?: unknown },
+  input: { tripId?: unknown; memberId?: unknown; amountPaise?: unknown; currency?: unknown; purpose?: unknown; itemId?: unknown; toId?: unknown; methodLabel?: unknown },
 ) {
   const tripId = typeof input.tripId === "string" ? input.tripId : "";
-  const purpose: "pool" | "vendor" = input.purpose === "vendor" ? "vendor" : "pool";
+  const purpose: "pool" | "vendor" | "settle" = input.purpose === "vendor" ? "vendor" : input.purpose === "settle" ? "settle" : "pool";
   const amount = input.amountPaise;
   if (!tripId) throw new HttpError(400, "tripId is required");
   if (typeof amount !== "number" || !Number.isInteger(amount)) throw new HttpError(400, "amountPaise must be a whole number of paise");
@@ -187,6 +208,13 @@ export async function createPaymentOrder(
     if (!item) throw new HttpError(400, "Pick the itinerary item you're paying for");
     if (item.status === "cancelled") throw new HttpError(409, `"${item.title}" is cancelled`);
     itemId = item.id;
+  }
+  if (purpose === "settle") {
+    const to = state.participants.find((p) => p.id === input.toId && !p.leftOn);
+    if (!to) throw new HttpError(400, "Pick who you're paying");
+    const err = Object.values(validateSettlement(state, { from: me.id, to: to.id, amountPaise: amount, method: "razorpay" }))[0];
+    if (err) throw new HttpError(409, err);
+    itemId = to.id;
   }
   const methodLabel = typeof input.methodLabel === "string" && input.methodLabel.trim() ? input.methodLabel.trim().slice(0, 60) : undefined;
 
@@ -216,7 +244,7 @@ export async function createPaymentOrder(
       amountPaise: amount,
       currency: "INR",
       receipt: contribution.id,
-      notes: { tripId, contributionId: contribution.id, participantId: member.participantId, purpose: purpose === "vendor" ? `GroupTrip vendor payment · ${itemId}` : "GroupTrip pool contribution" },
+      notes: { tripId, contributionId: contribution.id, participantId: member.participantId, purpose: purpose === "vendor" ? `GroupTrip vendor payment · ${itemId}` : purpose === "settle" ? `GroupTrip settle-up → ${itemId}` : "GroupTrip pool contribution" },
     });
     if (order.amount !== amount || order.currency !== "INR") throw new Error("Order amount mismatch");
     orderId = order.id;
@@ -333,6 +361,7 @@ export async function refundContribution(userId: string, paymentId: string, inpu
   if (c.status === "REFUNDED" || c.status === "REFUND_PENDING") throw new HttpError(409, "This contribution has already been refunded");
   if (c.status !== "VERIFIED") throw new HttpError(409, "Only a verified payment can be refunded");
   if (c.purpose === "vendor") throw new HttpError(409, "Vendor payments are refunded through the booking's cancellation, not here");
+  if (c.purpose === "settle") throw new HttpError(409, "Settle-up payments aren't refunded here — record a payment in the other direction");
 
   const remaining = c.amountPaise - c.refundedPaise;
   const amount = input.amountPaise === undefined ? remaining : input.amountPaise;
@@ -506,4 +535,111 @@ export async function completeDemoCheckout(userId: string, input: { contribution
   if (!c || c.userId !== userId) throw new HttpError(404, "Contribution not found");
   if (!c.orderId) throw new HttpError(409, "This contribution has no order");
   return g.complete(c.orderId, c.amountPaise, input.outcome === "fail" ? "fail" : "success");
+}
+
+// ---------------------------------------------------------------- payment requests (Razorpay Payment Links)
+
+/**
+ * "Request ₹X from Rohan": a Razorpay Payment Link the payer opens on their
+ * phone (UPI / cards / netbanking). The app polls Razorpay for the link's
+ * status, so the moment it's paid the pool (or the settle-up) updates by
+ * itself — nobody marks anything as paid. Works without webhooks, so on
+ * localhost too. Pool requests can be made by anyone for anyone; settle-up
+ * requests only by the member who is owed.
+ */
+export async function createPaymentRequest(userId: string, input: { tripId?: unknown; fromId?: unknown; amountPaise?: unknown; purpose?: unknown }) {
+  const tripId = typeof input.tripId === "string" ? input.tripId : "";
+  const purpose: "pool" | "settle" = input.purpose === "settle" ? "settle" : "pool";
+  const amount = input.amountPaise;
+  if (!tripId) throw new HttpError(400, "tripId is required");
+  if (typeof amount !== "number" || !Number.isInteger(amount) || amount < MIN_CONTRIBUTION_PAISE) throw new HttpError(400, "Request at least ₹1");
+  if (amount > MAX_CONTRIBUTION_PAISE) throw new HttpError(400, "That's above the ₹5,00,000 per-payment limit");
+  const { trip, member, events } = await loadTripForUser(tripId, userId);
+  const state = stateOf(events);
+  if (state.trip.status === "closed") throw new HttpError(409, "This trip is closed");
+  const from = state.participants.find((p) => p.id === input.fromId && !p.leftOn);
+  if (!from) throw new HttpError(400, "Pick who should pay");
+  if (purpose === "settle") {
+    if (from.id === member.participantId) throw new HttpError(400, "You can't request money from yourself");
+    const err = Object.values(validateSettlement(state, { from: from.id, to: member.participantId, amountPaise: amount, method: "razorpay" }))[0];
+    if (err) throw new HttpError(409, err);
+  }
+  const g = gw();
+  if (!g.createPaymentLink) throw new HttpError(503, "Payment requests need Razorpay test keys on the server");
+  const r = await repo();
+  const now = Date.now();
+  const contribution: Contribution = {
+    id: newId("pc"),
+    tripId,
+    participantId: from.id,
+    userId,
+    amountPaise: amount,
+    currency: "INR",
+    provider: "razorpay",
+    purpose,
+    itemId: purpose === "settle" ? member.participantId : undefined,
+    methodLabel: "Payment link",
+    status: "PENDING",
+    refundedPaise: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await r.createContribution(contribution);
+  const toName = state.participants.find((p) => p.id === member.participantId)?.name ?? "the organiser";
+  let link;
+  try {
+    link = await g.createPaymentLink({
+      amountPaise: amount,
+      currency: "INR",
+      description: purpose === "settle" ? `${trip.name}: ${from.name} settles up with ${toName}` : `${trip.name}: ${from.name}'s share for the trip pool`,
+      referenceId: contribution.id,
+      notes: { tripId, contributionId: contribution.id, participantId: from.id, purpose: purpose === "settle" ? `GroupTrip settle-up → ${member.participantId}` : "GroupTrip pool contribution (link)" },
+    });
+  } catch {
+    await r.transitionContribution(contribution.id, ["PENDING"], { status: "FAILED", failureReason: "Could not create the payment link" });
+    throw new HttpError(502, "Razorpay could not create the payment link — check the keys and try again");
+  }
+  await r.transitionContribution(contribution.id, ["PENDING"], { orderId: link.id });
+  return { contributionId: contribution.id, linkId: link.id, url: link.short_url, amountPaise: amount, from: from.name, purpose };
+}
+
+/** Checks every open payment link of this trip with Razorpay and records the paid ones (idempotent). */
+export async function syncPaymentRequests(tripId: string, userId: string) {
+  await loadTripForUser(tripId, userId);
+  const r = await repo();
+  const g = gw();
+  const open = (await r.listContributions(tripId)).filter((c) => c.orderId?.startsWith("plink_") && (c.status === "PENDING" || c.status === "VERIFIED"));
+  const out: { contributionId: string; from: string; purpose: string; amountPaise: number; status: string; url: string | null; createdAt: number }[] = [];
+  for (const c of open) {
+    let status: string = c.status;
+    let url: string | null = null;
+    if (g.fetchPaymentLink) {
+      try {
+        const link = await g.fetchPaymentLink(c.orderId!);
+        url = link.short_url;
+        if (c.status === "PENDING" && link.status === "paid") {
+          const paid = link.payments.find((p) => p.status === "captured") ?? link.payments[0];
+          const payment = paid ? await g.fetchPayment(paid.payment_id) : null;
+          if (payment && payment.amount === c.amountPaise && payment.currency === c.currency && (payment.status === "captured" || payment.status === "authorized")) {
+            const owner = await r.findContributionByPayment(payment.id);
+            if (!owner || owner.id === c.id) {
+              const current = (await r.transitionContribution(c.id, ["PENDING"], { status: "VERIFIED", paymentId: payment.id })) ?? (await r.getContribution(c.id));
+              if (current?.status === "VERIFIED") {
+                await ensureContributionInLedger(current);
+                status = "VERIFIED";
+              }
+            }
+          }
+        } else if (c.status === "PENDING" && (link.status === "cancelled" || link.status === "expired")) {
+          await r.transitionContribution(c.id, ["PENDING"], { status: "FAILED", failureReason: `Payment link ${link.status}` });
+          status = "FAILED";
+        }
+      } catch {
+        /* Razorpay unreachable: report the stored status and try again next poll */
+      }
+    }
+    if (c.status === "VERIFIED" && status === "VERIFIED" && Date.now() - c.updatedAt > 10 * 60_000) continue; // old paid links drop off the list
+    out.push({ contributionId: c.id, from: c.participantId, purpose: c.purpose, amountPaise: c.amountPaise, status, url, createdAt: c.createdAt });
+  }
+  return { requests: out.sort((a, b) => b.createdAt - a.createdAt) };
 }

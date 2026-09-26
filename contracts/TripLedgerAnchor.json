@@ -1,0 +1,176 @@
+{
+  "contractName": "TripLedgerAnchor",
+  "compiler": "solc 0.8.28+commit.7893614a.Emscripten.clang",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "lastBlocks",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "newBlocks",
+          "type": "uint64"
+        }
+      ],
+      "name": "NotNewer",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "tripKey",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "blocks",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "headHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "merkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "Anchored",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "tripKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint64",
+          "name": "blocks",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "headHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "merkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "anchor",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "tripKey",
+          "type": "bytes32"
+        }
+      ],
+      "name": "count",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "tripKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "get",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "blocks",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "anchoredAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "headHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "merkleRoot",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct TripLedgerAnchor.Anchor",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60a0604052348015600f57600080fd5b50336080526080516104bc6100366000396000818161010101526101e001526104bc6000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c806318ae19c2146100515780637937354c146100b95780637f00e393146100e75780638da5cb5b146100fc575b600080fd5b61006461005f3660046103ca565b61013b565b6040516100b09190600060808201905067ffffffffffffffff835116825267ffffffffffffffff6020840151166020830152604083015160408301526060830151606083015292915050565b60405180910390f35b6100d96100c73660046103ec565b60009081526020819052604090205490565b6040519081526020016100b0565b6100fa6100f5366004610405565b6101d5565b005b6101237f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016100b0565b6040805160808101825260008082526020808301829052828401829052606083018290528582528190529190912080548390811061017b5761017b61044f565b6000918252602091829020604080516080810182526003909302909101805467ffffffffffffffff8082168552600160401b9091041693830193909352600183015490820152600290910154606082015290505b92915050565b336001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000161461021e576040516330cd747160e01b815260040160405180910390fd5b600084815260208190526040902080541580159061027a57508054819061024790600190610465565b815481106102575761025761044f565b600091825260209091206003909102015467ffffffffffffffff90811690851611155b156102e2578054819061028f90600190610465565b8154811061029f5761029f61044f565b60009182526020909120600390910201546040516328c377d360e21b815267ffffffffffffffff9182166004820152908516602482015260440160405180910390fd5b6040805160808101825267ffffffffffffffff808716825242811660208084019182529383018781526060840187815286546001818101895560008981529790972095516003909102909501805493518516600160401b026fffffffffffffffffffffffffffffffff1990941695909416949094179190911782555181840155905160029091015581546103769190610465565b6040805167ffffffffffffffff871681526020810186905290810184905286907f8fe09f4dfd2fce9ccf8b76d5c1401df512f02de105400c1d548fce95164378659060600160405180910390a35050505050565b600080604083850312156103dd57600080fd5b50508035926020909101359150565b6000602082840312156103fe57600080fd5b5035919050565b6000806000806080858703121561041b57600080fd5b84359350602085013567ffffffffffffffff8116811461043a57600080fd5b93969395505050506040820135916060013590565b634e487b7160e01b600052603260045260246000fd5b818103818111156101cf57634e487b7160e01b600052601160045260246000fdfea2646970667358221220b24f6c9e70fed53f8f36f7b5b61495bf588992d8a883057266baf10e310c8a1e64736f6c634300081c0033"
+}

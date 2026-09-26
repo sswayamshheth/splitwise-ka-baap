@@ -3,6 +3,8 @@
 import { useState, type ReactNode } from "react";
 
 import { cx, Icon, useFeedback } from "@/components/app/kit";
+import { useCheckout } from "@/components/app/payments/checkout";
+import { RequestSheet } from "@/components/app/payments/PaymentRequest";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatRelative } from "@/lib/dates";
 import { cancelSettlement, confirmSettlement, initiateSettlement, upiIntentUrl } from "@/lib/ledger/commands";
@@ -21,6 +23,8 @@ export function SettleSection() {
   const trip = useTrip();
   const { toast, confirm } = useFeedback();
   const [busy, setBusy] = useState<string | null>(null);
+  const [asking, setAsking] = useState<{ from: string; amountPaise: number } | null>(null);
+  const checkout = useCheckout();
   const { ledger, state } = trip;
   const transfers = ledger.transfers;
   const pending = ledger.pendingSettlements;
@@ -193,7 +197,24 @@ export function SettleSection() {
                       <span className="flex items-center gap-space-xs font-label-md text-label-md text-error">
                         <Icon name="arrow_forward" className="text-[16px]" /> Due
                       </span>
-                      <span className="flex items-center gap-space-sm">
+                      <span className="flex flex-wrap items-center justify-end gap-space-sm">
+                        {trip.isMe(t.from) ? (
+                          <button
+                            disabled={checkout.busy}
+                            onClick={() => void checkout.pay({ purpose: "settle", toId: t.to, amountPaise: t.amountPaise, payee: trip.fullName(t.to), description: `${trip.state.trip.name} · settle up with ${trip.fullName(t.to)}` })}
+                            className="flex items-center gap-1 rounded-full bg-primary px-space-md py-1 font-label-md text-label-md text-on-primary disabled:opacity-40"
+                          >
+                            <Icon name="bolt" className="text-[16px]" /> Pay with Razorpay
+                          </button>
+                        ) : null}
+                        {trip.isMe(t.to) ? (
+                          <button
+                            onClick={() => setAsking({ from: t.from, amountPaise: t.amountPaise })}
+                            className="flex items-center gap-1 rounded-full bg-primary px-space-md py-1 font-label-md text-label-md text-on-primary"
+                          >
+                            <Icon name="bolt" className="text-[16px]" /> Request via Razorpay
+                          </button>
+                        ) : null}
                         {upi && trip.isMe(t.from) ? (
                           <a href={upi} className="flex items-center gap-1 font-label-md text-label-md text-primary hover:underline">
                             <Icon name="qr_code_2" className="text-[16px]" /> Open UPI app
@@ -204,7 +225,7 @@ export function SettleSection() {
                           onClick={() => void markPaid(t.from, t.to, t.amountPaise)}
                           className="rounded-full bg-primary-container px-space-md py-1 font-label-md text-label-md text-on-primary disabled:opacity-40"
                         >
-                          {trip.isMe(t.from) ? "I've paid this" : `Record ${trip.short(t.from)}'s payment`}
+                          {trip.isMe(t.from) ? "Paid another way" : `Record ${trip.short(t.from)}'s payment`}
                         </button>
                       </span>
                     </>
@@ -246,6 +267,8 @@ export function SettleSection() {
           </div>
         </div>
       ) : null}
+      {asking ? <RequestSheet open onClose={() => setAsking(null)} purpose="settle" fromId={asking.from} amountPaise={asking.amountPaise} /> : null}
+      {checkout.element}
     </section>
   );
 }

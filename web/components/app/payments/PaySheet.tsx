@@ -15,6 +15,7 @@ import { EXPENSE_CATEGORIES, type ExpenseCategory, type ItineraryItem, type Paym
 import { formatMoney, parseAmount } from "@/lib/money";
 import { useCheckout } from "./checkout";
 import type { Config } from "./RazorpayPool";
+import { QrScanner } from "./QrScanner";
 import { UpiPayPanel } from "./UpiQr";
 
 /**
@@ -25,7 +26,7 @@ import { UpiPayPanel } from "./UpiQr";
  *     …or pay the vendor straight from a UPI app: their UPI (from their QR) becomes
  *     a real upi:// request (QR + "Open UPI app"); once paid, it's recorded
  *     against the trip pool.
- *  2) Pay someone else — QR link / UPI ID / phone → the same UPI request →
+ *  2) Pay anyone — scan a QR (camera / photo) / UPI ID / phone → the same UPI request →
  *     recorded against the trip pool (the app itself never moves money).
  */
 
@@ -34,7 +35,7 @@ type Receipt = { amountPaise: number; payee: string; via: string; funders: { nam
 
 export function PaySheet({ open, onClose, onContribute }: { open: boolean; onClose: () => void; onContribute: () => void }) {
   const [step, setStep] = useState<Step>({ kind: "choose" });
-  const titles: Record<Step["kind"], string> = { choose: "Pay", vendors: "Pay a vendor", vendor: "Pay a vendor", someone: "Pay someone", receipt: "Paid" };
+  const titles: Record<Step["kind"], string> = { choose: "Pay", vendors: "Pay a vendor", vendor: "Pay a vendor", someone: "Pay anyone", receipt: "Paid" };
   return (
     <Sheet open={open} onClose={onClose} title={titles[step.kind]}>
       {step.kind !== "choose" && step.kind !== "receipt" ? (
@@ -70,7 +71,6 @@ function useUpiAllowed() {
 }
 
 function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () => void }) {
-  const upiAllowed = useUpiAllowed();
   const Option = ({ icon, title, sub, onClick, tone }: { icon: string; title: string; sub: string; onClick: () => void; tone: string }) => (
     <button onClick={onClick} className="flex w-full items-center gap-space-md rounded-2xl bg-surface-container-lowest p-space-md text-left shadow-sm ring-1 ring-outline-variant/40 transition-shadow hover:shadow-md">
       <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full", tone)}>
@@ -86,9 +86,8 @@ function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () 
   return (
     <div className="flex flex-col gap-space-sm">
       <Option icon="storefront" tone="bg-primary-fixed/60 text-primary" title="Pay a vendor from the itinerary" sub="Villa, cab, activity… with the best card in the group" onClick={onVendor} />
-      {upiAllowed ? (
-        <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay someone else" sub="QR, UPI ID or phone — paid from the trip pool" onClick={onSomeone} />
-      ) : null}
+      {/* Always offered: the money moves in the payer's own UPI app, so it doesn't depend on Razorpay's mode. */}
+      <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay anyone" sub="Scan a QR, UPI ID or phone number — recorded in the trip pool" onClick={onSomeone} />
     </div>
   );
 }
@@ -491,13 +490,8 @@ function PaySomeone({ onContribute, onPaid }: { onContribute: () => void; onPaid
 
       {tab === "qr" ? (
         <div className="flex flex-col gap-2">
-          <div className="relative mx-auto flex h-40 w-40 items-center justify-center rounded-2xl bg-inverse-surface/90">
-            {["left-2 top-2 border-l-4 border-t-4", "right-2 top-2 border-r-4 border-t-4", "bottom-2 left-2 border-b-4 border-l-4", "bottom-2 right-2 border-b-4 border-r-4"].map((c) => (
-              <span key={c} className={cx("absolute h-7 w-7 rounded-sm border-primary-fixed", c)} />
-            ))}
-            <Icon name="qr_code_2" className="text-[64px] text-inverse-on-surface/70" />
-          </div>
-          <p className="text-center font-label-sm text-label-sm text-on-surface-variant">Camera scanning comes with the mobile app. Paste the QR's UPI link here:</p>
+          <QrScanner onResult={setQr} />
+          <p className="text-center font-label-sm text-label-sm text-on-surface-variant">…or paste the QR&apos;s UPI link:</p>
           <input className={inputCls} value={qr} onChange={(e) => setQr(e.target.value)} placeholder="upi://pay?pa=shop@okaxis&pn=Shop&am=450" autoCapitalize="none" />
           {parsedQr ? (
             <p className="font-label-md text-label-md text-primary">

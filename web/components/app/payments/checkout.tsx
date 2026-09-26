@@ -18,8 +18,10 @@ import { formatMoney } from "@/lib/money";
  */
 
 export type CheckoutRequest = {
-  purpose: "pool" | "vendor";
+  purpose: "pool" | "vendor" | "settle";
   amountPaise: number;
+  /** For settle-ups: the member being paid. */
+  toId?: string;
   /** Shown on the checkout: who the money goes to. */
   payee: string;
   description: string;
@@ -70,7 +72,13 @@ export function useCheckout() {
         const out = await api<{ status: "VERIFIED" | "FAILED" | "PENDING" }>("/api/payments/verify", { body: { contributionId: order.contributionId, ...signed } });
         await trip.refresh();
         if (out.status === "VERIFIED") {
-          toast(req.purpose === "vendor" ? `Payment verified by the server · ${formatMoney(order.amountPaise)} to ${req.payee} recorded` : `Contribution verified by the server · ${formatMoney(order.amountPaise)} added to the pool`);
+          toast(
+            req.purpose === "vendor"
+              ? `Payment verified by the server · ${formatMoney(order.amountPaise)} to ${req.payee} recorded`
+              : req.purpose === "settle"
+                ? `Paid ${formatMoney(order.amountPaise)} to ${req.payee} · settled automatically`
+                : `Contribution verified by the server · ${formatMoney(order.amountPaise)} added to the pool`,
+          );
         } else if (out.status === "FAILED") toast("The payment failed — nothing was recorded. You can try again.", "error");
         else toast(order.mode === "demo" ? "Payment pending — the pool updates once it's confirmed" : "Payment received — waiting for confirmation from Razorpay");
         return { status: out.status };
@@ -89,7 +97,7 @@ export function useCheckout() {
       setBusy(true);
       try {
         const order = await api<Order>("/api/payments/orders", {
-          body: { tripId: trip.tripId, memberId: trip.meId, amountPaise: req.amountPaise, currency: "INR", purpose: req.purpose, itemId: req.itemId, methodLabel: req.methodLabel },
+          body: { tripId: trip.tripId, memberId: trip.meId, amountPaise: req.amountPaise, currency: "INR", purpose: req.purpose, itemId: req.itemId, toId: req.toId, methodLabel: req.methodLabel },
         });
 
         if (order.mode === "demo") {

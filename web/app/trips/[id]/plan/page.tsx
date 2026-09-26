@@ -40,6 +40,18 @@ function inputOf(item: ItineraryItem): ItineraryInput {
 
 type Pending = { item: ItineraryItem; change: Change; joining: boolean };
 
+/** Where to book an item: a real search on a booking site, prefilled where the site allows it. */
+function bookingUrl(item: ItineraryItem, destination: string): string {
+  const city = destination.split(",")[0].trim();
+  const q = encodeURIComponent;
+  if (item.category === "Stay") {
+    const out = item.endDate ?? item.date;
+    return `https://www.booking.com/searchresults.html?ss=${q(city)}&checkin=${item.date}&checkout=${out > item.date ? out : item.date}`;
+  }
+  if (item.category === "Transport") return "https://www.makemytrip.com/flights/";
+  return `https://www.google.com/search?q=${q(`${item.title} ${city} book`)}`;
+}
+
 /**
  * The plan: the itinerary day by day, who is on each item, and what it is
  * expected to cost. Opting in or out of an unpaid item just edits the plan;
@@ -250,6 +262,17 @@ export default function PlanPage() {
                           <Icon name={on ? "do_not_disturb_on" : "thumb_up"} className="text-[18px]" />
                           {on ? "Decline" : "Count me in"}
                         </button>
+                        {!booked ? (
+                          <a
+                            href={bookingUrl(item, state.trip.destination)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Opens the booking site in a new tab. On desktop, the GroupTrip extension shows whose card saves most at checkout."
+                            className="flex h-10 items-center justify-center gap-1 rounded-lg bg-primary-container px-space-md font-label-md text-label-md text-on-primary hover:bg-primary"
+                          >
+                            <Icon name="open_in_new" className="text-[18px]" /> Book
+                          </a>
+                        ) : null}
                         {!booked ? (
                           <button onClick={() => setSheet({ mode: "edit", item })} className="flex h-10 items-center justify-center gap-1 rounded-lg px-space-md font-label-md text-label-md text-primary hover:bg-surface-container">
                             <Icon name="edit" className="text-[18px]" /> Edit

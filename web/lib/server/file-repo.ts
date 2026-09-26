@@ -20,6 +20,7 @@ type Db = {
   events: Record<string, LedgerEvent[]>;
   contributions?: Record<string, Contribution>;
   webhookEvents?: Record<string, { type: string; at: number }>;
+  extTokens?: Record<string, { userId: string; at: number }>;
 };
 
 const DEFAULT_FILE = path.join(process.cwd(), ".data", "db.json");
@@ -31,7 +32,8 @@ export class FileRepo implements Repo {
 
   constructor(private readonly file = DEFAULT_FILE) {
     // Hosted file systems are ephemeral or read-only: fail loudly instead of losing data.
-    if (process.env.NODE_ENV === "production") {
+    // ALLOW_LOCAL_FILE_STORE=1 is only for `next start` on a laptop (never set it on Vercel).
+    if (process.env.NODE_ENV === "production" && process.env.ALLOW_LOCAL_FILE_STORE !== "1") {
       throw new Error(
         "SUPABASE_SECRET_KEY (and NEXT_PUBLIC_SUPABASE_URL) must be set in production. The local file store is for development only.",
       );
@@ -166,6 +168,15 @@ export class FileRepo implements Repo {
       seen[eventId] = { type, at: Date.now() };
       return true;
     });
+  }
+
+  saveExtensionToken(tokenHash: string, userId: string) {
+    return this.write((db) => {
+      (db.extTokens ??= {})[tokenHash] = { userId, at: Date.now() };
+    });
+  }
+  async userForExtensionToken(tokenHash: string) {
+    return (await this.load()).extTokens?.[tokenHash]?.userId ?? null;
   }
 
   appendEvents(tripId: string, baseSeq: number, events: LedgerEvent[]): Promise<AppendResult> {

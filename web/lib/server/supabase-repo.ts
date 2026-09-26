@@ -50,7 +50,7 @@ type ContributionDb = {
   amount_paise: number;
   currency: "INR";
   provider: "razorpay";
-  purpose: "pool" | "vendor" | null;
+  purpose: "pool" | "vendor" | "settle" | null;
   item_id: string | null;
   method_label: string | null;
   order_id: string | null;
@@ -218,6 +218,14 @@ export class SupabaseRepo implements Repo {
       throw new Error(`Supabase: ${res.error.message}`);
     }
     return true;
+  }
+
+  async saveExtensionToken(tokenHash: string, userId: string) {
+    check(await this.db.from("extension_tokens").insert({ token_hash: tokenHash, user_id: userId }));
+  }
+  async userForExtensionToken(tokenHash: string) {
+    const r = check(await this.db.from("extension_tokens").select("user_id").eq("token_hash", tokenHash).maybeSingle()) as { user_id: string } | null;
+    return r?.user_id ?? null;
   }
 
   async appendEvents(tripId: string, baseSeq: number, events: LedgerEvent[]): Promise<AppendResult> {

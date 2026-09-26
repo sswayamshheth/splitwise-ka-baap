@@ -17,6 +17,70 @@ type Status = { store: "file" | "supabase"; auth: string; ai: string };
 const KIND_LABEL: Record<Card["kind"], string> = { "credit-card": "Credit card", "debit-card": "Debit card", netbanking: "Bank account", upi: "UPI" };
 const KIND_ICON: Record<Card["kind"], string> = { "credit-card": "credit_card", "debit-card": "credit_card", netbanking: "account_balance", upi: "qr_code_2" };
 
+/** Pairs the GroupTrip browser extension: a one-time token the user pastes into the extension popup. */
+function ExtensionConnect() {
+  const [token, setToken] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [paired, setPaired] = useState(false);
+  const [installed, setInstalled] = useState(false);
+  useEffect(() => {
+    // The extension marks the page when it's installed, and confirms when it has taken the token.
+    setInstalled(document.documentElement.dataset.grouptripExtension === "1");
+    const onMsg = (e: MessageEvent) => {
+      if (e.source === window && e.data?.type === "GROUPTRIP_PAIRED") setPaired(true);
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+  async function create() {
+    setBusy(true);
+    try {
+      const r = await api<{ token: string }>("/api/ext/token", { method: "POST", body: {} });
+      setToken(r.token);
+      window.postMessage({ type: "GROUPTRIP_PAIR", token: r.token }, window.location.origin);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="flex flex-col gap-space-sm">
+      <h2 className="font-headline-sm text-headline-sm text-on-surface">Browser extension</h2>
+      <div className="flex flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
+        <p className="font-body-md text-body-md text-on-surface-variant">
+          On MakeMyTrip, IndiGo, Booking.com and other checkouts, the GroupTrip extension reads the site&apos;s own bank offers and tells you whose card in your trip saves the most — then adds the booking to your trip. Desktop Chrome, Edge or Brave.
+        </p>
+        {paired ? (
+          <p className="flex items-center gap-2 rounded-lg bg-surface-container p-3 font-title-md text-title-md text-primary">
+            <span className="material-symbols-outlined">check_circle</span> Extension connected to this account
+          </p>
+        ) : token ? (
+          <>
+            <div className="flex items-center gap-2 rounded-lg bg-surface-container-low p-2">
+              <code className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{token}</code>
+              <button
+                onClick={() => {
+                  void navigator.clipboard?.writeText(token);
+                  setCopied(true);
+                }}
+                className="rounded-lg bg-primary-container px-3 py-1.5 font-label-md text-label-md text-on-primary"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">Paste it into the extension popup → Pair. Shown once; generate a new one any time.</p>
+          </>
+        ) : (
+          <button onClick={() => void create()} disabled={busy} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary-container font-title-md text-title-md text-on-primary disabled:opacity-40">
+            <span className="material-symbols-outlined">extension</span> {busy ? "Connecting…" : installed ? "Connect browser extension (one click)" : "Connect browser extension"}
+          </button>
+        )}
+        <p className="font-label-sm text-label-sm text-on-surface-variant">Install: chrome://extensions → Developer mode → Load unpacked → the project&apos;s <code>extension/</code> folder.</p>
+      </div>
+    </section>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const { signOut } = useClerk();
@@ -301,6 +365,8 @@ export default function ProfilePage() {
       </section>
 
       {/* Settings rows */}
+      <ExtensionConnect />
+
       <section className="flex flex-col overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm">
         <button onClick={() => void demo()} disabled={demoBusy} className="flex items-center justify-between gap-3 border-b border-outline-variant/30 px-space-md py-4 text-left transition-colors hover:bg-surface-container-low disabled:opacity-50">
           <span className="flex items-center gap-3 font-title-md text-title-md text-on-surface">

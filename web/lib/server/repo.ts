@@ -55,9 +55,10 @@ export type Contribution = {
   amountPaise: number;
   currency: "INR";
   provider: "razorpay";
-  /** "pool" = money into the trip pool; "vendor" = paying an itinerary item's vendor directly. */
-  purpose: "pool" | "vendor";
-  /** For vendor payments: the itinerary item being paid. */
+  /** "pool" = money into the trip pool; "vendor" = paying an itinerary item's vendor directly;
+   *  "settle" = paying back what you owe another member (a settle-up transfer). */
+  purpose: "pool" | "vendor" | "settle";
+  /** For vendor payments: the itinerary item being paid. For settle-ups: the member being paid. */
   itemId?: string;
   /** For vendor payments: the card/account used (name only). */
   methodLabel?: string;
@@ -109,6 +110,10 @@ export interface Repo {
   transitionContribution(id: string, from: PaymentStatus[], patch: Partial<Omit<Contribution, "id" | "tripId">>): Promise<Contribution | null>;
   /** Records a provider webhook event id; false if it was already processed. */
   claimWebhookEvent(eventId: string, type: string): Promise<boolean>;
+
+  /** Browser-extension pairing: only a SHA-256 hash of the token is stored. */
+  saveExtensionToken(tokenHash: string, userId: string): Promise<void>;
+  userForExtensionToken(tokenHash: string): Promise<string | null>;
 }
 
 let cached: Repo | null = null;
