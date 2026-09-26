@@ -23,12 +23,22 @@ function InterestsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api<{ profile: { name: string; interests?: Interests } }>("/api/me")
+    api<{ profile: { name: string; interests?: Interests }; onboarded: boolean; needsInterests: boolean }>("/api/me")
       .then((r) => {
+        // Asked once: skip this page if the name isn't saved yet (onboard first) or preferences were already answered.
+        if (!r.onboarded) {
+          router.replace(`/onboarding?next=${encodeURIComponent(next)}`);
+          return;
+        }
+        if (!r.needsInterests) {
+          router.replace(next);
+          return;
+        }
         setName(r.profile.name?.split(" ")[0] ?? "");
         if (r.profile.interests) setValue({ ...EMPTY_INTERESTS, ...r.profile.interests });
       })
       .catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(kind: "save" | "skip") {
