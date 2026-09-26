@@ -968,9 +968,12 @@ export function removeContribution(state: TripState, contributionId: string, ctx
 /** Build a UPI intent URL. Never executes a transaction; the phone's UPI app does. */
 export function upiIntentUrl(opts: { vpa: string; name: string; amountPaise: Paise; note?: string }): string {
   const amount = (opts.amountPaise / 100).toFixed(2);
-  const params = new URLSearchParams({ pa: opts.vpa, pn: opts.name, am: amount, cu: "INR" });
-  if (opts.note) params.set("tn", opts.note.slice(0, 50));
-  return `upi://pay?${params.toString()}`;
+  // Written the way bank QR codes are: a literal "@" in the UPI ID (some apps reject "%40") and
+  // spaces as "%20" (URLSearchParams' "+" shows up literally in some apps' payee name).
+  const enc = (v: string) => encodeURIComponent(v);
+  const parts = [`pa=${opts.vpa.trim()}`, `pn=${enc(opts.name)}`, `am=${amount}`, "cu=INR"];
+  if (opts.note) parts.push(`tn=${enc(opts.note.slice(0, 50))}`);
+  return `upi://pay?${parts.join("&")}`;
 }
 
 /** Parses a scanned/pasted UPI QR payload into its parts. */

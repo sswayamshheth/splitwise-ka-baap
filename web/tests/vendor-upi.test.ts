@@ -23,6 +23,8 @@ describe("vendor UPI on itinerary items", () => {
   it("the UPI request encodes vendor, name and amount, and a UPI-paid booking is recorded against the pool", () => {
     const url = upiIntentUrl({ vpa: "raviboats@okaxis", name: "Ravi Boats", amountPaise: 3_000_00, note: "Boat ride" });
     expect(parseUpiIntent(url)).toMatchObject({ vpa: "raviboats@okaxis", name: "Ravi Boats", amountPaise: 3_000_00 });
+    // Same shape as bank QR codes: literal "@", spaces as %20.
+    expect(url).toBe("upi://pay?pa=raviboats@okaxis&pn=Ravi%20Boats&am=3000.00&cu=INR&tn=Boat%20ride");
 
     let s = applyEvent(base, depositToPool(base, { participantId: GOA.aarav, amountPaise: 6_000_00, method: "upi" }, { actor: GOA.aarav }))!;
     const add = addItineraryItem(s, { title: "Boat ride", category: "Activity", date: "2026-10-11", estimatedPaise: 3_000_00, participantIds: everyone, vendorUpi: "raviboats@okaxis" }, { actor: GOA.aarav });
