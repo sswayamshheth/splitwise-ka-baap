@@ -89,6 +89,11 @@ export default function TripPage() {
           <Icon name="location_on" className="text-[18px]" />
           {t.destination} · {formatDateRange(t.startDate, t.endDate)}
         </p>
+        <Link href={`${base}/chain`} className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-container-lowest/95 py-0.5 pl-2 pr-0.5 font-label-sm text-label-sm text-on-surface shadow-sm">
+          <Icon name="deployed_code" className="text-[16px] text-primary" />
+          Blockchain
+          <ChainBadge />
+        </Link>
       </PhotoHero>
 
       <div className="flex flex-col gap-space-lg px-margin pt-space-md">
