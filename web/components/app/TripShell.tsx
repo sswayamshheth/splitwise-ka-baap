@@ -2,20 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
+import { api } from "@/lib/client/api";
 import { formatDateRange } from "@/lib/dates";
 import { TripProvider, useTrip } from "@/lib/client/trip";
+import type { Interests } from "@/lib/interests";
+import { addPaymentMethod, setParticipantInterests } from "@/lib/ledger/commands";
+import type { LedgerEvent } from "@/lib/ledger/types";
 import { Button, cx, Empty, Icon, initials, Page, Spinner, TopBar } from "./kit";
 
 const TABS = [
   { seg: "", label: "Trip", icon: "landscape" },
-  { seg: "plan", label: "Plan", icon: "event_note" },
+  { seg: "plan", label: "Plan", icon: "calendar_today" },
   { seg: "money", label: "Money", icon: "account_balance_wallet" },
   { seg: "activity", label: "Activity", icon: "history" },
 ] as const;
 
-/** A trip: header, the four trip tabs, and the trip's ledger in context for every screen below. */
+/** A trip: header, the trip's four tabs in the bottom bar, and the trip ledger in context for every screen below. */
 export function TripShell({ tripId, children }: { tripId: string; children: ReactNode }) {
   return (
     <TripProvider
@@ -38,8 +42,43 @@ export function TripShell({ tripId, children }: { tripId: string; children: Reac
   );
 }
 
+type Profile = { interests?: Interests; cards?: { label: string; bank: string; network?: "Visa" | "Mastercard" | "RuPay" | "Amex"; kind: "credit-card" | "debit-card" | "netbanking" | "upi" }[] };
+
+/**
+ * Brings my saved preferences and card names into this trip (once per visit),
+ * as ordinary ledger events — so the Harmony Score and the card optimiser see
+ * them, and the change is in the trip's history.
+ */
+function useProfileSync() {
+  const trip = useTrip();
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current || trip.state.trip.status === "closed") return;
+    done.current = true;
+    void api<{ profile: Profile }>("/api/me")
+      .then(async ({ profile }) => {
+        const mine = trip.participant(trip.meId);
+        if (!mine || mine.leftOn) return;
+        const wantsInterests = profile.interests && JSON.stringify(profile.interests) !== JSON.stringify(mine.interests ?? null);
+        const have = new Set((mine.paymentMethods ?? []).map((m) => m.label.toLowerCase()));
+        const newCards = (profile.cards ?? []).filter((c) => !have.has(c.label.toLowerCase()));
+        if (!wantsInterests && newCards.length === 0) return;
+        await trip.run((state, ctx) => {
+          const out: LedgerEvent[] = [];
+          if (wantsInterests) out.push(setParticipantInterests(state, ctx.actor, profile.interests, ctx));
+          for (const c of newCards) {
+            out.push(addPaymentMethod(state, ctx.actor, { label: c.label, bank: c.bank, network: c.network, kind: c.kind === "upi" ? "upi" : c.kind === "netbanking" ? "netbanking" : c.kind }, { ...ctx, now: Date.now() + out.length }));
+          }
+          return out;
+        });
+      })
+      .catch(() => undefined);
+  }, [trip]);
+}
+
 function TripChrome({ children }: { children: ReactNode }) {
   const trip = useTrip();
+  useProfileSync();
   const pathname = usePathname();
   const base = `/trips/${trip.tripId}`;
   const rest = pathname.slice(base.length).replace(/^\//, "");
@@ -60,35 +99,37 @@ function TripChrome({ children }: { children: ReactNode }) {
                 <Icon name="auto_awesome" className="text-[20px]" />
               </Link>
             )}
-            <Link href={`${base}/explain`} aria-label="My balance" className="flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-primary/20 transition-colors hover:bg-surface-variant">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-primary/20">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-container font-label-md text-label-md text-on-primary">{initials(trip.fullName(trip.meId))}</span>
-            </Link>
+            </span>
           </div>
         }
       />
+      <div className="flex flex-1 flex-col pb-20">{children}</div>
       {tabbed ? (
-        <div className="sticky top-16 z-30 bg-surface/90 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-[520px] gap-space-sm overflow-x-auto px-margin py-space-sm">
+        <nav className="fixed bottom-0 z-50 w-full bg-surface/85 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_12px_rgba(16,32,28,0.04)] backdrop-blur-xl">
+          <div className="mx-auto flex h-20 max-w-[520px] items-center justify-around px-space-xs">
             {TABS.map((tab) => {
               const active = tab.seg === rest;
               return (
                 <Link
                   key={tab.label}
                   href={tab.seg ? `${base}/${tab.seg}` : base}
+                  prefetch
+                  aria-current={active ? "page" : undefined}
                   className={cx(
-                    "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-space-md py-space-xs font-label-md text-label-md transition-colors",
-                    active ? "bg-primary-container text-on-primary shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-variant",
+                    "flex min-h-[44px] min-w-[56px] flex-col items-center justify-center gap-space-xs transition-colors",
+                    active ? "font-semibold text-primary-container" : "text-on-surface-variant hover:text-on-surface",
                   )}
                 >
-                  <Icon name={tab.icon} className="text-[16px]" />
-                  {tab.label}
+                  <Icon name={tab.icon} filled={active} className="text-[24px]" />
+                  <span className="font-label-md text-label-md">{tab.label}</span>
                 </Link>
               );
             })}
           </div>
-        </div>
+        </nav>
       ) : null}
-      {children}
     </div>
   );
 }

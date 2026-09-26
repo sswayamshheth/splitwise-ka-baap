@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Interests } from "@/lib/interests";
 import type { LedgerEvent } from "@/lib/ledger/types";
 
 /**
@@ -12,7 +13,21 @@ import type { LedgerEvent } from "@/lib/ledger/types";
  * which seq it was built on, and loses if someone else appended first.
  */
 
-export type Profile = { userId: string; name: string; email?: string; phone?: string; upiId?: string; createdAt: number };
+/** A card or account a member pays with — its NAME only (e.g. "HDFC Regalia Visa"); never a number. */
+export type SavedCard = { id: string; label: string; bank: string; network?: "Visa" | "Mastercard" | "RuPay" | "Amex"; kind: "credit-card" | "debit-card" | "netbanking" | "upi" };
+
+export type Profile = {
+  userId: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  upiId?: string;
+  interests?: Interests;
+  /** True once the user has seen the (optional) preferences page, even if they skipped it. */
+  interestsAsked?: boolean;
+  cards?: SavedCard[];
+  createdAt: number;
+};
 
 export type TripRow = {
   id: string;
@@ -40,6 +55,12 @@ export type Contribution = {
   amountPaise: number;
   currency: "INR";
   provider: "razorpay";
+  /** "pool" = money into the trip pool; "vendor" = paying an itinerary item's vendor directly. */
+  purpose: "pool" | "vendor";
+  /** For vendor payments: the itinerary item being paid. */
+  itemId?: string;
+  /** For vendor payments: the card/account used (name only). */
+  methodLabel?: string;
   orderId?: string;
   /** Unique across all contributions: one provider payment = one contribution. */
   paymentId?: string;

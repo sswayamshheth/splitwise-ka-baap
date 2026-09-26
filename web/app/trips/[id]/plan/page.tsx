@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Button, Card, Chip, cx, Empty, Field, Icon, inputCls, Label, Notice, Sheet, useFeedback } from "@/components/app/kit";
 import { CATEGORY_ICON, PortraitStack, TimelinePin } from "@/components/app/trip/common";
+import { PlanAssistantCard, PlanAssistantSheet } from "@/components/app/trip/PlanAssistant";
 import { categoryPhoto } from "@/lib/covers";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate, isValidIso, todayIso } from "@/lib/dates";
@@ -25,6 +26,8 @@ function inputOf(item: ItineraryItem): ItineraryInput {
     time: item.time,
     location: item.location,
     vendor: item.vendor,
+    vendorUpi: item.vendorUpi,
+    vendorUpiName: item.vendorUpiName,
     estimatedPaise: item.estimatedPaise,
     actualPaise: item.actualPaise,
     participantIds: item.participantIds,
@@ -50,8 +53,8 @@ export default function PlanPage() {
   const budget = useMemo(() => computeBudget(state), [state]);
   const [sheet, setSheet] = useState<{ mode: "add" } | { mode: "edit"; item: ItineraryItem } | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
+  const [assistant, setAssistant] = useState(false);
   const closed = state.trip.status === "closed";
-  const me = state.participants.find((p) => p.id === meId);
 
   const days = useMemo(() => {
     const sorted = [...state.itinerary].sort((a, b) => (a.date + (a.time ?? "")).localeCompare(b.date + (b.time ?? "")));
@@ -62,7 +65,8 @@ export default function PlanPage() {
   const dayIndex = (iso: string) => {
     const start = new Date(`${state.trip.startDate}T00:00:00`).getTime();
     const d = Math.round((new Date(`${iso}T00:00:00`).getTime() - start) / 86_400_000);
-    return d >= 0 ? `Day ${d + 1}` : "Before the trip";
+    if (d < 0) return "Before the trip";
+    return iso > state.trip.endDate ? "After the trip" : `Day ${d + 1}`;
   };
 
   async function togglePlanned(item: ItineraryItem) {
@@ -117,7 +121,7 @@ export default function PlanPage() {
     item.status === "cancelled" ? ("idle" as const) : booked && item.date < today ? ("done" as const) : booked ? ("active" as const) : ("idle" as const);
 
   return (
-    <main className="mx-auto w-full max-w-[520px] flex-1 pb-32">
+    <main className="mx-auto w-full max-w-[520px] flex-1 pb-10">
       {/* header + day selector carousel */}
       <div className="px-margin pb-space-sm pt-space-md">
         <div className="flex items-center justify-between pb-space-xs">
@@ -182,6 +186,7 @@ export default function PlanPage() {
             <Icon name="science" />
           </Link>
         </div>
+        {!closed ? <PlanAssistantCard onOpen={() => setAssistant(true)} /> : null}
         {!closed ? (
           <button onClick={() => setSheet({ mode: "add" })} className="mt-space-sm flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-primary/40 font-title-md text-[15px] text-primary hover:bg-surface-container-low">
             <Icon name="add" className="text-[20px]" /> Add to the plan
@@ -233,18 +238,8 @@ export default function PlanPage() {
                         {describePolicy(item.cancellationPolicy)}
                       </span>
                     ) : null}
-                    <div className="-mx-space-md -mb-space-md mt-1 flex items-center justify-between gap-space-sm rounded-b-xl bg-surface-container-low/60 p-space-sm px-space-md">
-                      <span className="flex min-w-0 items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
-                        {booked ? <Icon name="check_circle" className="text-[16px] text-primary" /> : <Icon name="group" className="text-[16px]" />}
-                        <span className="truncate">
-                          {booked ? "Confirmed" : "Planned"} · {item.participantIds.length} going · {perHead ? "per head" : "one price"}
-                          {b?.estimatedShares[meId] ? ` · you ${formatMoney(b.estimatedShares[meId])}` : ""}
-                        </span>
-                      </span>
-                      <PortraitStack names={going} max={4} size={24} />
-                    </div>
                     {item.status !== "cancelled" && !closed ? (
-                      <div className="mt-space-md flex gap-space-sm">
+                      <div className="mt-space-sm flex gap-space-sm">
                         <button
                           onClick={() => (booked ? toggleBooked(item) : void togglePlanned(item))}
                           className={cx(
@@ -261,18 +256,28 @@ export default function PlanPage() {
                           </button>
                         ) : (
                           <Link href={`/trips/${trip.tripId}/activity?expense=${item.expenseIds[0]}`} className="flex h-10 items-center justify-center gap-1 rounded-lg px-space-md font-label-md text-label-md text-primary hover:bg-surface-container">
-                            <Icon name="receipt_long" className="text-[18px]" /> Payment
+                            <Icon name="history" className="text-[18px]" /> History
                           </Link>
                         )}
                       </div>
                     ) : null}
+                    <div className="-mx-space-md -mb-space-md mt-space-md flex items-center justify-between gap-space-sm rounded-b-xl bg-surface-container-low/60 p-space-sm px-space-md">
+                      <span className="flex min-w-0 items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                        {booked ? <Icon name="check_circle" className="text-[16px] text-primary" /> : <Icon name="group" className="text-[16px]" />}
+                        <span className="truncate">
+                          {booked ? "Confirmed" : "Planned"} · {item.participantIds.length} going · {perHead ? "per head" : "one price"}
+                          {b?.estimatedShares[meId] ? ` · you ${formatMoney(b.estimatedShares[meId])}` : ""}
+                        </span>
+                      </span>
+                      <PortraitStack names={going} max={4} size={24} />
+                    </div>
                   </>
                 );
                 return (
                   <div key={item.id} className={cx("relative flex items-start gap-space-md", item.status === "cancelled" && "opacity-60")}>
                     <TimelinePin icon={pinFor(item, booked) === "done" ? "check_circle" : CATEGORY_ICON[item.category]} tone={pinFor(item, booked)} />
                     {booked ? (
-                      <div className="flex-1 overflow-hidden rounded-xl bg-surface-container-lowest shadow-md">
+                      <div className="min-w-0 flex-1 overflow-hidden rounded-xl bg-surface-container-lowest shadow-md">
                         <div className="relative h-28 w-full bg-cover bg-center" style={{ backgroundImage: `url("${categoryPhoto(item.category, item.id)}")` }}>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                           <div className="absolute left-3 top-2.5">
@@ -287,7 +292,7 @@ export default function PlanPage() {
                           </div>
                         </div>
                         <div className="flex flex-col gap-space-xs p-space-md">
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface">{item.title}</h3>
+                          <h3 className="min-w-0 break-words font-headline-sm text-headline-sm text-on-surface">{item.title}</h3>
                           {b?.nights ? (
                             <span className="font-body-md text-body-md text-on-surface-variant">
                               {b.nights} night{b.nights === 1 ? "" : "s"} · {formatMoney(amount)} total
@@ -299,7 +304,7 @@ export default function PlanPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className={cx("flex flex-1 flex-col gap-space-xs rounded-xl p-space-md", item.status === "cancelled" ? "bg-surface-container-low" : "bg-surface-container-lowest shadow-sm")}>
+                      <div className={cx("flex min-w-0 flex-1 flex-col gap-space-xs rounded-xl p-space-md", item.status === "cancelled" ? "bg-surface-container-low" : "bg-surface-container-lowest shadow-sm")}>
                         <div className="flex items-center justify-between gap-2">
                           <span className="truncate font-label-sm text-label-sm uppercase tracking-wider text-primary">{when}</span>
                           <span className={cx("shrink-0 rounded-full px-2 py-0.5 font-label-sm text-[10px] font-semibold uppercase", status === "Cancelled" ? "bg-error-container text-on-error-container" : "bg-surface-container text-on-surface-variant")}>{status}</span>
@@ -330,6 +335,7 @@ export default function PlanPage() {
 
       <ItemSheet state={sheet} onClose={() => setSheet(null)} />
       {pending ? <BookedChange pending={pending} onClose={() => setPending(null)} /> : null}
+      {assistant ? <PlanAssistantSheet open onClose={() => setAssistant(false)} /> : null}
     </main>
   );
 }
@@ -449,6 +455,7 @@ function ItemForm({
   const [endDate, setEndDate] = useState(editing?.endDate ?? "");
   const [time, setTime] = useState(editing?.time ?? "");
   const [vendor, setVendor] = useState(editing?.vendor ?? "");
+  const [vendorUpi, setVendorUpi] = useState(editing?.vendorUpi ?? "");
   const [amount, setAmount] = useState(editing ? String(editing.estimatedPaise / 100) : "");
   const [who, setWho] = useState<string[]>(editing?.participantIds ?? active.map((p) => p.id));
   const [busy, setBusy] = useState(false);
@@ -468,6 +475,7 @@ function ItemForm({
           endDate: endDate || undefined,
           time: time || undefined,
           vendor: vendor || undefined,
+          vendorUpi: vendorUpi.trim() || undefined,
           estimatedPaise: parsed.paise!,
           participantIds: who,
           weights: undefined,
@@ -525,6 +533,9 @@ function ItemForm({
         </div>
         <Field label="Vendor (optional)">
           <input className={inputCls} value={vendor} onChange={(e) => setVendor(e.target.value)} placeholder="e.g. Goa Dive Centre" />
+        </Field>
+        <Field label="Vendor UPI ID (optional)" hint="From the vendor's UPI QR — lets anyone pay them from a UPI app.">
+          <input className={inputCls} value={vendorUpi} onChange={(e) => setVendorUpi(e.target.value)} placeholder="vendor@okaxis" autoCapitalize="none" />
         </Field>
         <div className="flex flex-col gap-space-xs">
           <Label>Who&apos;s going ({who.length})</Label>

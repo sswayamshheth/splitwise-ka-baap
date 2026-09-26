@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { Icon, Spinner, useFeedback } from "@/components/app/kit";
+import { useMe } from "@/components/app/MainShell";
 import { api } from "@/lib/client/api";
 import { tripCover } from "@/lib/covers";
 import { daysBetween, formatDateRange, parseIso, todayIso } from "@/lib/dates";
@@ -57,22 +58,40 @@ function timing(t: TripSummary, today: string) {
 const PAST_ICONS = ["local_cafe", "kayaking", "hiking", "beach_access", "landscape", "sailing"];
 
 export default function HomePage() {
+  return (
+    <Suspense fallback={<Spinner label="Loading your trips" />}>
+      <Home />
+    </Suspense>
+  );
+}
+
+function Home() {
   const router = useRouter();
+  const params = useSearchParams();
   const { toast } = useFeedback();
+  const { me } = useMe();
+  const name = me?.name?.split(" ")[0] ?? "";
   const [trips, setTrips] = useState<TripSummary[] | null>(null);
-  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [loadingDemo, setLoadingDemo] = useState(false);
+  const joinRef = useRef<HTMLElement>(null);
+  const joinInput = useRef<HTMLInputElement>(null);
+  const wantsJoin = params.get("join") === "1";
 
   useEffect(() => {
     api<{ trips: TripSummary[] }>("/api/trips")
       .then((r) => setTrips(r.trips))
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load your trips"));
-    api<{ profile: { name: string } }>("/api/me")
-      .then((r) => setName(r.profile.name?.split(" ")[0] ?? ""))
-      .catch(() => undefined);
   }, []);
+
+  // "+ -> Join with a code" lands here with ?join=1: bring the code box into view and focus it.
+  useEffect(() => {
+    if (!wantsJoin || trips === null) return;
+    joinRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => joinInput.current?.focus(), 350);
+    return () => clearTimeout(t);
+  }, [wantsJoin, trips]);
 
   async function loadDemo() {
     setLoadingDemo(true);
@@ -121,7 +140,7 @@ export default function HomePage() {
       ) : trips === null ? (
         <Spinner label="Loading your trips" />
       ) : trips.length === 0 ? (
-        <EmptyHero loadingDemo={loadingDemo} onDemo={() => void loadDemo()} />
+        <EmptyHero />
       ) : (
         <>
           {/* Active trip hero */}
@@ -176,7 +195,7 @@ export default function HomePage() {
           <section className="mt-1 flex flex-col gap-space-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="font-title-lg text-title-lg text-on-surface">Upcoming trips</h2>
+                <h2 className="font-title-lg text-title-lg text-on-surface">{upcoming.some((t) => t.phase === "ongoing") ? "Also on & upcoming" : "Upcoming trips"}</h2>
                 <span className="rounded-full bg-surface-container-high px-2 py-0.5 font-label-sm text-label-sm text-on-surface-variant">{upcoming.length}</span>
               </div>
               <Link href="/trips/new" className="flex items-center gap-0.5 font-title-md text-title-md text-primary transition-colors hover:text-primary-container">
@@ -190,7 +209,7 @@ export default function HomePage() {
               upcoming.map((t) => (
                 <Link key={t.id} href={`/trips/${t.id}`} className="flex w-full cursor-pointer items-center gap-3.5 rounded-xl bg-surface-container-lowest p-3.5 shadow-sm transition-colors hover:bg-surface-container-low">
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-container-high bg-cover bg-center" style={{ backgroundImage: `url("${tripCover(t.destination, t.id)}")` }}>
-                    <span className="absolute left-1 top-1 rounded-full bg-surface/90 px-1.5 py-0.5 text-[10px] font-semibold text-on-surface shadow-sm">{month(t.startDate)}</span>
+                    <span className="absolute left-1 top-1 rounded-full bg-surface/90 px-1.5 py-0.5 text-[10px] font-semibold text-on-surface shadow-sm">{t.phase === "ongoing" ? "Now" : month(t.startDate)}</span>
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-center justify-between gap-1">
@@ -247,8 +266,11 @@ export default function HomePage() {
         </>
       )}
 
+      {/* Presenter demo - always reachable */}
+      {trips !== null ? <DemoCard compact={trips.length > 0} busy={loadingDemo} onDemo={() => void loadDemo()} /> : null}
+
       {/* Join with a code */}
-      <section className="flex flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-3.5 shadow-sm">
+      <section ref={joinRef} className={`flex scroll-mt-24 flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-3.5 shadow-sm transition-shadow ${wantsJoin ? "ring-2 ring-primary/40" : ""}`}>
         <div className="flex items-center gap-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-primary">
             <Icon name="group_add" className="text-[20px]" />
@@ -260,7 +282,8 @@ export default function HomePage() {
         </div>
         <div className="flex gap-2">
           <input
-            className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 font-title-md tracking-[0.2em] text-on-surface outline-none placeholder:tracking-normal placeholder:text-on-surface-variant/60 focus:border-primary"
+            ref={joinInput}
+            className="h-11 w-full min-w-0 rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 font-title-md tracking-[0.2em] text-on-surface outline-none placeholder:tracking-normal placeholder:text-on-surface-variant/60 focus:border-primary"
             placeholder="e.g. K7Q2ZD"
             value={code}
             maxLength={8}
@@ -278,19 +301,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {trips && trips.length > 0 ? (
-        <button onClick={() => void loadDemo()} disabled={loadingDemo} className="mx-auto flex items-center gap-1 font-label-md text-label-md text-primary disabled:opacity-50">
-          <Icon name="bolt" className="text-[16px]" /> {loadingDemo ? "Loading demo…" : "Load / reset the Goa demo trip"}
-        </button>
-      ) : null}
     </main>
   );
 }
 
-function EmptyHero({ loadingDemo, onDemo }: { loadingDemo: boolean; onDemo: () => void }) {
+function EmptyHero() {
   return (
     <section className="flex flex-col gap-space-md">
-      <div className="relative h-64 w-full overflow-hidden rounded-xl bg-surface-container shadow-sm">
+      <div className="relative h-56 w-full overflow-hidden rounded-xl bg-surface-container shadow-sm">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${tripCover("Candolim, Goa beach", "empty")}")` }} />
         <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface via-inverse-surface/40 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 p-4">
@@ -302,9 +320,40 @@ function EmptyHero({ loadingDemo, onDemo }: { loadingDemo: boolean; onDemo: () =
       <Link href="/trips/new" className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary-container font-title-md text-title-md text-on-primary shadow-sm transition-colors hover:bg-primary">
         <Icon name="add" className="text-[20px]" /> Plan a trip
       </Link>
-      <button onClick={onDemo} disabled={loadingDemo} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-surface-container font-title-md text-title-md text-primary transition-colors hover:bg-surface-container-high disabled:opacity-50">
-        <Icon name="bolt" className="text-[20px]" /> {loadingDemo ? "Loading…" : "Load the Goa demo trip"}
+    </section>
+  );
+}
+
+/** For presenters: one tap loads (or resets) a fully worked trip. */
+function DemoCard({ compact, busy, onDemo }: { compact: boolean; busy: boolean; onDemo: () => void }) {
+  if (compact) {
+    return (
+      <button onClick={onDemo} disabled={busy} className="flex items-center gap-3 rounded-xl bg-secondary-fixed/40 p-3.5 text-left transition-colors hover:bg-secondary-fixed/60 disabled:opacity-60">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+          <Icon name="slideshow" className="text-[20px]" />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="font-title-md text-title-md text-on-secondary-fixed">{busy ? "Loading demo…" : "Show demo"}</span>
+          <span className="truncate font-label-sm text-label-sm text-on-secondary-fixed-variant">Load or reset &ldquo;Goa with the gang&rdquo; — a fully worked trip</span>
+        </span>
+        <Icon name="arrow_forward" className="text-[20px] text-on-secondary-fixed-variant" />
       </button>
+    );
+  }
+  return (
+    <section className="relative overflow-hidden rounded-xl bg-inverse-surface shadow-sm">
+      <div className="absolute inset-0 bg-cover bg-center opacity-50" style={{ backgroundImage: `url("${tripCover("Goa beach sunset", "demo")}")` }} />
+      <div className="absolute inset-0 bg-gradient-to-r from-inverse-surface via-inverse-surface/80 to-inverse-surface/30" />
+      <div className="relative z-10 flex flex-col gap-3 p-5">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
+          <Icon name="slideshow" className="text-[15px]" /> Presenter demo
+        </span>
+        <h2 className="font-headline-md text-headline-md text-surface-bright">Goa with the gang</h2>
+        <p className="max-w-[34ch] font-body-md text-body-md text-surface-bright/85">Loads a fully worked six-person trip — bookings, the trip pool, a refund, what-if and settle-up — with you as organiser.</p>
+        <button onClick={onDemo} disabled={busy} className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-surface-container-lowest font-title-md text-title-md text-on-surface shadow-md transition-transform active:scale-[0.99] disabled:opacity-60">
+          <Icon name="play_arrow" className="text-[22px] text-primary" /> {busy ? "Loading demo…" : "Show demo"}
+        </button>
+      </div>
     </section>
   );
 }

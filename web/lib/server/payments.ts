@@ -1,10 +1,12 @@
 import "server-only";
 
 import { newId } from "@/lib/id";
+import { addExpense, CommandError } from "@/lib/ledger/commands";
+import { pricingOf } from "@/lib/ledger/policy";
 import { poolFunding, poolSummary } from "@/lib/ledger/pool";
 import { reduceEvents } from "@/lib/ledger/reduce";
 import type { ContributionData, LedgerEvent, TripState } from "@/lib/ledger/types";
-import { gateway, GatewayUnavailable, type GatewayPayment } from "./razorpay";
+import { DemoGateway, gateway, GatewayUnavailable, type GatewayPayment } from "./razorpay";
 import { repo, type Contribution, type MemberRow, type PaymentStatus } from "./repo";
 import { HttpError, loadTripForUser, syncTripRow, validateAppend } from "./trips";
 
@@ -75,8 +77,56 @@ async function memberRowFor(c: Contribution): Promise<MemberRow> {
   return (await (await repo()).getMember(c.tripId, c.userId)) ?? { tripId: c.tripId, userId: c.userId, participantId: c.participantId, role: "member", joinedAt: c.createdAt };
 }
 
+const ledgerExpenseId = (contributionId: string) => `x_pay_${contributionId}`;
+
+/**
+ * A verified vendor payment becomes ONE expense in the ledger: paid by the
+ * member whose card was charged, shared by the itinerary item's members,
+ * linked to the item (which is then "booked"). Deterministic id → written once.
+ */
+async function ensureVendorExpenseInLedger(c: Contribution) {
+  if (!c.paymentId || c.status !== "VERIFIED") return false;
+  const expenseId = ledgerExpenseId(c.id);
+  return appendLedger(c.tripId, await memberRowFor(c), (events) => {
+    if (events.some((e) => e.type === "EXPENSE_ADDED" && e.expense.id === expenseId)) return null;
+    const state = stateOf(events);
+    const item = state.itinerary.find((i) => i.id === c.itemId);
+    const me = state.participants.find((p) => p.id === c.participantId);
+    const method = me?.paymentMethods?.find((m) => m.label.toLowerCase() === (c.methodLabel ?? "").toLowerCase());
+    const participants = (item?.participantIds.length ? item.participantIds : [c.participantId]).map((participantId, i) => ({ participantId, weight: item?.weights?.[i] ?? 1 }));
+    let event: LedgerEvent;
+    try {
+      event = addExpense(
+        state,
+        {
+          title: item?.title ?? "Vendor payment",
+          vendor: item?.vendor,
+          amountPaise: c.amountPaise,
+          date: new Date(c.createdAt).toISOString().slice(0, 10),
+          category: item?.category ?? "Other",
+          payers: [{ participantId: c.participantId, amountPaise: c.amountPaise }],
+          participants,
+          splitMode: item?.weights ? "weighted" : "equal",
+          pricing: item ? pricingOf({ category: item.category }) : undefined,
+          cancellationPolicy: item?.cancellationPolicy,
+          itineraryItemId: item?.id,
+          paymentMethodId: method?.id,
+          capture: { kind: "deeplink", reference: `${c.paymentId}${c.methodLabel ? ` · ${c.methodLabel}` : ""}` },
+          notes: "Paid through Razorpay checkout; recorded after server-side verification.",
+        },
+        { actor: c.participantId },
+      );
+    } catch (e) {
+      throw new HttpError(409, e instanceof CommandError ? `Payment verified but couldn't be booked: ${e.message}` : "Payment verified but couldn't be booked");
+    }
+    if (event.type !== "EXPENSE_ADDED") return null;
+    return [{ ...event, id: `ev_pay_${c.id}`, expense: { ...event.expense, id: expenseId } }];
+  });
+}
+
 /** Writes the ledger event for a verified payment, exactly once. */
 async function ensureContributionInLedger(c: Contribution) {
+  if (c.purpose === "vendor") return ensureVendorExpenseInLedger(c);
   if (!c.paymentId || (c.status !== "VERIFIED" && c.status !== "REFUND_PENDING" && c.status !== "REFUNDED")) return false;
   const dataId = ledgerContributionId(c.id);
   return appendLedger(c.tripId, await memberRowFor(c), (events) => {
@@ -111,8 +161,12 @@ async function recognise(c: Contribution, payment: GatewayPayment) {
 
 // ---------------------------------------------------------------- create order
 
-export async function createPaymentOrder(userId: string, input: { tripId?: unknown; memberId?: unknown; amountPaise?: unknown; currency?: unknown }) {
+export async function createPaymentOrder(
+  userId: string,
+  input: { tripId?: unknown; memberId?: unknown; amountPaise?: unknown; currency?: unknown; purpose?: unknown; itemId?: unknown; methodLabel?: unknown },
+) {
   const tripId = typeof input.tripId === "string" ? input.tripId : "";
+  const purpose: "pool" | "vendor" = input.purpose === "vendor" ? "vendor" : "pool";
   const amount = input.amountPaise;
   if (!tripId) throw new HttpError(400, "tripId is required");
   if (typeof amount !== "number" || !Number.isInteger(amount)) throw new HttpError(400, "amountPaise must be a whole number of paise");
@@ -127,6 +181,14 @@ export async function createPaymentOrder(userId: string, input: { tripId?: unkno
   if (state.trip.status === "closed") throw new HttpError(409, "This trip is closed — the pool no longer takes contributions");
   const me = state.participants.find((p) => p.id === member.participantId);
   if (!me || me.leftOn) throw new HttpError(409, "You have left this trip");
+  let itemId: string | undefined;
+  if (purpose === "vendor") {
+    const item = state.itinerary.find((i) => i.id === input.itemId);
+    if (!item) throw new HttpError(400, "Pick the itinerary item you're paying for");
+    if (item.status === "cancelled") throw new HttpError(409, `"${item.title}" is cancelled`);
+    itemId = item.id;
+  }
+  const methodLabel = typeof input.methodLabel === "string" && input.methodLabel.trim() ? input.methodLabel.trim().slice(0, 60) : undefined;
 
   const g = gw();
   const r = await repo();
@@ -139,6 +201,9 @@ export async function createPaymentOrder(userId: string, input: { tripId?: unkno
     amountPaise: amount,
     currency: "INR",
     provider: "razorpay",
+    purpose,
+    itemId,
+    methodLabel,
     status: "PENDING",
     refundedPaise: 0,
     createdAt: now,
@@ -151,7 +216,7 @@ export async function createPaymentOrder(userId: string, input: { tripId?: unkno
       amountPaise: amount,
       currency: "INR",
       receipt: contribution.id,
-      notes: { tripId, contributionId: contribution.id, participantId: member.participantId, purpose: "GroupTrip pool contribution (test mode)" },
+      notes: { tripId, contributionId: contribution.id, participantId: member.participantId, purpose: purpose === "vendor" ? `GroupTrip vendor payment · ${itemId}` : "GroupTrip pool contribution" },
     });
     if (order.amount !== amount || order.currency !== "INR") throw new Error("Order amount mismatch");
     orderId = order.id;
@@ -161,7 +226,7 @@ export async function createPaymentOrder(userId: string, input: { tripId?: unkno
     throw new HttpError(502, "Razorpay could not create the order — check the test keys and try again");
   }
   await r.transitionContribution(contribution.id, ["PENDING"], { orderId });
-  return { contributionId: contribution.id, orderId, amountPaise: amount, currency: "INR" as const, keyId: g.keyId, mode: g.mode, name: me.name };
+  return { contributionId: contribution.id, orderId, amountPaise: amount, currency: "INR" as const, keyId: g.keyId, mode: g.mode, name: me.name, purpose };
 }
 
 // ---------------------------------------------------------------- verify (Checkout handler)
@@ -267,6 +332,7 @@ export async function refundContribution(userId: string, paymentId: string, inpu
   if (member.role !== "owner" && c.userId !== userId) throw new HttpError(403, "Only the contributor or the trip organiser can refund this");
   if (c.status === "REFUNDED" || c.status === "REFUND_PENDING") throw new HttpError(409, "This contribution has already been refunded");
   if (c.status !== "VERIFIED") throw new HttpError(409, "Only a verified payment can be refunded");
+  if (c.purpose === "vendor") throw new HttpError(409, "Vendor payments are refunded through the booking's cancellation, not here");
 
   const remaining = c.amountPaise - c.refundedPaise;
   const amount = input.amountPaise === undefined ? remaining : input.amountPaise;
@@ -321,7 +387,7 @@ export async function poolView(tripId: string, userId: string) {
   const state = stateOf(events);
   const funding = poolFunding(state);
   const name = (id: string) => state.participants.find((p) => p.id === id)?.name ?? "Former member";
-  const contributions = (await (await repo()).listContributions(tripId)).map((c) => ({
+  const contributions = (await (await repo()).listContributions(tripId)).filter((c) => (c.purpose ?? "pool") === "pool").map((c) => ({
     contributionId: c.id,
     memberId: c.participantId,
     memberName: name(c.participantId),
@@ -377,7 +443,7 @@ export async function transactions(tripId: string, userId: string) {
   for (const p of payments) {
     rows.push({
       id: p.id,
-      kind: "contribution",
+      kind: p.purpose === "vendor" ? "vendor_payment" : "contribution",
       memberId: p.participantId,
       memberName: name(p.participantId),
       amountPaise: p.amountPaise,
@@ -387,7 +453,7 @@ export async function transactions(tripId: string, userId: string) {
       paymentId: p.paymentId ?? null,
       contributionId: p.id,
       tripId,
-      purpose: "Contribution to the trip pool",
+      purpose: p.purpose === "vendor" ? `Vendor payment${p.methodLabel ? ` · ${p.methodLabel}` : ""}` : "Contribution to the trip pool",
     });
   }
   for (const c of state.contributions) {
@@ -427,4 +493,17 @@ export async function transactions(tripId: string, userId: string) {
   }
   rows.sort((a, b) => b.at - a.at);
   return { tripId, transactions: rows };
+}
+
+// ---------------------------------------------------------------- demo checkout (no keys configured)
+
+/** Completes a DEMO checkout for the caller's own pending order and returns the signed Checkout response. */
+export async function completeDemoCheckout(userId: string, input: { contributionId?: unknown; outcome?: unknown }) {
+  const g = gw();
+  if (!(g instanceof DemoGateway)) throw new HttpError(409, "Demo checkout is only available when Razorpay keys are not configured");
+  if (typeof input.contributionId !== "string") throw new HttpError(400, "contributionId is required");
+  const c = await (await repo()).getContribution(input.contributionId);
+  if (!c || c.userId !== userId) throw new HttpError(404, "Contribution not found");
+  if (!c.orderId) throw new HttpError(409, "This contribution has no order");
+  return g.complete(c.orderId, input.outcome === "fail" ? "fail" : "success");
 }

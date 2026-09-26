@@ -341,3 +341,47 @@ describe("pool, ledger and settlement integrity", () => {
     expect(pool.availableAmountPaise).toBe(0);
   });
 });
+
+describe("vendor payments from the itinerary", () => {
+  it("a verified vendor payment becomes exactly one expense paid by me, shared by the item's members", async () => {
+    // Add a plan item for everyone, then pay its vendor through checkout.
+    const { addItineraryItem } = await import("@/lib/ledger/commands");
+    const state = await ledger();
+    const item = addItineraryItem(
+      state,
+      { title: "Riverside camp", category: "Stay", date: "2026-10-10", estimatedPaise: 9_000_00, participantIds: Object.values(ids), vendor: "Beas Camps" },
+      { actor: ids.A },
+    );
+    await repoInstance.appendEvents(TRIP, (await repoInstance.getEvents(TRIP)).length, [item]);
+    const itemId = item.type === "ITINERARY_ITEM_ADDED" ? item.item.id : "";
+    const order = await createPaymentOrder(users.A, { tripId: TRIP, purpose: "vendor", itemId, amountPaise: 9_000_00, methodLabel: "HDFC Regalia" });
+    const checkout = rp.pay(order.orderId);
+    await verifyPayment(users.A, { contributionId: order.contributionId, ...checkout });
+    await verifyPayment(users.A, { contributionId: order.contributionId, ...checkout }); // replay
+    const l = computeLedger(await ledger());
+    const paid = l.expenses.filter((e) => e.expense.itineraryItemId === itemId);
+    expect(paid).toHaveLength(1);
+    expect(paid[0].expense.payers).toEqual([{ participantId: ids.A, amountPaise: 9_000_00 }]);
+    expect(l.balances[ids.A].netPaise).toBe(6_000_00);
+    expect(l.balances[ids.B].netPaise).toBe(-3_000_00);
+    expect((await ledger()).itinerary.find((i) => i.id === itemId)!.status).toBe("booked");
+    // Pool untouched; vendor payments can't be refunded through the pool.
+    expect((await poolView(TRIP, users.A)).collectedAmountPaise).toBe(0);
+    await expectHttp(refundContribution(users.A, checkout.razorpay_payment_id, {}), 409);
+  });
+});
+
+describe("demo checkout (no Razorpay keys)", () => {
+  it("runs the same verification pipeline and records once", async () => {
+    const { DemoGateway } = await import("@/lib/server/razorpay");
+    const { completeDemoCheckout } = await import("@/lib/server/payments");
+    setGatewayForTests(new DemoGateway());
+    const order = await createPaymentOrder(users.C, { tripId: TRIP, amountPaise: 2_500_00 });
+    expect(order.mode).toBe("demo");
+    const signed = await completeDemoCheckout(users.C, { contributionId: order.contributionId });
+    await expectHttp(verifyPayment(users.C, { contributionId: order.contributionId, ...signed, razorpay_signature: "x" }), 400);
+    expect((await verifyPayment(users.C, { contributionId: order.contributionId, ...signed })).status).toBe("VERIFIED");
+    expect((await poolView(TRIP, users.C)).collectedAmountPaise).toBe(2_500_00);
+    await expectHttp(completeDemoCheckout(users.A, { contributionId: order.contributionId }), 404); // not your order
+  });
+});

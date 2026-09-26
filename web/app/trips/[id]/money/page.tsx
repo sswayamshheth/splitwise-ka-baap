@@ -7,6 +7,7 @@ import { cx, Icon } from "@/components/app/kit";
 import { ExpenseSheet } from "@/components/app/money/ExpenseSheet";
 import { DepositSheet, useOrganiserId, WithdrawSheet } from "@/components/app/money/PoolSheets";
 import { SettleSection } from "@/components/app/money/SettleSection";
+import { PaySheet } from "@/components/app/payments/PaySheet";
 import { ContributeSheet, PoolFundingBar, PoolPayments, TargetSheet, usePool } from "@/components/app/payments/RazorpayPool";
 import { Eyebrow, Face } from "@/components/app/money/parts";
 import { useTrip } from "@/lib/client/trip";
@@ -22,7 +23,7 @@ import { formatMoney } from "@/lib/money";
  */
 export default function MoneyPage() {
   const trip = useTrip();
-  const [sheet, setSheet] = useState<null | "deposit" | "withdraw" | "vendor" | "direct" | "contribute" | "target">(null);
+  const [sheet, setSheet] = useState<null | "deposit" | "withdraw" | "direct" | "contribute" | "target" | "pay">(null);
   const { pool: serverPool, config: payConfig, reload: reloadPool } = usePool();
   const pool = poolSummary(trip.state);
   const organiserId = useOrganiserId();
@@ -104,10 +105,7 @@ export default function MoneyPage() {
                 </p>
               </div>
             </div>
-            <Link href={`/trips/${trip.tripId}/explain`} className="flex items-center gap-0.5 font-label-sm text-label-sm font-semibold text-primary hover:underline">
-              Explain balance
-              <Icon name="arrow_forward" className="text-[14px]" />
-            </Link>
+
           </div>
           <div className="mt-2 grid grid-cols-3 gap-2 pt-2">
             <div className="flex flex-col justify-between rounded-xl bg-surface-container-low p-3">
@@ -150,19 +148,19 @@ export default function MoneyPage() {
       <section className="flex gap-space-sm px-margin py-space-sm">
         <button
           disabled={closed}
-          onClick={() => setSheet("contribute")}
+          onClick={() => setSheet("pay")}
           className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary-container font-title-md text-title-md text-on-primary shadow-sm transition-transform active:scale-[0.98] disabled:opacity-40"
+        >
+          <Icon name="payments" className="text-[20px]" />
+          Pay
+        </button>
+        <button
+          disabled={closed}
+          onClick={() => setSheet("contribute")}
+          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-surface-container font-title-md text-title-md text-on-surface transition-transform active:scale-[0.98] disabled:opacity-40"
         >
           <Icon name="add_circle" className="text-[20px]" />
           Contribute
-        </button>
-        <button
-          disabled={closed || pool.availablePaise === 0}
-          onClick={() => setSheet("vendor")}
-          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-surface-container font-title-md text-title-md text-on-surface transition-transform active:scale-[0.98] disabled:opacity-40"
-        >
-          <Icon name="storefront" className="text-[20px]" />
-          Pay a vendor
         </button>
       </section>
 
@@ -183,10 +181,7 @@ export default function MoneyPage() {
             <h3 className="font-headline-sm text-headline-sm text-on-surface">Member Holdings</h3>
             <span className="rounded-full bg-surface-container-high px-2 py-0.5 font-label-sm text-label-sm text-on-surface-variant">{members.length}</span>
           </div>
-          <Link href={`/trips/${trip.tripId}/explain`} className="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant transition-colors hover:text-primary">
-            <span>Ledger breakdown</span>
-            <Icon name="unfold_more" className="text-[16px]" />
-          </Link>
+
         </div>
         <div className="flex flex-col gap-2.5">
           {members.map((m) => {
@@ -335,7 +330,7 @@ export default function MoneyPage() {
       {sheet === "contribute" ? <ContributeSheet open onClose={() => setSheet(null)} pool={serverPool} config={payConfig} onDone={() => void reloadPool()} /> : null}
       {sheet === "target" ? <TargetSheet open onClose={() => setSheet(null)} current={serverPool?.targetAmountPaise ?? null} onSaved={() => void reloadPool()} /> : null}
       {sheet === "withdraw" ? <WithdrawSheet open onClose={() => setSheet(null)} /> : null}
-      {sheet === "vendor" ? <ExpenseSheet open source="pool" onClose={() => setSheet(null)} /> : null}
+      {sheet === "pay" ? <PaySheet open onClose={() => setSheet(null)} onContribute={() => setSheet("contribute")} /> : null}
       {sheet === "direct" ? <ExpenseSheet open source="direct" onClose={() => setSheet(null)} /> : null}
     </main>
   );

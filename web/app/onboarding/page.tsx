@@ -31,8 +31,9 @@ function Onboarding() {
     setBusy(true);
     setError(null);
     try {
-      await api("/api/me", { method: "PUT", body: { name, upiId: upi || undefined } });
-      router.replace(next);
+      const res = await api<{ needsInterests: boolean }>("/api/me", { method: "PUT", body: { name, upiId: upi || undefined } });
+      // The preferences page is optional and asked once, right after the name.
+      router.replace(res.needsInterests ? `/onboarding/interests?next=${encodeURIComponent(next)}` : next);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save");
     } finally {

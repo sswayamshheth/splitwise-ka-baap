@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Button, cx, Field, Icon, inputCls, Notice, Sheet, useFeedback } from "@/components/app/kit";
+import { BudgetCard } from "@/components/app/trip/BudgetCard";
 import { EventRow, HeroBadge, PhotoHero, Portrait, ProgressBar } from "@/components/app/trip/common";
+import { HarmonyCard } from "@/components/app/trip/HarmonyCard";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { tripCover } from "@/lib/covers";
 import { daysBetween, formatDateRange, todayIso } from "@/lib/dates";
@@ -16,9 +18,10 @@ import { formatMoney } from "@/lib/money";
 
 /**
  * The trip at a glance, in the design's Trip / Group layout: photo hero,
- * where I stand (and why), the trip's health, what needs attention, the
- * what-if and ask entry points, the circle of members and invites, and the
- * latest ledger events. Every figure is derived from the event log.
+ * where I stand, harmony and budget, the trip's health, what needs
+ * attention, the what-if and ask entry points, the circle of members and
+ * invites, and the latest ledger events. Every figure is derived from the
+ * event log.
  */
 export default function TripPage() {
   const trip = useTrip();
@@ -56,7 +59,7 @@ export default function TripPage() {
   const issues = health.anomalies.critical + health.anomalies.warning;
 
   return (
-    <main className="mx-auto w-full max-w-[520px] flex-1 pb-32">
+    <main className="mx-auto w-full max-w-[520px] flex-1 pb-10">
       {/* hero */}
       <PhotoHero
         image={tripCover(t.destination, tripId)}
@@ -94,7 +97,7 @@ export default function TripPage() {
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary">Your position</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-surface-container px-space-sm py-0.5 font-label-sm text-label-sm text-on-surface-variant">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Reconciled {formatMoney(ledger.reconciliationPaise)}
+              {ledger.reconciliationPaise === 0 ? "Books balance" : "Out of balance"}
             </span>
           </div>
           <div>
@@ -117,14 +120,17 @@ export default function TripPage() {
             </div>
           ) : null}
           <div className="grid grid-cols-2 gap-space-sm">
-            <Link href={`${base}/explain?p=${meId}`} className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-surface-container font-title-md text-[15px] text-primary hover:bg-surface-container-high">
-              <Icon name="receipt_long" className="text-[18px]" /> Why this amount?
+            <Link href={`${base}/activity`} className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-surface-container font-title-md text-[15px] text-primary hover:bg-surface-container-high">
+              <Icon name="history" className="text-[18px]" /> Activity
             </Link>
             <Link href={`${base}/money`} className="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-primary-container font-title-md text-[15px] text-on-primary hover:bg-primary">
               <Icon name="swap_horiz" className="text-[18px]" /> Settle up
             </Link>
           </div>
         </section>
+
+        <HarmonyCard />
+        <BudgetCard />
 
         {/* pool + health, like the design's "Collective vault" strip */}
         <section className="flex flex-col gap-space-sm rounded-xl bg-surface-container-low p-space-md">
@@ -215,8 +221,8 @@ export default function TripPage() {
         <section className="flex flex-col gap-space-sm">
           <div className="flex items-center justify-between">
             <h3 className="font-headline-sm text-headline-sm text-on-surface">Latest in the ledger</h3>
-            <Link href={`${base}/activity?tab=audit`} className="flex items-center gap-0.5 font-label-md text-label-md text-primary">
-              Audit trail <Icon name="arrow_forward" className="text-[16px]" />
+            <Link href={`${base}/activity`} className="flex items-center gap-0.5 font-label-md text-label-md text-primary">
+              All activity <Icon name="arrow_forward" className="text-[16px]" />
             </Link>
           </div>
           <div className="flex flex-col divide-y divide-outline-variant/40 rounded-xl bg-surface-container-lowest px-space-md shadow-sm">
@@ -284,7 +290,7 @@ function Members({ members }: { members: ReturnType<typeof useTrip>["state"]["pa
         </div>
         <div className="flex items-baseline justify-between">
           <h3 className="font-headline-md text-headline-md text-on-surface">The Expedition Circle</h3>
-          <span className="font-label-sm text-label-sm text-on-surface-variant">Tap for their ledger</span>
+
         </div>
       </div>
 
@@ -294,7 +300,7 @@ function Members({ members }: { members: ReturnType<typeof useTrip>["state"]["pa
         const mine = trip.isMe(p.id);
         const funded = pool.members[p.id]?.depositedPaise ?? 0;
         return (
-          <Link key={p.id} href={`/trips/${trip.tripId}/explain?p=${p.id}`} className={cx("rounded-xl bg-surface-container-lowest p-space-md shadow-sm transition-all duration-200 hover:shadow-md", p.leftOn && "opacity-60")}>
+          <div key={p.id} className={cx("rounded-xl bg-surface-container-lowest p-space-md shadow-sm", p.leftOn && "opacity-60")}>
             <div className="flex items-start gap-space-md">
               <div className="relative shrink-0">
                 <Portrait name={p.name} size={56} />
@@ -322,18 +328,13 @@ function Members({ members }: { members: ReturnType<typeof useTrip>["state"]["pa
                   <span className={cx("h-1.5 w-1.5 shrink-0 rounded-full", n > 0 ? "bg-primary" : n < 0 ? "bg-secondary" : "bg-outline")} />
                   {n > 0 ? `Owed ${formatMoney(n)}` : n < 0 ? `Owes ${formatMoney(-n)}` : "Settled"}
                 </div>
-                <div className="mt-2.5 flex items-center justify-between pt-2 text-on-surface-variant">
-                  <span className="truncate font-label-sm text-label-sm">
-                    Paid {formatMoney((b?.paidPaise ?? 0) - (b?.refundsReceivedPaise ?? 0))} · share {formatMoney(b?.sharePaise ?? 0)}
-                    {funded ? ` · ${formatMoney(funded)} into pool` : ""}
-                  </span>
-                  <span className="ml-1 flex shrink-0 items-center gap-0.5 font-label-sm text-label-sm text-primary">
-                    Why? <Icon name="chevron_right" className="text-[16px]" />
-                  </span>
-                </div>
+                <p className="mt-2 truncate font-label-sm text-label-sm text-on-surface-variant">
+                  Paid {formatMoney((b?.paidPaise ?? 0) - (b?.refundsReceivedPaise ?? 0))} · share {formatMoney(b?.sharePaise ?? 0)}
+                  {funded ? ` · ${formatMoney(funded)} into pool` : ""}
+                </p>
               </div>
             </div>
-          </Link>
+          </div>
         );
       })}
 
