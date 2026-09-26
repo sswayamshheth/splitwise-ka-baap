@@ -1,8 +1,8 @@
 "use client";
 
-import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { useAuth, useSignIn, useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "./kit";
 
@@ -24,6 +24,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export function EmailLogin({ next = "/home" }: { next?: string }) {
   const router = useRouter();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const { isLoaded: signInLoaded, signIn, setActive } = useSignIn();
   const { isLoaded: signUpLoaded, signUp } = useSignUp();
   const [email, setEmail] = useState("");
@@ -37,6 +38,27 @@ export function EmailLogin({ next = "/home" }: { next?: string }) {
   const valid = EMAIL_RE.test(address);
   const loaded = signInLoaded && signUpLoaded;
 
+  // Client-side navigation can stall after sign-in (seen in the installed iOS PWA),
+  // so fall back to a full page load if the route hasn't changed.
+  const leaving = useRef(false);
+  function go(to: string) {
+    if (leaving.current) return;
+    leaving.current = true;
+    const from = window.location.pathname;
+    router.replace(to);
+    window.setTimeout(() => {
+      if (window.location.pathname === from) window.location.assign(to);
+    }, 1500);
+  }
+
+  // Already signed in (e.g. a retry after a stalled redirect): don't show the form.
+  // Skipped while a code is being verified, so verify() picks the destination
+  // (new accounts go to onboarding).
+  useEffect(() => {
+    if (authLoaded && isSignedIn && !busy) go(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoaded, isSignedIn, busy, next]);
+
   async function sendCode() {
     if (!loaded || !valid) return;
     setBusy(true);
@@ -49,7 +71,9 @@ export function EmailLogin({ next = "/home" }: { next?: string }) {
       setMode("signin");
       setStep("code");
     } catch (e) {
-      if (clerkCode(e) === "form_identifier_not_found") {
+      if (clerkCode(e) === "session_exists") {
+        go(next);
+      } else if (clerkCode(e) === "form_identifier_not_found") {
         // New address: create the account, verified by the same kind of code.
         try {
           await signUp.create({ emailAddress: address });
@@ -57,7 +81,8 @@ export function EmailLogin({ next = "/home" }: { next?: string }) {
           setMode("signup");
           setStep("code");
         } catch (e2) {
-          setError(clerkMessage(e2));
+          if (clerkCode(e2) === "session_exists") go(next);
+          else setError(clerkMessage(e2));
         }
       } else {
         setError(clerkMessage(e));
@@ -76,7 +101,7 @@ export function EmailLogin({ next = "/home" }: { next?: string }) {
         const res = await signIn.attemptFirstFactor({ strategy: "email_code", code });
         if (res.status === "complete" && res.createdSessionId) {
           await setActive({ session: res.createdSessionId });
-          router.replace(next);
+          go(next);
           return;
         }
         setError(`Sign-in needs another step (${res.status}).`);
@@ -84,7 +109,7 @@ export function EmailLogin({ next = "/home" }: { next?: string }) {
         const res = await signUp.attemptEmailAddressVerification({ code });
         if (res.status === "complete" && res.createdSessionId) {
           await setActive({ session: res.createdSessionId });
-          router.replace(`/onboarding?next=${encodeURIComponent(next)}`);
+          go(`/onboarding?next=${encodeURIComponent(next)}`);
           return;
         }
         setError(
@@ -94,7 +119,8 @@ export function EmailLogin({ next = "/home" }: { next?: string }) {
         );
       }
     } catch (e) {
-      setError(clerkMessage(e));
+      if (clerkCode(e) === "session_exists") go(next);
+      else setError(clerkMessage(e));
     } finally {
       setBusy(false);
     }
