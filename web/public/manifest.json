@@ -1,0 +1,14 @@
+{
+  "name": "GroupTrip Ledger",
+  "short_name": "GroupTrip",
+  "description": "Group travel app where the itinerary is the ledger",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e6f64",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
