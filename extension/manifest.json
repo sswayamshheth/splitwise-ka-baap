@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "GroupTrip — Group Card Advisor",
+  "version": "0.2.0",
+  "description": "On any booking checkout, reads the site's own bank offers and tells you whose card in your trip saves the most. Adds the booking to your GroupTrip ledger.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GroupTrip card advisor"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*"
+      ],
+      "js": [
+        "scan.js",
+        "advisor.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

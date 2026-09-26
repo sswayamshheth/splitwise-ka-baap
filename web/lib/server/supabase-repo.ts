@@ -220,6 +220,14 @@ export class SupabaseRepo implements Repo {
     return true;
   }
 
+  async saveExtensionToken(tokenHash: string, userId: string) {
+    check(await this.db.from("extension_tokens").insert({ token_hash: tokenHash, user_id: userId }));
+  }
+  async userForExtensionToken(tokenHash: string) {
+    const r = check(await this.db.from("extension_tokens").select("user_id").eq("token_hash", tokenHash).maybeSingle()) as { user_id: string } | null;
+    return r?.user_id ?? null;
+  }
+
   async appendEvents(tripId: string, baseSeq: number, events: LedgerEvent[]): Promise<AppendResult> {
     const { count } = await this.db.from("trip_events").select("seq", { count: "exact", head: true }).eq("trip_id", tripId);
     const current = count ?? 0;

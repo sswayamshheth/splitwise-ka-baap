@@ -20,6 +20,7 @@ type Db = {
   events: Record<string, LedgerEvent[]>;
   contributions?: Record<string, Contribution>;
   webhookEvents?: Record<string, { type: string; at: number }>;
+  extTokens?: Record<string, { userId: string; at: number }>;
 };
 
 const DEFAULT_FILE = path.join(process.cwd(), ".data", "db.json");
@@ -159,6 +160,15 @@ export class FileRepo implements Repo {
       seen[eventId] = { type, at: Date.now() };
       return true;
     });
+  }
+
+  saveExtensionToken(tokenHash: string, userId: string) {
+    return this.write((db) => {
+      (db.extTokens ??= {})[tokenHash] = { userId, at: Date.now() };
+    });
+  }
+  async userForExtensionToken(tokenHash: string) {
+    return (await this.load()).extTokens?.[tokenHash]?.userId ?? null;
   }
 
   appendEvents(tripId: string, baseSeq: number, events: LedgerEvent[]): Promise<AppendResult> {

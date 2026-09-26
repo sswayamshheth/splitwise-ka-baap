@@ -109,6 +109,10 @@ export interface Repo {
   transitionContribution(id: string, from: PaymentStatus[], patch: Partial<Omit<Contribution, "id" | "tripId">>): Promise<Contribution | null>;
   /** Records a provider webhook event id; false if it was already processed. */
   claimWebhookEvent(eventId: string, type: string): Promise<boolean>;
+
+  /** Browser-extension pairing: only a SHA-256 hash of the token is stored. */
+  saveExtensionToken(tokenHash: string, userId: string): Promise<void>;
+  userForExtensionToken(tokenHash: string): Promise<string | null>;
 }
 
 let cached: Repo | null = null;
