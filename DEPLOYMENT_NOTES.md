@@ -12,7 +12,7 @@ Deployed 2026-09-26 from the `deploy` branch. No secret values appear in this fi
 | AI service (`ai/`) | Not deployed: empty stub, not used by the app | — |
 | Simulator (`simulator/`) | Not deployed: empty stub, not used by the app | — |
 
-Vercel project settings: framework Next.js, root directory `web`, Node.js 22.x, personal scope `lakhotiaaryan-6870s-projects`. The project is **not** connected to GitHub; deploys are made with the Vercel CLI from the repo root.
+Vercel project settings: framework Next.js, root directory `web`, Node.js 22.x, functions in `sin1` (Singapore, set in `web/vercel.json`, next to the database), personal scope `lakhotiaaryan-6870s-projects`. The project is **not** connected to GitHub; deploys are made with the Vercel CLI from the repo root.
 
 ## Environment variables
 
@@ -102,6 +102,8 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 - `33177a5` — `web/components/app/EmailLogin.tsx`: the login page redirects if the user is already signed in; after verifying the code it calls `setActive` and navigates with `router.replace`, falling back to `window.location.assign` if the route doesn't change; Clerk's `session_exists` error now redirects instead of showing an error. Deployed with `vercel deploy --prod` (deployment `group-trip-ledger-e3nmp4vox`).
 - `ebfefdd` — merged `origin/main` `080f74a` (vendor UPI QR payments, AI plan assistant, demo checkout, QA fixes). No conflicts; 178 tests pass. `6765db5` renumbered its migration to 0004, applied to production, then deployed with `vercel deploy --prod` (deployment `group-trip-ledger-r0cnaymyd`). Signed-in check: `/api/me` returns the new profile fields, payments config reports `mode: demo`.
 
+- `6713d64`…`33df950` — demo checkout made stateless (no server memory; signing key derived from `SUPABASE_SECRET_KEY`, no new variable); user-facing payment and assistant screens no longer mention Razorpay test mode, env var names or missing keys; the vendor UPI QR option is hidden in demo mode (code kept); functions moved to `sin1`. Deployed with `vercel deploy --prod` (deployment `group-trip-ledger-4aelg74cw`).
+
 ## Known issues
 
 - **No `/status` page.** It is listed as a public route but only `/api/status` exists.
@@ -113,6 +115,7 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 - **First production deploy was accidental** (a CLI deploy without `--target`); it was kept because it is the same build as the preview.
 - **Clerk secret key was exposed** in a terminal transcript during setup and was rotated before being uploaded to Vercel. The keys in Vercel are the new ones.
 - `ai/`, `simulator/`, `docs/requests.md` and `seed/` are empty placeholders.
+- **"Pay someone else" still opens a real UPI payment** (QR, UPI ID or phone) in the user's own UPI app, even in demo mode. Only the vendor UPI option is hidden. Decision pending.
 - **Some existing users are asked for name and UPI ID again on first sign-in to production.** The app treats a user as onboarded only if a `profiles` row with a name exists in Supabase. The Clerk development instance is shared with local development, so accounts created before the production database existed (their profiles lived in the local file store) have no row in production. It is one-time per account; new accounts are unaffected. **Accepted as is** (no data import or code change). One account had not re-onboarded as of 2026-09-26; that person should sign in and complete onboarding once before judging.
 - **Login ignores the middleware's `redirect_url`.** Signed-out users sent to `/login?redirect_url=…` land on `/home` after sign-in, because the page reads `?next=`. Pre-existing; not changed.
 
