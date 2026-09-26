@@ -1,3 +1,4 @@
+import type { Interests } from "@/lib/interests";
 import type { ExpenseData, ItineraryItem, LedgerEvent, ParticipantData, PaymentMethod, SettlementData, TripMeta } from "./types";
 
 /**
@@ -70,6 +71,8 @@ export function buildGoaEvents(now = Date.now()): LedgerEvent[] {
     currency: "INR",
     status: "active",
     description: "Six of us, four nights, one villa. Flights, villa and scuba already paid.",
+    budgetPaise: 1_25_000_00,
+    budgetSplit: { Stay: 45, Transport: 20, Food: 15, Activity: 15, Other: 5 },
   };
 
   const people: ParticipantData[] = [
@@ -80,6 +83,16 @@ export function buildGoaEvents(now = Date.now()): LedgerEvent[] {
     { id: P.dev, name: "Dev Malhotra", upiId: "devm@paytm", phone: "99870 12345", paymentMethods: [card("pm_dev_millennia", "HDFC Millennia", "HDFC Bank", "Mastercard", "3390", 90_000_00)] },
     { id: P.meera, name: "Meera Joshi", upiId: "meera.joshi@okicici", paymentMethods: [card("pm_meera_idfc", "IDFC FIRST Select", "IDFC FIRST", "RuPay", "9042", 70_000_00)] },
   ];
+
+  const prefs: Record<string, Interests> = {
+    [P.aarav]: { diet: "non-veg", pace: "balanced", cuisines: ["Seafood", "North Indian"], activities: ["water", "adventure", "food", "nightlife"] },
+    [P.rohan]: { diet: "non-veg", pace: "packed", cuisines: ["Seafood", "Street food"], activities: ["water", "adventure", "nightlife"] },
+    [P.siya]: { diet: "veg", pace: "balanced", cuisines: ["Cafés & bakeries", "Continental"], activities: ["water", "relaxing", "food", "shopping"] },
+    [P.kavya]: { diet: "jain", pace: "relaxed", cuisines: ["Gujarati", "South Indian"], activities: ["culture", "relaxing", "nature", "water"] },
+    [P.dev]: { diet: "non-veg", pace: "packed", cuisines: ["North Indian", "Street food"], activities: ["adventure", "nature", "nightlife", "indoor"] },
+    [P.meera]: { diet: "veg", pace: "relaxed", cuisines: ["South Indian", "Cafés & bakeries"], activities: ["culture", "relaxing", "shopping"] },
+  };
+  for (const p of people) p.interests = prefs[p.id];
 
   const everyone = Object.values(P) as string[];
   const flyers = everyone.filter((id) => id !== P.meera);

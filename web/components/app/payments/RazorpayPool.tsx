@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
 import { Face } from "@/components/app/money/parts";
-import { api, ApiError } from "@/lib/client/api";
+import { useCheckout } from "./checkout";
+import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { setPoolTarget } from "@/lib/ledger/pool";
 import { formatMoney, parseAmount } from "@/lib/money";
@@ -43,7 +44,7 @@ export type PoolState = {
   }[];
 };
 
-type Config = { enabled: boolean; keyId: string | null; mode: "test" | "live" | null; webhooks: boolean; missing?: string[] };
+export type Config = { enabled: boolean; keyId: string | null; mode: "test" | "live" | "demo" | null; webhooks: boolean; missing?: string[] };
 
 export function usePool() {
   const trip = useTrip();
@@ -148,93 +149,29 @@ export function TargetSheet({ open, onClose, current, onSaved }: { open: boolean
 
 // ------------------------------------------------------------------ contribute via Razorpay Checkout
 
-type RazorpayResponse = { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string };
-type RazorpayInstance = { open: () => void; on: (event: string, cb: (res: { error?: { description?: string } }) => void) => void };
-declare global {
-  interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance;
-  }
-}
-
-function loadCheckout(): Promise<void> {
-  if (typeof window === "undefined") return Promise.reject(new Error("No browser"));
-  if (window.Razorpay) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
-    const s = existing ?? document.createElement("script");
-    s.src = "https://checkout.razorpay.com/v1/checkout.js";
-    s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("Couldn't load Razorpay Checkout — check your connection"));
-    if (!existing) document.body.appendChild(s);
-  });
-}
-
 export function ContributeSheet({ open, onClose, pool, config, onDone }: { open: boolean; onClose: () => void; pool: PoolState | null; config: Config | null; onDone: () => void }) {
   const trip = useTrip();
-  const { toast } = useFeedback();
+  const checkout = useCheckout();
   const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
   const parsed = parseAmount(text);
   const remaining = pool?.remainingAmountPaise ?? null;
   const quick = [1_000_00, 5_000_00, ...(remaining && remaining > 0 ? [remaining] : [])];
+  const demo = config?.mode === "demo";
 
   async function pay() {
     if (parsed.paise === undefined || !parsed.paise) return;
-    setBusy(true);
-    try {
-      const order = await api<{ contributionId: string; orderId: string; amountPaise: number; currency: string; keyId: string; name: string }>("/api/payments/orders", {
-        body: { tripId: trip.tripId, memberId: trip.meId, amountPaise: parsed.paise, currency: "INR" },
-      });
-      await loadCheckout();
-      if (!window.Razorpay) throw new Error("Razorpay Checkout didn't load");
-      const rz = new window.Razorpay({
-        key: order.keyId,
-        order_id: order.orderId,
-        amount: order.amountPaise,
-        currency: order.currency,
-        name: "GroupTrip",
-        description: `${trip.state.trip.name} · trip pool (TEST MODE)`,
-        prefill: { name: order.name },
-        notes: { contributionId: order.contributionId },
-        theme: { color: "#1e6f64" },
-        handler: async (res: RazorpayResponse) => {
-          try {
-            const out = await api<{ status: string; alreadyVerified: boolean }>("/api/payments/verify", { body: { contributionId: order.contributionId, ...res } });
-            await trip.refresh();
-            onDone();
-            if (out.status === "VERIFIED") toast(`Contribution verified by the server · ${formatMoney(order.amountPaise)} added to the pool`);
-            else if (out.status === "FAILED") toast("The payment failed — nothing was added. You can try again.", "error");
-            else toast("Payment received — waiting for Razorpay to confirm it");
-            onClose();
-          } catch (e) {
-            toast(e instanceof ApiError ? e.message : "We couldn't verify that payment — nothing was recorded", "error");
-          } finally {
-            setBusy(false);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setBusy(false);
-            toast("Checkout closed — nothing was collected");
-          },
-        },
-      });
-      rz.on("payment.failed", (r) => {
-        toast(`Payment failed: ${r.error?.description ?? "declined"} — the pool is unchanged`, "error");
-      });
-      rz.open();
-    } catch (e) {
-      setBusy(false);
-      toast(errorText(e), "error");
+    const res = await checkout.pay({ purpose: "pool", amountPaise: parsed.paise, payee: "the trip pool", description: `${trip.state.trip.name} · trip pool` });
+    if (res.status === "VERIFIED") {
+      onDone();
+      onClose();
     }
   }
 
   return (
     <Sheet open={open} onClose={onClose} title="Contribute to the pool">
-      {!config?.enabled ? (
+      {config && !config.enabled ? (
         <div className="mb-space-md rounded-xl bg-secondary-fixed/50 p-space-md font-body-md text-body-md text-on-secondary-fixed">
-          Razorpay isn't configured on this server yet{config?.missing?.length ? ` (missing ${config.missing.join(", ")})` : ""}. You can still record a cash/UPI deposit manually.
+          Payments are switched off on this server{config.missing?.length ? ` (missing ${config.missing.join(", ")})` : ""}. You can still record a cash/UPI deposit manually.
         </div>
       ) : null}
       <div className="flex items-center gap-2 rounded-xl bg-surface-container-low px-space-md">
@@ -250,16 +187,23 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
         ))}
       </div>
       <button
-        disabled={busy || !config?.enabled || parsed.paise === undefined || !parsed.paise}
+        disabled={checkout.busy || (config ? !config.enabled : false) || parsed.paise === undefined || !parsed.paise}
         onClick={() => void pay()}
         className="mt-space-lg flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary-container font-title-md text-title-md text-on-primary shadow-sm disabled:opacity-40"
       >
-        <Icon name="lock" /> {busy ? "Opening Razorpay…" : `Pay ${parsed.paise ? formatMoney(parsed.paise) : ""} with Razorpay`}
+        <Icon name="lock" /> {checkout.busy ? "Opening checkout…" : `Pay ${parsed.paise ? formatMoney(parsed.paise) : ""}${demo ? " (demo checkout)" : " with Razorpay"}`}
       </button>
       <p className="mt-space-sm text-center font-label-sm text-label-sm text-on-surface-variant">
-        Razorpay <span className="font-semibold">test mode</span> — no real money moves. The Trip Pool is a simulated escrow layer: GroupTrip records the contribution only after the server verifies the
-        payment with Razorpay.
+        {demo ? (
+          <>Demo checkout — simulated, no money moves. </>
+        ) : (
+          <>
+            Razorpay <span className="font-semibold">{config?.mode === "live" ? "live" : "test"} mode</span>.{" "}
+          </>
+        )}
+        The Trip Pool is a simulated escrow layer: GroupTrip records the contribution only after the server verifies the payment.
       </p>
+      {checkout.element}
     </Sheet>
   );
 }

@@ -50,6 +50,9 @@ type ContributionDb = {
   amount_paise: number;
   currency: "INR";
   provider: "razorpay";
+  purpose: "pool" | "vendor" | null;
+  item_id: string | null;
+  method_label: string | null;
   order_id: string | null;
   payment_id: string | null;
   status: PaymentStatus;
@@ -67,6 +70,9 @@ const toContribution = (r: ContributionDb): Contribution => ({
   amountPaise: Number(r.amount_paise),
   currency: r.currency,
   provider: r.provider,
+  purpose: r.purpose ?? "pool",
+  itemId: r.item_id ?? undefined,
+  methodLabel: r.method_label ?? undefined,
   orderId: r.order_id ?? undefined,
   paymentId: r.payment_id ?? undefined,
   status: r.status,
@@ -102,10 +108,10 @@ export class SupabaseRepo implements Repo {
 
   async getProfile(userId: string) {
     const r = check(await this.db.from("profiles").select("*").eq("user_id", userId).maybeSingle());
-    return r ? { userId: r.user_id, name: r.name, email: r.email ?? undefined, phone: r.phone ?? undefined, upiId: r.upi_id ?? undefined, createdAt: Date.parse(r.created_at) } : null;
+    return r ? { userId: r.user_id, name: r.name, email: r.email ?? undefined, phone: r.phone ?? undefined, interests: r.interests ?? undefined, interestsAsked: !!r.interests_asked, cards: r.cards ?? [], upiId: r.upi_id ?? undefined, createdAt: Date.parse(r.created_at) } : null;
   }
   async upsertProfile(p: Profile) {
-    check(await this.db.from("profiles").upsert({ user_id: p.userId, name: p.name, email: p.email ?? null, phone: p.phone ?? null, upi_id: p.upiId ?? null }));
+    check(await this.db.from("profiles").upsert({ user_id: p.userId, name: p.name, email: p.email ?? null, phone: p.phone ?? null, interests: p.interests ?? null, interests_asked: !!p.interestsAsked, cards: p.cards ?? [], upi_id: p.upiId ?? null }));
     return p;
   }
 
@@ -175,6 +181,9 @@ export class SupabaseRepo implements Repo {
         amount_paise: c.amountPaise,
         currency: c.currency,
         provider: c.provider,
+        purpose: c.purpose,
+        item_id: c.itemId ?? null,
+        method_label: c.methodLabel ?? null,
         order_id: c.orderId ?? null,
         payment_id: c.paymentId ?? null,
         status: c.status,

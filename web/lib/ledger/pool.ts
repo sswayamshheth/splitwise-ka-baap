@@ -1,7 +1,7 @@
 import { newId } from "@/lib/id";
 import { allocate, isPaise, sumPaise, type Paise } from "@/lib/money";
 import { addExpense, CommandError, type ExpenseInput } from "./commands";
-import type { ContributionData, LedgerEvent, ParticipantId, SettlementMethod, TripState } from "./types";
+import type { ContributionData, ExpenseCategory, LedgerEvent, ParticipantId, SettlementMethod, TripState } from "./types";
 
 /**
  * The trip pool (a simulated escrow). Members deposit into it; vendors are
@@ -156,4 +156,42 @@ export function poolFunding(state: TripState): PoolFunding {
     fundingPercent: target ? Math.min(100, Math.floor((collected * 100) / target)) : null,
     status: state.trip.status === "closed" ? "closed" : target !== null && collected >= target ? "funded" : "open",
   };
+}
+
+// ---------------------------------------------------------------- trip budget
+
+/** Default split offered when the organiser wants category budgets (editable). */
+export const DEFAULT_BUDGET_SPLIT: Partial<Record<ExpenseCategory, number>> = { Stay: 40, Transport: 20, Food: 20, Activity: 15, Other: 5 };
+
+/** Sets the trip's total budget and (optionally) its category split. Recorded as a trip update. */
+export function setTripBudget(state: TripState, input: { totalPaise: Paise | undefined; split?: Partial<Record<ExpenseCategory, number>> }, ctx: Ctx): LedgerEvent {
+  if (state.trip.status === "closed") throw new CommandError("This trip is closed.");
+  if (input.totalPaise !== undefined && (!isPaise(input.totalPaise) || input.totalPaise <= 0)) throw new CommandError("Enter a budget above ₹0", "amount");
+  let split: Partial<Record<ExpenseCategory, number>> | undefined;
+  if (input.split) {
+    split = {};
+    let sum = 0;
+    for (const [cat, pct] of Object.entries(input.split) as [ExpenseCategory, number][]) {
+      if (!Number.isInteger(pct) || pct < 0 || pct > 100) throw new CommandError("Percentages must be whole numbers 0–100", "split");
+      if (pct > 0) split[cat] = pct;
+      sum += pct;
+    }
+    if (sum !== 100) throw new CommandError(`Category percentages must add up to 100 (they add up to ${sum})`, "split");
+  }
+  return {
+    ...base(ctx),
+    type: "TRIP_UPDATED",
+    before: { budgetPaise: state.trip.budgetPaise, budgetSplit: state.trip.budgetSplit },
+    after: { budgetPaise: input.totalPaise, budgetSplit: split },
+  };
+}
+
+/** Budget per category in paise from the total and split (largest-remainder, sums exactly). */
+export function categoryBudgets(state: TripState): { category: ExpenseCategory; percent: number; paise: Paise }[] {
+  const total = state.trip.budgetPaise;
+  const split = state.trip.budgetSplit;
+  if (!total || !split) return [];
+  const cats = Object.entries(split).filter(([, p]) => (p ?? 0) > 0) as [ExpenseCategory, number][];
+  const parts = allocate(total, cats.map(([, p]) => p));
+  return cats.map(([category, percent], i) => ({ category, percent, paise: parts[i] }));
 }

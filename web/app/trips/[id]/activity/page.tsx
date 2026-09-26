@@ -1,324 +1,365 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
-import { Chip, cx, Empty, Icon, inputCls, Label, Spinner } from "@/components/app/kit";
-import { CATEGORY_ICON, ChronicleItem } from "@/components/app/trip/common";
+import { Chip, cx, Empty, Icon, inputCls, Spinner } from "@/components/app/kit";
+import { CATEGORY_ICON, Portrait, symbol } from "@/components/app/trip/common";
 import { ExpenseSheet } from "@/components/app/trip/ExpenseSheet";
 import { useTrip } from "@/lib/client/trip";
-import { daysBetween, formatDate, todayIso } from "@/lib/dates";
-import { buildNameLookup, describeEvent } from "@/lib/ledger/describe";
-import type { ExpenseCategory } from "@/lib/ledger/types";
+import { formatDate, formatRelative } from "@/lib/dates";
+import { buildNameLookup, describeEvent, type Described } from "@/lib/ledger/describe";
+import type { LedgerEvent } from "@/lib/ledger/types";
 import { formatMoney } from "@/lib/money";
 
-type Sort = "new" | "old" | "high" | "low";
+type Line = { e: LedgerEvent; d: Described };
+type Kind = "booking" | "plan" | "members" | "payments" | "trip";
+type Block = {
+  key: string;
+  kind: Kind;
+  title: string;
+  sub: string;
+  icon: string;
+  amountPaise?: number;
+  status?: { label: string; tone: "teal" | "coral" | "lavender" | "grey" | "amber" };
+  paidBy?: string;
+  date?: string;
+  firstTs: number;
+  lastTs: number;
+  lines: Line[];
+  expenseId?: string;
+};
+
+type Filter = "all" | "bookings" | "payments" | "members";
+type Sort = "new" | "old" | "amount";
+
+const STATUS_TONE: Record<NonNullable<Block["status"]>["tone"], string> = {
+  teal: "bg-primary-fixed/60 text-on-primary-fixed-variant",
+  coral: "bg-error-container text-on-error-container",
+  lavender: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+  grey: "bg-surface-container text-on-surface-variant",
+  amber: "bg-secondary-fixed text-on-secondary-fixed-variant",
+};
+
+const DOT: Record<Described["tone"], string> = {
+  blue: "bg-primary-fixed/60 text-primary",
+  mint: "bg-primary-fixed/40 text-primary",
+  coral: "bg-error-container text-on-error-container",
+  amber: "bg-secondary-fixed text-on-secondary-fixed-variant",
+  grey: "bg-surface-container text-on-surface-variant",
+  lavender: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+};
 
 /**
- * Everything that happened with money on this trip. Expenses can be sorted
- * and filtered by who paid, vendor, category or whether I'm involved; the
- * audit trail lists every ledger event, newest first.
+ * Everything that happened on this trip, organised: one block per booking
+ * (and per plan item with its own history), plus Members, Pool & payments
+ * and Trip blocks. Collapsed blocks show the headline; opening one shows its
+ * full history from the append-only log and, for bookings, who bears what.
  */
 function Activity() {
   const trip = useTrip();
+  const { state, ledger, meId, events } = trip;
   const params = useSearchParams();
-  const [tab, setTab] = useState<"expenses" | "audit">(params.get("tab") === "audit" ? "audit" : "expenses");
-  const [open, setOpen] = useState<string | null>(params.get("expense"));
+  const deep = params.get("expense");
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(deep ? [`x:${deep}`] : []));
+  const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("new");
-  const [payer, setPayer] = useState<string | null>(null);
-  const [vendor, setVendor] = useState<string | null>(null);
-  const [category, setCategory] = useState<ExpenseCategory | null>(null);
-  const [mine, setMine] = useState(false);
   const [q, setQ] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+  const [sheet, setSheet] = useState<string | null>(null);
 
-  const { ledger, meId } = trip;
-  const vendors = useMemo(() => [...new Set(ledger.expenses.map((c) => c.expense.vendor?.trim()).filter((v): v is string => !!v))].sort(), [ledger]);
-  const categories = useMemo(() => [...new Set(ledger.expenses.map((c) => c.expense.category))], [ledger]);
-  const payers = useMemo(() => [...new Set(ledger.expenses.flatMap((c) => c.expense.payers.map((p) => p.participantId)))], [ledger]);
+  const names = useMemo(() => buildNameLookup(events, meId), [events, meId]);
+  const settlements = useMemo(() => new Map(state.settlements.map((s) => [s.id, s])), [state.settlements]);
 
-  const rows = useMemo(() => {
+  const blocks = useMemo(() => {
+    const itemToExpense = new Map<string, string>();
+    for (const it of state.itinerary) if (it.expenseIds[0]) itemToExpense.set(it.id, it.expenseIds[0]);
+    for (const x of state.expenses) if (x.itineraryItemId && !itemToExpense.has(x.itineraryItemId)) itemToExpense.set(x.itineraryItemId, x.id);
+
+    const map = new Map<string, Block>();
+    const get = (key: string, init: () => Omit<Block, "lines" | "firstTs" | "lastTs">) => {
+      let b = map.get(key);
+      if (!b) {
+        b = { ...init(), lines: [], firstTs: Infinity, lastTs: 0 };
+        map.set(key, b);
+      }
+      return b;
+    };
+    const payerNames = (ids: string[]) => ids.map((id) => trip.short(id)).join(" & ");
+
+    for (const e of events) {
+      const d = describeEvent(e, names, { settlements });
+      let block: Block;
+      const itemId = d.itemId ?? (e.type === "ITINERARY_ITEM_REMOVED" ? e.itemId : undefined);
+      const expenseId = d.expenseId ?? (itemId ? itemToExpense.get(itemId) : undefined);
+      if (expenseId) {
+        block = get(`x:${expenseId}`, () => {
+          const c = ledger.byExpenseId[expenseId];
+          if (!c) {
+            const deleted = e.type === "EXPENSE_DELETED" ? e.expense : e.type === "EXPENSE_ADDED" ? e.expense : undefined;
+            return { key: `x:${expenseId}`, kind: "booking", title: deleted?.title ?? "Removed expense", sub: deleted?.vendor ?? "", icon: "delete", amountPaise: deleted?.amountPaise, status: { label: "Deleted", tone: "grey" }, expenseId };
+          }
+          const x = c.expense;
+          const status: Block["status"] =
+            x.status === "cancelled"
+              ? { label: "Cancelled", tone: "coral" }
+              : c.refundedPaise > 0 && c.effectivePaise === 0
+                ? { label: "Refunded", tone: "lavender" }
+                : c.refundedPaise > 0
+                  ? { label: "Partly refunded", tone: "lavender" }
+                  : { label: x.fundedFromPool ? "Paid · pool" : "Paid", tone: "teal" };
+          return {
+            key: `x:${expenseId}`,
+            kind: "booking",
+            title: x.title,
+            sub: [x.vendor, x.category].filter(Boolean).join(" · "),
+            icon: CATEGORY_ICON[x.category] ?? "receipt_long",
+            amountPaise: c.effectivePaise,
+            status,
+            paidBy: x.fundedFromPool ? "Trip pool" : payerNames(x.payers.map((p) => p.participantId)),
+            date: x.date,
+            expenseId,
+          };
+        });
+      } else if (itemId) {
+        block = get(`i:${itemId}`, () => {
+          const it = state.itinerary.find((i) => i.id === itemId) ?? (e.type === "ITINERARY_ITEM_REMOVED" ? e.item : e.type === "ITINERARY_ITEM_ADDED" ? e.item : undefined);
+          const live = state.itinerary.some((i) => i.id === itemId);
+          return {
+            key: `i:${itemId}`,
+            kind: "plan",
+            title: it?.title ?? "Plan item",
+            sub: [it?.vendor, it?.category, "not paid yet"].filter(Boolean).join(" · "),
+            icon: it ? (CATEGORY_ICON[it.category] ?? "event_note") : "event_note",
+            amountPaise: it?.estimatedPaise,
+            status: !live ? { label: "Removed", tone: "grey" } : it?.status === "cancelled" ? { label: "Cancelled", tone: "coral" } : { label: "Planned", tone: "amber" },
+            date: it?.date,
+          };
+        });
+      } else if (e.type.startsWith("SETTLEMENT_") || e.type.startsWith("CONTRIBUTION_")) {
+        block = get("payments", () => ({ key: "payments", kind: "payments", title: "Pool & payments", sub: "", icon: "account_balance_wallet" }));
+      } else if (d.kind === "member") {
+        block = get("members", () => ({ key: "members", kind: "members", title: "Members", sub: "", icon: "group" }));
+      } else {
+        block = get("trip", () => ({ key: "trip", kind: "trip", title: "Trip & plan setup", sub: "", icon: "flag" }));
+      }
+      block.lines.push({ e, d });
+      block.firstTs = Math.min(block.firstTs, e.ts);
+      block.lastTs = Math.max(block.lastTs, e.ts);
+    }
+
+    // Headlines for the grouped blocks, from the ledger.
+    const pay = map.get("payments");
+    if (pay) {
+      const deposits = state.contributions.filter((c) => c.direction !== "out").reduce((s, c) => s + c.amountPaise, 0);
+      const confirmed = state.settlements.filter((s) => s.status === "confirmed");
+      const pending = state.settlements.filter((s) => s.status === "initiated").length;
+      pay.amountPaise = deposits + confirmed.reduce((s, x) => s + x.amountPaise, 0);
+      pay.sub = `${formatMoney(deposits)} into the pool · ${confirmed.length} settlement${confirmed.length === 1 ? "" : "s"} confirmed${pending ? ` · ${pending} pending` : ""}`;
+      if (pending) pay.status = { label: `${pending} pending`, tone: "amber" };
+    }
+    const mem = map.get("members");
+    if (mem) {
+      const left = state.participants.filter((p) => p.leftOn).length;
+      mem.sub = `${state.participants.length - left} travelling${left ? ` · ${left} left` : ""}`;
+    }
+    const tr = map.get("trip");
+    if (tr) tr.sub = `${state.trip.destination} · ${state.itinerary.length} plan item${state.itinerary.length === 1 ? "" : "s"}`;
+    return [...map.values()];
+  }, [events, names, settlements, state, ledger, trip]);
+
+  const visible = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const list = ledger.expenses.filter((c) => {
-      const e = c.expense;
-      if (payer && !e.payers.some((p) => p.participantId === payer)) return false;
-      if (vendor && e.vendor?.trim() !== vendor) return false;
-      if (category && e.category !== category) return false;
-      if (mine && !(c.shares[meId] || c.netPaidByPayer[meId])) return false;
-      if (needle && !`${e.title} ${e.vendor ?? ""} ${e.notes ?? ""}`.toLowerCase().includes(needle)) return false;
+    const list = blocks.filter((b) => {
+      if (filter === "bookings" && b.kind !== "booking" && b.kind !== "plan") return false;
+      if (filter === "payments" && b.kind !== "payments") return false;
+      if (filter === "members" && b.kind !== "members") return false;
+      if (needle && !`${b.title} ${b.sub} ${b.paidBy ?? ""}`.toLowerCase().includes(needle)) return false;
       return true;
     });
-    return list.sort((a, b) => {
-      if (sort === "high") return b.expense.amountPaise - a.expense.amountPaise;
-      if (sort === "low") return a.expense.amountPaise - b.expense.amountPaise;
-      const d = a.expense.date.localeCompare(b.expense.date);
-      return sort === "new" ? -d : d;
+    return list.sort((a, b) => (sort === "amount" ? (b.amountPaise ?? 0) - (a.amountPaise ?? 0) : sort === "old" ? a.firstTs - b.firstTs : b.lastTs - a.lastTs));
+  }, [blocks, filter, sort, q]);
+
+  useEffect(() => {
+    if (!deep) return;
+    const el = document.getElementById(`block-x:${deep}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [deep]);
+
+  const toggle = (key: string) =>
+    setExpanded((s) => {
+      const next = new Set(s);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
     });
-  }, [ledger, payer, vendor, category, mine, q, sort, meId]);
 
-  const groups = useMemo(() => {
-    if (sort === "high" || sort === "low") return [["", rows] as const];
-    const m = new Map<string, typeof rows>();
-    for (const r of rows) m.set(r.expense.date, [...(m.get(r.expense.date) ?? []), r]);
-    return [...m.entries()];
-  }, [rows, sort]);
-
-  const total = rows.reduce((s, c) => s + c.effectivePaise, 0);
-  const myTotal = rows.reduce((s, c) => s + (c.shares[meId] ?? 0), 0);
-  const filtered = !!(payer || vendor || category || mine || q.trim());
-  const dayLabel = (iso: string) => {
-    if (iso === todayIso()) return "Today";
-    const d = daysBetween(trip.state.trip.startDate, iso);
-    return d >= 0 && iso <= trip.state.trip.endDate ? `Day ${d + 1}` : iso < trip.state.trip.startDate ? "Before the trip" : "After the trip";
-  };
+  const bookings = ledger.expenses.filter((c) => c.expense.status === "active").length;
+  const myShare = ledger.balances[meId]?.sharePaise ?? 0;
 
   return (
-    <main className="mx-auto w-full max-w-[520px] flex-1 px-margin pb-32 pt-space-md">
-      {/* sub-navigation (design pill tabs) */}
-      <div className="flex items-center gap-space-sm py-space-xs">
-        {(
-          [
-            ["expenses", "Expenses", "receipt_long"],
-            ["audit", "Ledger chronicle", "history"],
-          ] as const
-        ).map(([v, l, icon]) => (
-          <button
-            key={v}
-            onClick={() => setTab(v)}
-            className={cx(
-              "flex items-center gap-1 whitespace-nowrap rounded-full px-space-md py-space-xs font-label-md text-label-md transition-colors",
-              tab === v ? "bg-primary-container text-on-primary shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-variant",
-            )}
+    <main className="mx-auto w-full max-w-[520px] flex-1 px-margin pb-10 pt-space-md">
+      {/* summary */}
+      <div className="flex items-center justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
+        <div className="flex flex-col">
+          <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Shared ledger</span>
+          <span className="font-currency-display text-[28px] leading-9 text-on-surface">{formatMoney(ledger.totals.spendPaise)}</span>
+          <span className="font-label-sm text-label-sm text-on-surface-variant">
+            {bookings} booking{bookings === 1 ? "" : "s"} · {events.length} updates · net of refunds
+          </span>
+        </div>
+        <div className="flex flex-col items-end rounded-lg bg-surface-container-low px-space-md py-space-sm">
+          <span className="font-label-sm text-label-sm text-on-surface-variant">Your share</span>
+          <span className="font-currency-md text-currency-md text-primary">{formatMoney(myShare)}</span>
+        </div>
+      </div>
+
+      {/* controls */}
+      <div className="mt-space-md flex flex-col gap-space-sm">
+        <div className="relative">
+          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant" />
+          <input className={cx(inputCls, "h-11 rounded-full border-transparent bg-surface-container-low pl-10")} placeholder="Search bookings, vendors, people" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        <div className="flex items-center justify-between gap-space-sm">
+          <div className="flex gap-space-xs overflow-x-auto">
+            {(
+              [
+                ["all", "All"],
+                ["bookings", "Bookings"],
+                ["payments", "Payments"],
+                ["members", "Members"],
+              ] as const
+            ).map(([v, l]) => (
+              <Chip key={v} selected={filter === v} onClick={() => setFilter(v)}>
+                {l}
+              </Chip>
+            ))}
+          </div>
+          <select
+            aria-label="Sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as Sort)}
+            className="h-9 shrink-0 rounded-full border-none bg-surface-container-low px-3 font-label-md text-label-md text-on-surface-variant outline-none"
           >
-            <Icon name={icon} className="text-[16px]" />
-            {l}
-          </button>
+            <option value="new">Newest</option>
+            <option value="old">Oldest</option>
+            <option value="amount">Amount</option>
+          </select>
+        </div>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="mt-space-lg">
+          <Empty icon="receipt_long" title={q || filter !== "all" ? "Nothing matches" : "No activity yet"} message={q || filter !== "all" ? "Try another filter." : "Bookings and payments show up here as they happen."} />
+        </div>
+      ) : null}
+
+      <div className="mt-space-md flex flex-col gap-space-sm">
+        {visible.map((b) => (
+          <BlockCard key={b.key} b={b} open={expanded.has(b.key)} onToggle={() => toggle(b.key)} onDetails={b.expenseId && ledger.byExpenseId[b.expenseId] ? () => setSheet(b.expenseId!) : undefined} names={names} />
         ))}
       </div>
 
-      {tab === "audit" ? (
-        <AuditTrail />
-      ) : (
-        <>
-          {/* shared ledger hero */}
-          <div className="mt-space-md flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">{filtered ? "Matching entries" : "Shared ledger"}</span>
-                <div className="mt-space-xs flex items-baseline gap-space-sm">
-                  <span className="font-currency-display text-currency-display text-on-surface">{formatMoney(total)}</span>
-                  <span className="font-body-md text-body-md text-on-surface-variant">total logged</span>
-                </div>
-              </div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-container text-primary">
-                <Icon name="receipt_long" />
-              </span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-surface-container-low/80 px-space-md py-space-sm">
-              <span className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface">
-                <Icon name="person" className="text-[18px] text-primary" /> Your share
-              </span>
-              <span className="font-currency-md text-[15px] text-primary">{formatMoney(myTotal)}</span>
-            </div>
-            <span className="font-label-sm text-label-sm text-on-surface-variant">
-              {rows.length} expense{rows.length === 1 ? "" : "s"} · net of refunds
-            </span>
-          </div>
+      <p className="mt-space-lg flex items-start gap-space-sm rounded-xl bg-surface-container p-space-md font-body-md text-body-md text-on-surface-variant">
+        <Icon name="shield" className="text-[20px] text-primary" />
+        Every line comes from the trip&apos;s append-only ledger — nothing is edited in place, and each update keeps who did it and when.
+      </p>
 
-          {/* search, sort, filters */}
-          <div className="mt-space-md flex flex-col gap-space-sm">
-            <div className="flex items-center gap-space-sm">
-              <div className="relative flex-1">
-                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant" />
-                <input className={cx(inputCls, "h-11 rounded-full border-transparent bg-surface-container-low pl-10")} placeholder="Search expenses" value={q} onChange={(e) => setQ(e.target.value)} />
-              </div>
-              <button onClick={() => setShowFilters(!showFilters)} className={cx("flex h-11 items-center gap-1 rounded-full px-space-md font-label-md text-label-md", showFilters || filtered ? "bg-primary-container text-on-primary" : "bg-surface-container-low text-primary")}>
-                <Icon name="tune" className="text-[18px]" /> Filter
-              </button>
-            </div>
-            <div className="flex gap-space-xs overflow-x-auto pb-1">
-              {(
-                [
-                  ["new", "Newest"],
-                  ["old", "Oldest"],
-                  ["high", "Highest"],
-                  ["low", "Lowest"],
-                ] as const
-              ).map(([v, l]) => (
-                <Chip key={v} selected={sort === v} onClick={() => setSort(v)}>
-                  {l}
-                </Chip>
-              ))}
-              <Chip selected={mine} icon="person" onClick={() => setMine(!mine)}>
-                Involves me
-              </Chip>
-            </div>
-            {showFilters ? (
-              <div className="flex flex-col gap-space-sm rounded-xl bg-surface-container-low p-space-md">
-                <FilterRow label="Paid by" options={payers.map((id) => [id, trip.short(id)] as const)} value={payer} onChange={setPayer} />
-                {vendors.length ? <FilterRow label="Vendor" options={vendors.map((v) => [v, v] as const)} value={vendor} onChange={setVendor} /> : null}
-                <FilterRow label="Category" options={categories.map((c) => [c, c] as const)} value={category} onChange={(v) => setCategory(v as ExpenseCategory | null)} />
-                {filtered ? (
-                  <button
-                    className="self-start font-label-md text-label-md text-primary"
-                    onClick={() => {
-                      setPayer(null);
-                      setVendor(null);
-                      setCategory(null);
-                      setMine(false);
-                      setQ("");
-                    }}
-                  >
-                    Clear all filters
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-
-          {rows.length === 0 ? (
-            <div className="mt-space-lg">
-              <Empty icon="receipt_long" title={filtered ? "Nothing matches" : "No expenses yet"} message={filtered ? "Try clearing a filter." : "Payments recorded from the Money tab show up here."} />
-            </div>
-          ) : null}
-
-          {groups.map(([date, list]) => (
-            <section key={date || "all"} className="mt-space-lg flex flex-col gap-space-sm">
-              {date ? (
-                <div className="flex items-baseline justify-between">
-                  <h3 className="flex items-baseline gap-space-xs font-headline-sm text-headline-sm text-on-surface">
-                    {dayLabel(date)}
-                    <span className="font-body-md text-body-md text-on-surface-variant">· {formatDate(date)}</span>
-                  </h3>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant">
-                    {list.length} entr{list.length === 1 ? "y" : "ies"}
-                  </span>
-                </div>
-              ) : null}
-              {list.map((c) => {
-                const e = c.expense;
-                const myShare = c.shares[meId] ?? 0;
-                const ways = Object.keys(c.shares).length;
-                const highlighted = e.status === "cancelled" || c.refundedPaise > 0 || !!e.withdrawals?.length;
-                const perPerson = ways ? Math.round(c.effectivePaise / ways) : c.effectivePaise;
-                return (
-                  <button
-                    key={e.id}
-                    onClick={() => setOpen(e.id)}
-                    className={cx(
-                      "flex w-full items-start gap-space-md rounded-xl p-space-md text-left transition-shadow hover:shadow-md",
-                      highlighted ? "bg-tertiary-fixed/60" : "bg-surface-container-lowest shadow-sm",
-                    )}
-                  >
-                    <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full", e.status === "cancelled" ? "bg-tertiary text-on-tertiary" : "bg-surface-container text-primary")}>
-                      <Icon name={e.status === "cancelled" ? "event_busy" : CATEGORY_ICON[e.category]} />
-                    </span>
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      <div className="flex items-start justify-between gap-space-sm">
-                        <span className="font-title-lg text-title-lg text-on-surface">{e.title}</span>
-                        <span className="flex shrink-0 flex-col items-end">
-                          <span className="font-currency-md text-currency-md text-on-surface">{formatMoney(c.effectivePaise)}</span>
-                          {c.effectivePaise !== e.amountPaise ? (
-                            <span className="font-label-sm text-label-sm text-on-surface-variant line-through">{formatMoney(e.amountPaise)}</span>
-                          ) : (
-                            <span className="font-label-sm text-label-sm text-on-surface-variant">{formatMoney(perPerson)} / person</span>
-                          )}
-                        </span>
-                      </div>
-                      {highlighted ? (
-                        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-surface-container-lowest/70 px-2 py-0.5 font-label-sm text-label-sm text-on-tertiary-fixed-variant">
-                          <span className="h-1.5 w-1.5 rounded-full bg-secondary-container" />
-                          {e.status === "cancelled" ? "Cancelled under the vendor's policy" : e.withdrawals?.length ? `${e.withdrawals.length} dropped out` : `${formatMoney(c.refundedPaise)} refunded`}
-                        </span>
-                      ) : null}
-                      <span className="font-body-md text-body-md text-on-surface-variant">
-                        Split {ways} way{ways === 1 ? "" : "s"} ({e.category})
-                        {e.vendor ? ` · ${e.vendor}` : ""}
-                        {!date ? ` · ${formatDate(e.date)}` : ""}
-                      </span>
-                      <div className="flex items-center justify-between gap-space-sm">
-                        <span className="flex items-center gap-1.5 font-label-md text-label-md text-primary">
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                          {e.fundedFromPool ? "Paid from the trip pool" : `${e.payers.map((p) => trip.short(p.participantId)).join(" & ")} paid`}
-                        </span>
-                        <span className="font-label-sm text-label-sm text-on-surface-variant">{myShare ? `you ${formatMoney(myShare)}` : "not you"}</span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </section>
-          ))}
-
-          <div className="mt-space-lg flex gap-space-sm rounded-xl bg-surface-container p-space-md">
-            <Icon name="shield" className="text-[20px] text-primary" />
-            <p className="font-body-md text-body-md text-on-surface-variant">Every entry is derived from the append-only ledger. Tap one to see exactly how each person&apos;s share is worked out.</p>
-          </div>
-        </>
-      )}
-      {open && trip.ledger.byExpenseId[open] ? <ExpenseSheet expenseId={open} onClose={() => setOpen(null)} /> : null}
+      {sheet && ledger.byExpenseId[sheet] ? <ExpenseSheet expenseId={sheet} onClose={() => setSheet(null)} /> : null}
     </main>
   );
 }
 
-function FilterRow({ label, options, value, onChange }: { label: string; options: readonly (readonly [string, string])[]; value: string | null; onChange: (v: string | null) => void }) {
-  return (
-    <div className="flex flex-col gap-space-xs">
-      <Label>{label}</Label>
-      <div className="flex flex-wrap gap-space-xs">
-        <Chip selected={!value} onClick={() => onChange(null)}>
-          Any
-        </Chip>
-        {options.map(([v, l]) => (
-          <Chip key={v} selected={value === v} onClick={() => onChange(value === v ? null : v)}>
-            {l}
-          </Chip>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function AuditTrail() {
+function BlockCard({ b, open, onToggle, onDetails, names }: { b: Block; open: boolean; onToggle: () => void; onDetails?: () => void; names: (id: string) => string }) {
   const trip = useTrip();
-  const names = useMemo(() => buildNameLookup(trip.events, trip.meId), [trip.events, trip.meId]);
-  const settlements = useMemo(() => new Map(trip.state.settlements.map((s) => [s.id, s])), [trip.state.settlements]);
-  const [kind, setKind] = useState<string | null>(null);
-  const all = useMemo(() => [...trip.events].reverse().map((e) => ({ e, d: describeEvent(e, names, { settlements }) })), [trip.events, names, settlements]);
-  const kinds = [...new Set(all.map((x) => x.d.kind))];
-  const list = kind ? all.filter((x) => x.d.kind === kind) : all;
+  const c = b.expenseId ? trip.ledger.byExpenseId[b.expenseId] : undefined;
+  const updates = b.lines.length;
   return (
-    <div className="mt-space-md flex flex-col gap-space-md">
-      <div className="flex flex-col gap-space-xs">
-        <span className="flex items-center gap-1.5 font-label-sm text-label-sm uppercase tracking-wider text-primary">
-          <Icon name="history_edu" className="text-[16px]" /> Ledger chronicle
+    <section id={`block-${b.key}`} className={cx("scroll-mt-20 overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm", open && "ring-1 ring-primary/20")}>
+      <button onClick={onToggle} aria-expanded={open} className="flex w-full items-start gap-space-md p-space-md text-left">
+        <span className={cx("flex h-11 w-11 shrink-0 items-center justify-center rounded-full", b.status?.tone === "coral" ? "bg-error-container text-on-error-container" : "bg-surface-container text-primary")}>
+          <Icon name={b.icon} className="text-[22px]" />
         </span>
-        <h2 className="font-headline-lg text-headline-lg text-on-surface">Every change, in order</h2>
-        <p className="font-body-md text-body-md text-on-surface-variant">
-          {trip.events.length} events, append-only. Nothing is edited in place — every balance on this trip is replayed from this list, and each line carries who did it and when.
-        </p>
-      </div>
-      <div className="flex gap-space-xs overflow-x-auto pb-1">
-        <Chip selected={!kind} onClick={() => setKind(null)}>
-          All
-        </Chip>
-        {kinds.map((k) => (
-          <Chip key={k} selected={kind === k} onClick={() => setKind(kind === k ? null : k)}>
-            {k}
-          </Chip>
-        ))}
-      </div>
-      <div className="flex items-center justify-between">
-        <Label>Chronicle</Label>
-        <span className="font-label-sm text-label-sm text-primary">{list.length} events accounted</span>
-      </div>
-      <div className="relative flex flex-col gap-space-md">
-        <div className="absolute bottom-4 left-[11px] top-3 w-[2px] rounded-full bg-surface-container-highest" />
-        {list.map(({ e, d }) => (
-          <ChronicleItem key={e.id} d={d} ts={e.ts} actor={names(e.actor)} />
-        ))}
-      </div>
-    </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex items-start justify-between gap-space-sm">
+            <span className="min-w-0 truncate font-title-md text-title-md text-on-surface">{b.title}</span>
+            {b.amountPaise !== undefined ? <span className="shrink-0 font-currency-md text-[16px] text-on-surface">{formatMoney(b.amountPaise)}</span> : null}
+          </div>
+          {b.sub ? <span className="truncate font-body-md text-[13px] text-on-surface-variant">{b.sub}</span> : null}
+          <div className="mt-1 flex flex-wrap items-center gap-x-space-sm gap-y-1">
+            {b.status ? <span className={cx("rounded-full px-2 py-0.5 font-label-sm text-label-sm", STATUS_TONE[b.status.tone])}>{b.status.label}</span> : null}
+            {b.paidBy ? (
+              <span className="flex items-center gap-1 font-label-sm text-label-sm text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {b.paidBy}
+              </span>
+            ) : null}
+            {b.date ? <span className="font-label-sm text-label-sm text-on-surface-variant">{formatDate(b.date)}</span> : null}
+            <span className="ml-auto flex items-center gap-0.5 font-label-sm text-label-sm text-on-surface-variant">
+              {updates} update{updates === 1 ? "" : "s"}
+              <Icon name={open ? "expand_less" : "expand_more"} className="text-[18px]" />
+            </span>
+          </div>
+        </div>
+      </button>
+
+      {open ? (
+        <div className="flex flex-col gap-space-md border-t border-outline-variant/40 bg-surface-container-low/40 px-space-md pb-space-md pt-space-sm">
+          {/* history, oldest first */}
+          <ol className="relative flex flex-col gap-space-sm">
+            <span className="absolute bottom-2 left-[13px] top-2 w-[2px] rounded-full bg-surface-container-highest" aria-hidden />
+            {b.lines.map(({ e, d }) => (
+              <li key={e.id} className="relative flex gap-space-sm">
+                <span className={cx("relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full", DOT[d.tone])}>
+                  <Icon name={symbol(d.icon)} className="text-[15px]" />
+                </span>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex items-start justify-between gap-space-sm">
+                    <span className="font-title-md text-[14px] leading-5 text-on-surface">{d.title}</span>
+                    {d.amountPaise !== undefined ? <span className="shrink-0 font-label-md text-label-md tabular-nums text-on-surface">{formatMoney(d.amountPaise)}</span> : null}
+                  </div>
+                  {d.detail ? <span className="font-label-md text-[12px] leading-4 text-on-surface-variant">{d.detail}</span> : null}
+                  {d.changes?.length ? (
+                    <div className="mt-1 flex flex-col gap-0.5 rounded-md bg-surface-container-lowest px-space-sm py-1">
+                      {d.changes.map((ch, i) => (
+                        <span key={i} className="font-label-sm text-label-sm text-on-surface-variant">
+                          {ch.label}: <span className="line-through opacity-70">{ch.before}</span> → <span className="text-on-surface">{ch.after}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <span className="font-label-sm text-[11px] text-outline">
+                    {formatRelative(e.ts)} · {names(e.actor)}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          {/* who bears what */}
+          {c && Object.keys(c.shares).length ? (
+            <div className="flex flex-col gap-space-xs rounded-lg bg-surface-container-lowest p-space-sm">
+              <span className="px-1 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Who bears what</span>
+              {Object.entries(c.shares).map(([pid, share]) => {
+                const paid = c.netPaidByPayer[pid] ?? 0;
+                return (
+                  <div key={pid} className="flex items-center gap-space-sm px-1">
+                    <Portrait name={trip.fullName(pid)} size={24} />
+                    <span className="min-w-0 flex-1 truncate font-body-md text-[14px] text-on-surface">{trip.isMe(pid) ? "You" : trip.fullName(pid)}</span>
+                    {paid ? <span className="font-label-sm text-label-sm text-primary">paid {formatMoney(paid)}</span> : null}
+                    <span className="w-20 text-right font-label-md text-label-md tabular-nums text-on-surface">{formatMoney(share)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {onDetails ? (
+            <button onClick={onDetails} className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-primary hover:bg-surface-container-high">
+              <Icon name="receipt_long" className="text-[18px]" /> Details · cancel or record a refund
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

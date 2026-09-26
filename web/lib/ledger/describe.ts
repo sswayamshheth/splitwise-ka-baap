@@ -58,6 +58,9 @@ export function describeEvent(e: LedgerEvent, name: NameOf, ctx: DescribeContext
     case "PARTICIPANT_ADDED":
       return { kind: "member", icon: "person-add-alt-1", tone: "mint", title: `${name(e.participant.id)} joined the trip`, detail: e.participant.upiId ? `UPI ${e.participant.upiId}` : "No UPI ID yet", participantId: e.participant.id };
     case "PARTICIPANT_UPDATED":
+      if ("interests" in e.after && Object.keys(e.after).length === 1) {
+        return { kind: "member", icon: "interests", tone: "lavender", title: `${name(e.participantId)} updated travel preferences`, detail: "Used for the trip's Harmony Score", participantId: e.participantId };
+      }
       return {
         kind: "member",
         icon: "manage-accounts",

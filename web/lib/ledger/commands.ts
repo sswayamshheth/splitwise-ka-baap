@@ -1,4 +1,5 @@
 import { newId } from "@/lib/id";
+import type { Interests } from "@/lib/interests";
 import { isValidIso } from "@/lib/dates";
 import { allocate, isPaise, sumPaise, type Paise } from "@/lib/money";
 import { computeBudget } from "./budget";
@@ -228,6 +229,14 @@ export function removeParticipant(state: TripState, participantId: ParticipantId
   };
 }
 
+/** Sets (or clears) a member's travel preferences. Recorded like any other member update. */
+export function setParticipantInterests(state: TripState, participantId: ParticipantId, interests: Interests | undefined, ctx: Ctx): LedgerEvent {
+  const current = state.participants.find((p) => p.id === participantId);
+  if (!current) throw new CommandError("That member is not on the trip");
+  if (JSON.stringify(current.interests ?? null) === JSON.stringify(interests ?? null)) throw new CommandError("Nothing changed");
+  return { ...base(ctx), type: "PARTICIPANT_UPDATED", participantId, before: { interests: current.interests }, after: { interests } };
+}
+
 // ---------------------------------------------------------------- payment methods
 
 export type PaymentMethodInput = {
@@ -311,6 +320,8 @@ export type ItineraryInput = {
   time?: string;
   location?: string;
   vendor?: string;
+  vendorUpi?: string;
+  vendorUpiName?: string;
   estimatedPaise: Paise;
   actualPaise?: Paise;
   participantIds: ParticipantId[];
@@ -320,7 +331,7 @@ export type ItineraryInput = {
   status?: ItineraryItem["status"];
 };
 
-export type ItineraryErrors = Partial<Record<"title" | "date" | "endDate" | "estimated" | "actual" | "participants" | "policy", string>>;
+export type ItineraryErrors = Partial<Record<"title" | "date" | "endDate" | "estimated" | "actual" | "participants" | "policy" | "vendorUpi", string>>;
 
 export function validateItinerary(state: TripState, input: ItineraryInput): ItineraryErrors {
   const errors: ItineraryErrors = {};
@@ -340,6 +351,7 @@ export function validateItinerary(state: TripState, input: ItineraryInput): Itin
     errors.participants = "At least one share must be more than zero";
   }
   const policyError = validatePolicy(input.cancellationPolicy);
+  if (input.vendorUpi && !isValidUpiId(input.vendorUpi)) errors.vendorUpi = "UPI IDs look like name@bank";
   if (policyError) errors.policy = policyError;
   return errors;
 }
@@ -354,6 +366,8 @@ export function buildItineraryItem(input: ItineraryInput, id = newId("it"), sour
     time: input.time?.trim() || undefined,
     location: input.location?.trim() || undefined,
     vendor: input.vendor?.trim() || undefined,
+    vendorUpi: input.vendorUpi?.trim() || undefined,
+    vendorUpiName: input.vendorUpiName?.trim() || undefined,
     estimatedPaise: input.estimatedPaise,
     actualPaise: input.actualPaise,
     participantIds: [...input.participantIds],

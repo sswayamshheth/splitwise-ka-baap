@@ -1,3 +1,4 @@
+import type { Interests } from "@/lib/interests";
 import type { Paise } from "@/lib/money";
 
 /**
@@ -120,6 +121,8 @@ export type ParticipantData = {
   paymentMethods?: PaymentMethod[];
   /** ISO date the member left the trip. They stay on the books until settled. */
   leftOn?: string;
+  /** Travel preferences (optional) — drive the Harmony Score. */
+  interests?: Interests;
 };
 
 // ---------------------------------------------------------------- itinerary
@@ -138,6 +141,10 @@ export type ItineraryItem = {
   time?: string;
   location?: string;
   vendor?: string;
+  /** The vendor's UPI ID (from their UPI QR or typed in) — used to pay them from a UPI app. */
+  vendorUpi?: string;
+  /** Payee name from the vendor's UPI QR, if it carried one. */
+  vendorUpiName?: string;
   /** What we expect it to cost, in paise. Drives the budget. */
   estimatedPaise: Paise;
   /**
@@ -243,6 +250,10 @@ export type TripMeta = {
   fundingTargetPaise?: Paise;
   /** Target for the whole trip pool (simulated escrow), in paise. */
   poolTargetPaise?: Paise;
+  /** The group's total budget for the trip, in paise (set at creation, editable). */
+  budgetPaise?: Paise;
+  /** Optional split of the budget by category, in whole percentages summing to 100. */
+  budgetSplit?: Partial<Record<ExpenseCategory, number>>;
 };
 
 type Base = { id: string; ts: number; actor: ParticipantId | "system" };
