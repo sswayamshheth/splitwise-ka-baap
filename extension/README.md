@@ -6,8 +6,9 @@ asks your GroupTrip trip whose card saves the most, and adds the booking to the 
 ## Load it (Chrome / Edge / Brave)
 1. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
 2. **Load unpacked** → select this `extension/` folder.
-3. In GroupTrip (http://localhost:3000): **Profile → Connect browser extension** → copy the token.
-4. Click the extension icon → set the GroupTrip address (localhost now, the deployed URL later) → paste the token → **Pair extension**.
+3. In GroupTrip (http://localhost:3000 or the deployed app): **Profile → Connect browser extension (one click)** — the page hands
+   the token to the extension and shows "Extension connected". (After editing these files, press **Reload** on the extension card.)
+4. Fallback: click the extension icon → set the GroupTrip address → paste the token shown on Profile → **Pair extension**.
 5. On MakeMyTrip / Goibibo / IndiGo / Booking.com etc. the pop-up **opens by itself on the checkout page** (once per page;
    the pill bottom-right reopens it). On any other site use the toolbar popup. The flow:
    1. **Trip** — only ongoing/upcoming trips; auto-detected from the destination and dates on the page (changeable).

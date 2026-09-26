@@ -113,7 +113,10 @@
         <input data-a="ref" placeholder="Booking ID (optional)" />
         <button class="gt-b" data-a="add">Booked — add ${fmt(state.amount)} to ${esc(state.trip.name)}</button>
         <div class="gt-m" data-a="msg">Split between the ${state.included.size} people ticked. Savings are estimates from offer text.</div>`;
-      box.querySelector('[data-a="add"]').onclick = async () => {
+      const addBtn = box.querySelector('[data-a="add"]');
+      addBtn.onclick = async () => {
+        if (addBtn.disabled) return;
+        addBtn.disabled = true; // one click = one expense, even if the network is slow
         const payerId = box.querySelector('[data-a="payer"]').value;
         const cardLabel = b && b.memberId === payerId ? b.card : undefined;
         const cap = await api("/api/ext/capture", "POST", {
@@ -129,6 +132,8 @@
         box.querySelector('[data-a="msg"]').innerHTML = cap && cap.ok
           ? `✓ Added to <b>${esc(cap.data.tripName)}</b> — paid by ${esc(first(cap.data.paidBy))}, split ${cap.data.sharedBy} ways.`
           : `<span class="gt-err">${esc(cap ? cap.error : "Couldn't add it")}</span>`;
+        if (cap && cap.ok) addBtn.textContent = `✓ Added to ${state.trip.name}`;
+        else addBtn.disabled = false;
       };
     }
 
@@ -144,7 +149,7 @@
         render();
       };
       q("amount").oninput = (e) => {
-        state.amount = Math.round(Number(String(e.target.value).replace(/,/g, "")) * 100) || 0;
+        state.amount = Math.round(Number(String(e.target.value).replace(/[^\d.]/g, "")) * 100) || 0;
       };
       root.querySelectorAll('[data-a="who"]').forEach((cb) => {
         cb.onchange = () => {

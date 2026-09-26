@@ -30,6 +30,8 @@
   let shownFor = "";
   const CHECKOUT = /(payment|pay now|proceed to pay|review (your )?booking|checkout|complete (your )?booking|payment options|fare summary|price details)/i;
   function maybeAutoOpen() {
+    // Some SPAs re-render <html>'s children and drop our widget; put it back.
+    if (!host.isConnected) document.documentElement.appendChild(host);
     if (open || shownFor === location.href) return;
     const text = (document.body && document.body.innerText) || "";
     if (!CHECKOUT.test(text.slice(0, 20000))) return;
