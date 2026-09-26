@@ -115,7 +115,7 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 - **First production deploy was accidental** (a CLI deploy without `--target`); it was kept because it is the same build as the preview.
 - **Clerk secret key was exposed** in a terminal transcript during setup and was rotated before being uploaded to Vercel. The keys in Vercel are the new ones.
 - `ai/`, `simulator/`, `docs/requests.md` and `seed/` are empty placeholders.
-- **"Pay someone else" still opens a real UPI payment** (QR, UPI ID or phone) in the user's own UPI app, even in demo mode. Only the vendor UPI option is hidden. Decision pending.
+- **UPI flows hidden in demo mode.** "Pay someone else" and the vendor "UPI app (vendor's QR)" option open a real payment in the user's own UPI app, so both are hidden while payments run in demo mode. The code is kept. Committed and pushed; not yet deployed at the time of writing.
 - **Some existing users are asked for name and UPI ID again on first sign-in to production.** The app treats a user as onboarded only if a `profiles` row with a name exists in Supabase. The Clerk development instance is shared with local development, so accounts created before the production database existed (their profiles lived in the local file store) have no row in production. It is one-time per account; new accounts are unaffected. **Accepted as is** (no data import or code change). One account had not re-onboarded as of 2026-09-26; that person should sign in and complete onboarding once before judging.
 - **Login ignores the middleware's `redirect_url`.** Signed-out users sent to `/login?redirect_url=…` land on `/home` after sign-in, because the page reads `?next=`. Pre-existing; not changed.
 
