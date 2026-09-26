@@ -215,6 +215,17 @@ export default function TripPage() {
           </Link>
         </section>
 
+        <Link href={`${base}/chain`} className="flex items-center gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm transition-shadow hover:shadow-md">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant">
+            <Icon name="deployed_code" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-headline-sm text-headline-sm text-on-surface">Blockchain proof</span>
+            <span className="block font-body-md text-body-md text-on-surface-variant">{trip.events.length} SHA-256 blocks, sealed on Ethereum — tamper-proof history.</span>
+          </span>
+          <Icon name="chevron_right" className="text-on-surface-variant" />
+        </Link>
+
         <Members members={members} />
 
         {/* recent */}
