@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Chip, cx, Icon, inputCls, Sheet, useFeedback } from "@/components/app/kit";
 import { Face } from "@/components/app/money/parts";
+import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate, todayIso } from "@/lib/dates";
 import { isValidUpiId, parseUpiIntent, updateItineraryItem } from "@/lib/ledger/commands";
@@ -13,6 +14,7 @@ import { payVendorFromPool, poolPayers, poolSummary } from "@/lib/ledger/pool";
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type ItineraryItem, type PaymentMethod } from "@/lib/ledger/types";
 import { formatMoney, parseAmount } from "@/lib/money";
 import { useCheckout } from "./checkout";
+import type { Config } from "./RazorpayPool";
 import { UpiPayPanel } from "./UpiQr";
 
 /**
@@ -134,6 +136,17 @@ function VendorPay({ itemId, onPaid, onContribute }: { itemId: string; onPaid: (
   const due = useDue();
   const checkout = useCheckout();
   const [mode, setMode] = useState<"card" | "upi">("card");
+  // The vendor UPI flow opens a real UPI payment, so it is hidden while payments run in demo mode.
+  const [upiAllowed, setUpiAllowed] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    api<Config>("/api/payments/config")
+      .then((c) => !cancelled && setUpiAllowed(c.mode !== "demo"))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const item = trip.state.itinerary.find((i) => i.id === itemId);
   const [text, setText] = useState(item ? String(due(item) / 100) : "");
   const parsed = parseAmount(text);
@@ -171,6 +184,7 @@ function VendorPay({ itemId, onPaid, onContribute }: { itemId: string; onPaid: (
       </div>
       {parsed.error && text ? <p className="-mt-2 font-label-sm text-label-sm text-error">{parsed.error}</p> : null}
 
+      {upiAllowed ? (
       <div className="flex gap-2">
         {(
           [
@@ -187,8 +201,9 @@ function VendorPay({ itemId, onPaid, onContribute }: { itemId: string; onPaid: (
           </button>
         ))}
       </div>
+      ) : null}
 
-      {mode === "upi" ? (
+      {mode === "upi" && upiAllowed ? (
         <VendorUpi item={item} amountPaise={amount} onPaid={onPaid} onContribute={onContribute} />
       ) : (
       <>
