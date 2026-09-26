@@ -30,15 +30,14 @@ Vercel project settings: framework Next.js, root directory `web`, Node.js 22.x, 
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser (anon/publishable key; not read by current code) |
 | `SUPABASE_SECRET_KEY` | Server, sensitive |
 
-### Not set yet (features off until added)
+### Intentionally not set
 
-| Name | Effect when missing |
+| Name | Why |
 |---|---|
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Payments use the labelled demo checkout (no real money) |
-| `RAZORPAY_WEBHOOK_SECRET` | Razorpay webhooks not verified (webhook URL: `https://group-trip-ledger-six.vercel.app/api/webhooks/razorpay`) |
-| `ANTHROPIC_API_KEY` | "Ask the ledger" assistant runs in offline mode |
-| `NEXT_PUBLIC_AI_PROXY_URL` | Optional; defaults to `/api/ai` |
-| `DEMO_PAYMENTS` | Optional; deliberately not set. Set to `off` to disable the demo checkout when Razorpay keys are missing |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Not used by decision (see Decisions). Without them, payments run through the in-app demo checkout, and `/api/webhooks/razorpay` rejects every request (400 "Invalid webhook signature"; verified in production). |
+| `ANTHROPIC_API_KEY` | Not used by decision (see Decisions). The assistant runs in offline mode. |
+| `NEXT_PUBLIC_AI_PROXY_URL` | Optional; defaults to `/api/ai`. |
+| `DEMO_PAYMENTS` | Optional. Leave unset so the demo checkout stays on; `off` would switch payments off entirely. |
 
 Local source of values: `web/.env.local` (git-ignored). Note that some lines there have a space after `=`; don't `source` the file in a shell.
 
@@ -56,7 +55,12 @@ Adding or changing an environment variable, then redeploy:
 - Preview, all branches: `vercel env add NAME preview ""` — the empty-string branch argument is needed; without it this CLI version keeps asking for a branch.
 - Use `--force` to overwrite an existing variable. Env changes only take effect on the next deploy.
 
-To turn on payments: add the three `RAZORPAY_*` test-mode variables, set the webhook in the Razorpay dashboard to the URL above, and redeploy production.
+To switch Razorpay on in future (not planned; see Decisions): add the three `RAZORPAY_*` test-mode variables, set the Razorpay webhook to `https://group-trip-ledger-six.vercel.app/api/webhooks/razorpay`, and redeploy production.
+
+## Decisions
+
+- **No Razorpay.** Payments run in demo mode by design: the in-app demo checkout simulates payments, and no money moves through the app. The Razorpay code stays in place so it can be switched on later by adding keys.
+- **No Anthropic API.** The assistant runs in offline mode by design: rule-based answers over the same ledger tools, no LLM. The Claude code stays in place so it can be switched on later by adding a key.
 
 ## Database
 
@@ -102,7 +106,6 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 
 - **No `/status` page.** It is listed as a public route but only `/api/status` exists.
 - **No delete-trip button in the UI.** `DELETE /api/trips/[id]` (owner only) works but nothing in the app calls it.
-- **Payments run in demo mode and the assistant is offline** until the Razorpay and Anthropic keys are added (see above).
 - **Next.js 14.2.35 security advisories** (npm audit: critical). Every fix requires Next 15+, a major upgrade we chose not to make. Advisories relevant to this app: denial of service in the App Router / Server Components / Server Actions, cache poisoning of middleware redirects and of React Server Component responses, and cache confusion of response bodies. Others (Image Optimizer, Pages Router i18n, Windows-hosted RCE, Edge Server Actions, custom servers) do not match this setup.
 - Other npm audit findings are dev/build-time only: `vitest` (critical) and `vite` (tests), `glob`, `eslint-config-next`, `@next/eslint-plugin-next` (lint), `postcss` (CSS build).
 - **PWA is minimal:** manifest and placeholder icons only, no service worker (no offline support).
