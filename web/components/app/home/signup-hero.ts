@@ -1,0 +1,2 @@
+/** Hero photograph from the team's Stitch sign_up screen (misty Western Ghats rainforest). */
+export const SIGNUP_HERO = "https://lh3.googleusercontent.com/aida-public/AB6AXuD__W9d9p-KhZMXZ6GVjbT_TDdoVLcAyQAfh-VxDrdBjPU_svYm9FLV5cFEvZscoNuPTHcH0QwD7BLauYCaYqWgLbOL1VemOrVIbCTco_-o07B-a3YX6oNn8EhVk1WwGOW85iiHc3F1bYJFEn2eiw21q3K4_qIBqg9mXef7jm_2ha7lR8TgHrmaaCwOnMfjZRjpD2o4PQ-9GtgdcXIu12Pa4OKAAynX--GcNSZD2jd73bjvTWmyeNks6Q";

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
+import { FeedbackProvider } from "@/components/app/kit";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,6 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ClerkProvider appearance={{ variables: { colorPrimary: "#1e6f64", colorText: "#0e1e1b", borderRadius: "12px" } }}>
     <html lang="en">
       <head>
         <link href="https://fonts.googleapis.com" rel="preconnect" />
@@ -20,8 +23,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
       </head>
       <body className="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col">
-        {children}
+        <FeedbackProvider>{children}</FeedbackProvider>
       </body>
     </html>
+    </ClerkProvider>
   );
 }
