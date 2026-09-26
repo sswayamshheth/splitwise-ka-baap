@@ -103,6 +103,9 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 - `ebfefdd` — merged `origin/main` `080f74a` (vendor UPI QR payments, AI plan assistant, demo checkout, QA fixes). No conflicts; 178 tests pass. `6765db5` renumbered its migration to 0004, applied to production, then deployed with `vercel deploy --prod` (deployment `group-trip-ledger-r0cnaymyd`). Signed-in check: `/api/me` returns the new profile fields, payments config reports `mode: demo`.
 
 - `6713d64`…`33df950` — demo checkout made stateless (no server memory; signing key derived from `SUPABASE_SECRET_KEY`, no new variable); user-facing payment and assistant screens no longer mention Razorpay test mode, env var names or missing keys; the vendor UPI QR option is hidden in demo mode (code kept); functions moved to `sin1`. Deployed with `vercel deploy --prod` (deployment `group-trip-ledger-4aelg74cw`).
+- `51d9e9e` — "Pay someone else" (real UPI payment) hidden in demo mode, like the vendor UPI option; code kept.
+- `30be048` — onboarding asks once: `/onboarding` moves on if a name is already saved, and `/onboarding/interests` moves on if preferences were already answered. Deployed with `vercel deploy --prod` (deployment `group-trip-ledger-e8cg4u1lz`, 2026-09-26), together with `51d9e9e`.
+- Data fix (2026-09-27, approved): `interests_asked` set to `true` for the 3 profiles created before the preferences feature went live (they had a name but the new column defaulted to `false`, so they would have been sent to the preferences page after already onboarding). Nothing else in those rows changed.
 
 ## Known issues
 
@@ -115,8 +118,10 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 - **First production deploy was accidental** (a CLI deploy without `--target`); it was kept because it is the same build as the preview.
 - **Clerk secret key was exposed** in a terminal transcript during setup and was rotated before being uploaded to Vercel. The keys in Vercel are the new ones.
 - `ai/`, `simulator/`, `docs/requests.md` and `seed/` are empty placeholders.
-- **UPI flows hidden in demo mode.** "Pay someone else" and the vendor "UPI app (vendor's QR)" option open a real payment in the user's own UPI app, so both are hidden while payments run in demo mode. The code is kept. Committed and pushed; not yet deployed at the time of writing.
-- **Some existing users are asked for name and UPI ID again on first sign-in to production.** The app treats a user as onboarded only if a `profiles` row with a name exists in Supabase. The Clerk development instance is shared with local development, so accounts created before the production database existed (their profiles lived in the local file store) have no row in production. It is one-time per account; new accounts are unaffected. **Accepted as is** (no data import or code change). One account had not re-onboarded as of 2026-09-26; that person should sign in and complete onboarding once before judging.
+- **UPI flows hidden in demo mode.** "Pay someone else" and the vendor "UPI app (vendor's QR)" option open a real payment in the user's own UPI app, so both are hidden while payments run in demo mode. The code is kept.
+- **Some existing users are asked for name and UPI ID again on first sign-in to production.** The app treats a user as onboarded only if a `profiles` row with a name exists in Supabase. The Clerk development instance is shared with local development, so accounts created before the production database existed (their profiles lived in the local file store) have no row in production. It is one-time per account; new accounts are unaffected. **Accepted as is** (no data import). As of 2026-09-27 all 5 Clerk accounts have a profile with a name, so nobody is affected any more.
+  - Investigated 2026-09-26/27 after reports of repeat onboarding: no saved answers were lost. The repeats were (1) the pre-production accounts above and (2) the new preferences page for 3 profiles created before that feature (fixed by the data fix above). Onboarding pages now also redirect if already answered (`30be048`).
+  - UPI IDs: none of the 5 profiles has one because none was entered. Tested on production: a test UPI ID saved from the Profile page was stored in `profiles.upi_id` under the Clerk user ID, then cleared again (back to NULL).
 - **Login ignores the middleware's `redirect_url`.** Signed-out users sent to `/login?redirect_url=…` land on `/home` after sign-in, because the page reads `?next=`. Pre-existing; not changed.
 
 ## Demo-day checklist
