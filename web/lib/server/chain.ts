@@ -65,6 +65,7 @@ export async function chainStatus() {
     wallet: null as string | null,
     walletUrl: null as string | null,
     balanceEth: null as string | null,
+    latestBlock: null as number | null,
     error: null as string | null,
   };
   if (!/^0x[0-9a-fA-F]{64}$/.test(c.key)) return base;
@@ -72,7 +73,9 @@ export async function chainStatus() {
   base.wallet = address;
   base.walletUrl = `${SEPOLIA.explorer}/address/${address}`;
   try {
-    base.balanceEth = formatEther(await provider().getBalance(address));
+    const [bal, head] = await Promise.all([provider().getBalance(address), provider().send("eth_blockNumber", [])]);
+    base.balanceEth = formatEther(bal);
+    base.latestBlock = Number(head);
   } catch (e) {
     base.error = `Couldn't reach Sepolia: ${(e as Error).message.slice(0, 120)}`;
   }

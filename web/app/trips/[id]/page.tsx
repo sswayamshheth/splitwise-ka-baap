@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Button, cx, Field, Icon, inputCls, Notice, Sheet, useFeedback } from "@/components/app/kit";
 import { BudgetCard } from "@/components/app/trip/BudgetCard";
+import { ChainBadge } from "@/components/app/trip/ChainBadge";
 import { EventRow, HeroBadge, PhotoHero, Portrait, ProgressBar } from "@/components/app/trip/common";
 import { HarmonyCard } from "@/components/app/trip/HarmonyCard";
 import { errorText, useTrip } from "@/lib/client/trip";
@@ -221,7 +222,10 @@ export default function TripPage() {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-headline-sm text-headline-sm text-on-surface">Blockchain proof</span>
-            <span className="block font-body-md text-body-md text-on-surface-variant">{trip.events.length} SHA-256 blocks, sealed on Ethereum — tamper-proof history.</span>
+            <span className="block font-body-md text-body-md text-on-surface-variant">Every change is a SHA-256 block; the chain is sealed on Ethereum.</span>
+            <span className="mt-1 block">
+              <ChainBadge />
+            </span>
           </span>
           <Icon name="chevron_right" className="text-on-surface-variant" />
         </Link>

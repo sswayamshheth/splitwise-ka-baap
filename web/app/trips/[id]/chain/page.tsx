@@ -12,7 +12,7 @@ import type { LedgerEvent } from "@/lib/ledger/types";
 
 type Anchor = { index: number; blocks: number; anchoredAt: number; headHash: string; merkleRoot: string; txHash: string | null; txUrl: string | null };
 type ChainInfo = {
-  status: { configured: boolean; network: string; chainId: number; explorer: string; contract: string | null; contractUrl: string | null; wallet: string | null; walletUrl: string | null; balanceEth: string | null; error: string | null };
+  status: { configured: boolean; network: string; chainId: number; explorer: string; contract: string | null; contractUrl: string | null; wallet: string | null; walletUrl: string | null; balanceEth: string | null; latestBlock: number | null; error: string | null };
   tripKey: string | null;
   anchors: Anchor[];
   pending: { txHash: string; txUrl: string; blocks: number } | null;
@@ -49,15 +49,30 @@ export default function ChainPage() {
   const [showAll, setShowAll] = useState(false);
   const [tamperAt, setTamperAt] = useState<number | null>(null);
 
+  const [run, setRun] = useState(0);
+  const [loadedAt, setLoadedAt] = useState<number | null>(null);
+  const [, setTick] = useState(0);
+
   const events = trip.events;
-  const blocks = useMemo(() => buildChain(events), [events]);
-  const check = useMemo(() => verifyChain(blocks, events), [blocks, events]);
-  const now = useMemo(() => commitment(events), [events]);
+  // Timed so the judges can see the work happen: hash -> link check -> Merkle root.
+  const timed = useMemo(() => {
+    const t0 = performance.now();
+    const blocks = buildChain(events);
+    const t1 = performance.now();
+    const check = verifyChain(blocks, events);
+    const t2 = performance.now();
+    const now = commitment(events);
+    const t3 = performance.now();
+    return { blocks, check, now, ms: { hash: t1 - t0, links: t2 - t1, merkle: t3 - t2 } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, run]);
+  const { blocks, check, now } = timed;
   const names = useMemo(() => buildNameLookup(events, trip.meId), [events, trip.meId]);
 
   const load = useCallback(async () => {
     try {
       setInfo(await api<ChainInfo>(`/api/trips/${trip.tripId}/chain`));
+      setLoadedAt(Date.now());
       setLoadError(null);
     } catch (e) {
       setLoadError((e as Error).message);
@@ -66,12 +81,17 @@ export default function ChainPage() {
   useEffect(() => {
     void load();
   }, [load]);
-  // While a transaction is being mined (~12 s per Sepolia block), check again every few seconds.
+  // While a transaction is being mined (~12 s per Sepolia block), check again every few seconds;
+  // otherwise refresh every 12 s so the live Ethereum block number keeps moving on screen.
   useEffect(() => {
-    if (!info?.pending) return;
-    const t = setInterval(() => void load(), 5000);
+    const t = setInterval(() => void load(), info?.pending ? 5000 : 12_000);
     return () => clearInterval(t);
   }, [info?.pending, load]);
+  // Re-render every second for the "read Ns ago" counter.
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const latest = info?.anchors.at(-1) ?? null;
   // Does the ledger we have now still produce the fingerprint that was put on-chain?
@@ -123,6 +143,93 @@ export default function ChainPage() {
         <p className="mt-1 font-body-md text-body-md text-on-surface-variant">
           Every change to this trip is a block, sealed with SHA-256 and linked to the one before it. The chain&apos;s fingerprint is published on Ethereum, so no one — not even us — can quietly rewrite what happened.
         </p>
+      </section>
+
+      {/* live verification log: what just happened, step by step */}
+      <section className="rounded-2xl bg-inverse-surface p-space-md text-inverse-on-surface shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+          <p className="flex items-center gap-2 font-title-md text-title-md">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-fixed opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary-fixed" />
+            </span>
+            Live verification
+          </p>
+          <button
+            onClick={() => {
+              setRun((r) => r + 1);
+              void load();
+            }}
+            className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-label-md text-label-md hover:bg-white/20"
+          >
+            <Icon name="refresh" className="text-[16px]" /> Re-run
+          </button>
+        </div>
+        <ol className="mt-space-sm space-y-1.5 font-mono text-[12px] leading-snug">
+          <li>
+            ✓ Hashed {blocks.length} ledger events with SHA-256 in this browser · {timed.ms.hash.toFixed(1)} ms
+          </li>
+          <li>
+            {check.ok ? "✓" : "✗"} Checked {blocks.length} links (each block → previous block&apos;s hash) · {check.ok ? "intact" : `broken at #${check.brokenAt}`} · {timed.ms.links.toFixed(1)} ms
+          </li>
+          <li>
+            ✓ Built the Merkle tree → root {short(now.merkleRoot)} · {timed.ms.merkle.toFixed(1)} ms
+          </li>
+          {info?.status.configured ? (
+            <>
+              <li>
+                ✓ Connected to Ethereum Sepolia · latest Ethereum block{" "}
+                <a href={`${info.status.explorer}/block/${info.status.latestBlock ?? ""}`} target="_blank" rel="noreferrer" className="underline">
+                  #{info.status.latestBlock?.toLocaleString("en-US") ?? "…"}
+                </a>
+                {loadedAt ? ` · read ${Math.max(0, Math.round((Date.now() - loadedAt) / 1000))}s ago` : ""}
+              </li>
+              <li>
+                ✓ Read {info.anchors.length} seal{info.anchors.length === 1 ? "" : "s"} from contract{" "}
+                {info.status.contractUrl ? (
+                  <a href={info.status.contractUrl} target="_blank" rel="noreferrer" className="underline">
+                    {short(info.status.contract ?? "", 6)}
+                  </a>
+                ) : null}
+                {latest ? ` → on-chain root ${short(latest.merkleRoot)}` : " → nothing sealed yet"}
+              </li>
+              {latest ? (
+                <li className={latestOk ? "text-primary-fixed" : "text-error-container"}>
+                  {latestOk ? "✓" : "✗"} Browser fingerprint {latestOk ? "=" : "≠"} Ethereum fingerprint for blocks #0–#{latest.blocks - 1}
+                  {unanchored > 0 ? ` · ${unanchored} newer block${unanchored === 1 ? "" : "s"} waiting to be sealed` : " · everything sealed"}
+                </li>
+              ) : null}
+            </>
+          ) : info ? (
+            <li>– Not connected to Ethereum on this server</li>
+          ) : (
+            <li className="animate-pulse">… contacting Ethereum Sepolia</li>
+          )}
+        </ol>
+      </section>
+
+      {/* the chain, drawn: last few blocks linked by their hashes, ending in the Ethereum seal */}
+      <section className="-mx-margin overflow-x-auto px-margin">
+        <div className="flex w-max items-stretch gap-1.5 pb-1">
+          {blocks.slice(-4).map((b) => (
+            <div key={b.height} className="flex items-center gap-1.5">
+              <div className={cx("w-[132px] rounded-xl p-2 shadow-sm", latest && b.height < latest.blocks ? "bg-primary-fixed/50" : "bg-surface-container-lowest")}>
+                <p className="font-title-md text-[13px] text-on-surface">Block #{b.height}</p>
+                <p className="truncate font-label-sm text-[11px] text-on-surface-variant">{b.type.replace(/_/g, " ").toLowerCase()}</p>
+                <p className="mt-1 font-mono text-[10px] text-on-surface">hash {b.hash.slice(0, 8)}</p>
+                <p className="font-mono text-[10px] text-on-surface-variant">prev {b.prevHash.slice(0, 8)}</p>
+              </div>
+              <Icon name="arrow_forward" className="text-[16px] text-outline" />
+            </div>
+          ))}
+          <div className={cx("flex w-[132px] flex-col justify-center rounded-xl p-2 shadow-sm", latestOk ? "bg-tertiary-fixed" : "bg-surface-container")}>
+            <p className="flex items-center gap-1 font-title-md text-[13px] text-on-tertiary-fixed">
+              <Icon name="deployed_code" className="text-[16px]" /> Ethereum
+            </p>
+            <p className="font-mono text-[10px] text-on-tertiary-fixed-variant">{latest ? `root ${latest.merkleRoot.slice(0, 8)}` : "not sealed"}</p>
+            <p className="font-label-sm text-[11px] text-on-tertiary-fixed-variant">{latest ? `${latest.blocks} blocks sealed` : "press Seal below"}</p>
+          </div>
+        </div>
       </section>
 
       {/* 1 · local chain, verified in this browser */}
