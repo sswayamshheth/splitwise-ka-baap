@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{ variables: { colorPrimary: "#1e6f64", colorText: "#0e1e1b", borderRadius: "12px" } }}>
+    <ClerkProvider appearance={{ variables: { colorPrimary: "#1e6f64", colorText: "#0e1e1b", fontFamily: "'Plus Jakarta Sans', sans-serif", borderRadius: "12px" } }}>
     <html lang="en">
       <head>
         <link href="https://fonts.googleapis.com" rel="preconnect" />
