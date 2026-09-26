@@ -142,10 +142,11 @@ export default function AskPage() {
             <div className="min-w-0 flex-1">
               <p className="font-title-lg text-title-lg text-on-surface">{!health.checked ? "Checking the assistant…" : mode === "claude" ? "Claude · reads through ledger tools" : "Offline mode · rule-based"}</p>
               <p className="font-label-md text-label-md text-on-surface-variant">
-                {claudeReady ? "Can read and simulate; only Apply (with confirmation) writes." : "No Claude API key on the server — answers come from fixed templates over the same tools, no LLM."}
+                {claudeReady ? "Can read and simulate; only Apply (with confirmation) writes." : "Answers come from fixed templates over the same ledger tools."}
               </p>
             </div>
           </div>
+          {claudeReady ? (
           <div className="grid grid-cols-2 gap-1 rounded-full bg-surface-container-high p-1">
             <button
               disabled={!claudeReady}
@@ -161,6 +162,7 @@ export default function AskPage() {
               <Icon name="rule" className="text-[16px]" /> Offline — no LLM
             </button>
           </div>
+          ) : null}
         </div>
 
         {/* Pinned questions (whiteboard notes) */}

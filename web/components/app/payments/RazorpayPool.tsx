@@ -171,7 +171,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
     <Sheet open={open} onClose={onClose} title="Contribute to the pool">
       {config && !config.enabled ? (
         <div className="mb-space-md rounded-xl bg-secondary-fixed/50 p-space-md font-body-md text-body-md text-on-secondary-fixed">
-          Payments are switched off on this server{config.missing?.length ? ` (missing ${config.missing.join(", ")})` : ""}. You can still record a cash/UPI deposit manually.
+          Payments are switched off on this server. You can still record a cash/UPI deposit manually.
         </div>
       ) : null}
       <div className="flex items-center gap-2 rounded-xl bg-surface-container-low px-space-md">
@@ -210,17 +210,20 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
 
 // ------------------------------------------------------------------ transaction history
 
-export function PoolPayments({ pool, onChanged }: { pool: PoolState | null; onChanged: () => void }) {
+export function PoolPayments({ pool, config, onChanged }: { pool: PoolState | null; config?: Config | null; onChanged: () => void }) {
   const trip = useTrip();
   const { toast, confirm } = useFeedback();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const demo = config?.mode === "demo";
   if (!pool || pool.contributions.length === 0) return null;
 
   async function refund(c: PoolState["contributions"][number]) {
     if (!c.paymentId) return;
     const ok = await confirm({
       title: `Refund ${formatMoney(c.amountPaise)} to ${c.memberName}?`,
-      message: "Razorpay (test mode) refunds the payment; the pool and ledger update once the refund is processed. Only unspent pool money can be refunded.",
+      message: demo
+        ? "Demo refund — simulated, no money moves. The pool and ledger update once it's processed. Only unspent pool money can be refunded."
+        : "Razorpay (test mode) refunds the payment; the pool and ledger update once the refund is processed. Only unspent pool money can be refunded.",
       confirm: "Refund",
       danger: true,
     });
@@ -230,7 +233,7 @@ export function PoolPayments({ pool, onChanged }: { pool: PoolState | null; onCh
       const out = await api<{ refundStatus: string }>(`/api/payments/${c.paymentId}/refund`, { body: {} });
       await trip.refresh();
       onChanged();
-      toast(out.refundStatus === "processed" ? "Refund processed · pool and ledger updated" : "Refund requested — the pool updates when Razorpay confirms it");
+      toast(out.refundStatus === "processed" ? "Refund processed · pool and ledger updated" : demo ? "Refund requested — the pool updates once it's confirmed" : "Refund requested — the pool updates when Razorpay confirms it");
     } catch (e) {
       toast(errorText(e), "error");
     } finally {
@@ -249,7 +252,9 @@ export function PoolPayments({ pool, onChanged }: { pool: PoolState | null; onCh
     <section className="px-margin pb-space-sm pt-space-md">
       <div className="mb-space-sm flex items-center justify-between">
         <h3 className="font-headline-sm text-headline-sm text-on-surface">Pool Payments</h3>
-        <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Razorpay · test mode</span>
+        {config?.mode ? (
+          <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">{demo ? "Demo checkout · simulated" : `Razorpay · ${config.mode} mode`}</span>
+        ) : null}
       </div>
       <div className="flex flex-col gap-2">
         {pool.contributions.map((c) => {
