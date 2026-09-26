@@ -54,7 +54,23 @@ export function PaySheet({ open, onClose, onContribute }: { open: boolean; onClo
   );
 }
 
+/** The UPI flows open a real UPI payment, so they are hidden while payments run in demo mode. */
+function useUpiAllowed() {
+  const [allowed, setAllowed] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    api<Config>("/api/payments/config")
+      .then((c) => !cancelled && setAllowed(c.mode !== "demo"))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return allowed;
+}
+
 function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () => void }) {
+  const upiAllowed = useUpiAllowed();
   const Option = ({ icon, title, sub, onClick, tone }: { icon: string; title: string; sub: string; onClick: () => void; tone: string }) => (
     <button onClick={onClick} className="flex w-full items-center gap-space-md rounded-2xl bg-surface-container-lowest p-space-md text-left shadow-sm ring-1 ring-outline-variant/40 transition-shadow hover:shadow-md">
       <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full", tone)}>
@@ -70,7 +86,9 @@ function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () 
   return (
     <div className="flex flex-col gap-space-sm">
       <Option icon="storefront" tone="bg-primary-fixed/60 text-primary" title="Pay a vendor from the itinerary" sub="Villa, cab, activity… with the best card in the group" onClick={onVendor} />
-      <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay someone else" sub="QR, UPI ID or phone — paid from the trip pool" onClick={onSomeone} />
+      {upiAllowed ? (
+        <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay someone else" sub="QR, UPI ID or phone — paid from the trip pool" onClick={onSomeone} />
+      ) : null}
     </div>
   );
 }
@@ -136,17 +154,7 @@ function VendorPay({ itemId, onPaid, onContribute }: { itemId: string; onPaid: (
   const due = useDue();
   const checkout = useCheckout();
   const [mode, setMode] = useState<"card" | "upi">("card");
-  // The vendor UPI flow opens a real UPI payment, so it is hidden while payments run in demo mode.
-  const [upiAllowed, setUpiAllowed] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    api<Config>("/api/payments/config")
-      .then((c) => !cancelled && setUpiAllowed(c.mode !== "demo"))
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const upiAllowed = useUpiAllowed();
   const item = trip.state.itinerary.find((i) => i.id === itemId);
   const [text, setText] = useState(item ? String(due(item) / 100) : "");
   const parsed = parseAmount(text);
