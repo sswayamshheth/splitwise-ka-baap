@@ -14,6 +14,8 @@ import { validatePaymentVerification, validateWebhookSignature } from "razorpay/
 export type GatewayOrder = { id: string; amount: number; currency: string; status: string; receipt?: string };
 export type GatewayPayment = { id: string; order_id: string | null; amount: number; currency: string; status: string; error_description?: string | null };
 export type GatewayRefund = { id: string; payment_id: string; amount: number; status: string };
+/** A Razorpay Payment Link: a hosted page (UPI / cards / netbanking) the payer opens from a URL or QR. */
+export type GatewayLink = { id: string; short_url: string; status: string; amount: number; payments: { payment_id: string; status: string }[] };
 
 export interface PaymentGateway {
   /** Public key id — safe to send to the browser for Checkout. */
@@ -25,6 +27,9 @@ export interface PaymentGateway {
   refundPayment(paymentId: string, input: { amountPaise: number; notes: Record<string, string> }): Promise<GatewayRefund>;
   verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
   verifyWebhookSignature(rawBody: string, signature: string): boolean;
+  /** Payment links (Razorpay only): create one, and read its status + payments. */
+  createPaymentLink?(input: { amountPaise: number; currency: string; description: string; referenceId: string; notes: Record<string, string> }): Promise<GatewayLink>;
+  fetchPaymentLink?(linkId: string): Promise<GatewayLink>;
 }
 
 export class GatewayUnavailable extends Error {
@@ -62,6 +67,22 @@ class RazorpayGateway implements PaymentGateway {
     const r = await this.client.payments.refund(paymentId, { amount: input.amountPaise, notes: input.notes });
     return { id: r.id, payment_id: r.payment_id, amount: Number(r.amount), status: r.status };
   }
+  async createPaymentLink(input: { amountPaise: number; currency: string; description: string; referenceId: string; notes: Record<string, string> }) {
+    const l = await this.client.paymentLink.create({
+      amount: input.amountPaise,
+      currency: input.currency,
+      description: input.description.slice(0, 2048),
+      reference_id: input.referenceId,
+      notes: input.notes,
+      notify: { sms: false, email: false },
+      reminder_enable: false,
+      // The SDK's types demand fields the API doesn't (checked against the live test API).
+    } as unknown as Parameters<Razorpay["paymentLink"]["create"]>[0]);
+    return linkOf(l);
+  }
+  async fetchPaymentLink(linkId: string) {
+    return linkOf(await this.client.paymentLink.fetch(linkId));
+  }
   verifyPaymentSignature(orderId: string, paymentId: string, signature: string) {
     try {
       return validatePaymentVerification({ order_id: orderId, payment_id: paymentId }, signature, this.keySecret);
@@ -77,6 +98,11 @@ class RazorpayGateway implements PaymentGateway {
       return false;
     }
   }
+}
+
+function linkOf(l: unknown): GatewayLink {
+  const x = l as { id: string; short_url: string; status: string; amount: number | string; payments?: { payment_id: string; status: string }[] | null };
+  return { id: x.id, short_url: x.short_url, status: x.status, amount: Number(x.amount), payments: (x.payments ?? []).map((p) => ({ payment_id: p.payment_id, status: p.status })) };
 }
 
 /**

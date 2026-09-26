@@ -55,9 +55,10 @@ export type Contribution = {
   amountPaise: number;
   currency: "INR";
   provider: "razorpay";
-  /** "pool" = money into the trip pool; "vendor" = paying an itinerary item's vendor directly. */
-  purpose: "pool" | "vendor";
-  /** For vendor payments: the itinerary item being paid. */
+  /** "pool" = money into the trip pool; "vendor" = paying an itinerary item's vendor directly;
+   *  "settle" = paying back what you owe another member (a settle-up transfer). */
+  purpose: "pool" | "vendor" | "settle";
+  /** For vendor payments: the itinerary item being paid. For settle-ups: the member being paid. */
   itemId?: string;
   /** For vendor payments: the card/account used (name only). */
   methodLabel?: string;

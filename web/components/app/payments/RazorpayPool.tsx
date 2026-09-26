@@ -6,6 +6,7 @@ import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
 import { useOrganiserId } from "@/components/app/money/PoolSheets";
 import { Face } from "@/components/app/money/parts";
 import { useCheckout } from "./checkout";
+import { RequestSheet } from "./PaymentRequest";
 import { UpiPayPanel } from "./UpiQr";
 import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
@@ -167,6 +168,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
   const upiPossible = !!organiser?.upiId && !iHoldThePool;
   const [via, setVia] = useState<"upi" | "razorpay">(upiPossible ? "upi" : "razorpay");
   const [recording, setRecording] = useState(false);
+  const [requesting, setRequesting] = useState(false);
 
   async function recordUpi(utr: string | undefined) {
     if (!parsed.paise) return;
@@ -235,7 +237,13 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
             <p className="rounded-xl bg-surface-container-low p-space-md font-body-md text-body-md text-on-surface-variant">
               You hold the pool{organiser?.upiId ? ` (${organiser.upiId})` : ""}, so there&apos;s nothing to send. Everyone else pays their share to your UPI here; record your own cash with &quot;Record it manually&quot;.
             </p>
-          ) : !organiser?.upiId ? (
+          ) : null}
+          {iHoldThePool && config?.enabled && !demo ? (
+            <button onClick={() => setRequesting(true)} className="mt-space-sm flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-title-md text-title-md text-on-primary">
+              <Icon name="bolt" /> Request a member&apos;s share via Razorpay
+            </button>
+          ) : null}
+          {iHoldThePool ? null : !organiser?.upiId ? (
             <p className="rounded-xl bg-surface-container-low p-space-md font-body-md text-body-md text-on-surface-variant">
               {organiser ? `${organiser.name} hasn't added a UPI ID yet` : "This trip has no organiser"} — use card / netbanking, or ask them to add it in Profile.
             </p>
@@ -276,6 +284,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
         The Trip Pool is a simulated escrow layer: GroupTrip records the contribution only after the server verifies the payment.
       </p>
       {checkout.element}
+      {requesting ? <RequestSheet open onClose={() => setRequesting(false)} purpose="pool" amountPaise={parsed.paise} /> : null}
     </Sheet>
   );
 }

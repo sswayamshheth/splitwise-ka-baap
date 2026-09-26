@@ -50,7 +50,7 @@ type ContributionDb = {
   amount_paise: number;
   currency: "INR";
   provider: "razorpay";
-  purpose: "pool" | "vendor" | null;
+  purpose: "pool" | "vendor" | "settle" | null;
   item_id: string | null;
   method_label: string | null;
   order_id: string | null;

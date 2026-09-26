@@ -8,6 +8,7 @@ import { ExpenseSheet } from "@/components/app/money/ExpenseSheet";
 import { DepositSheet, useOrganiserId, WithdrawSheet } from "@/components/app/money/PoolSheets";
 import { SettleSection } from "@/components/app/money/SettleSection";
 import { PaySheet } from "@/components/app/payments/PaySheet";
+import { PaymentRequests } from "@/components/app/payments/PaymentRequest";
 import { ContributeSheet, PoolFundingBar, PoolPayments, TargetSheet, usePool } from "@/components/app/payments/RazorpayPool";
 import { Eyebrow, Face } from "@/components/app/money/parts";
 import { useTrip } from "@/lib/client/trip";
@@ -171,6 +172,8 @@ export default function MoneyPage() {
           </button>
         </div>
       ) : null}
+
+      <PaymentRequests />
 
       <PoolPayments pool={serverPool} config={payConfig} onChanged={() => void reloadPool()} />
 
