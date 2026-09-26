@@ -126,11 +126,11 @@ export const POST = route(async (req: Request) => {
     }
   }
   if (mode === "photo") {
-    throw new HttpError(501, hasAI ? "Couldn't read that photo — try a clearer image, or paste the text instead" : "Reading photos needs the AI assistant (set ANTHROPIC_API_KEY). You can paste the text or upload a PDF instead.");
+    throw new HttpError(501, hasAI ? "Couldn't read that photo — try a clearer image, or paste the text instead" : "Reading photos isn't available here. You can paste the text or upload a PDF instead.");
   }
   if (mode === "suggest") {
     const items = suggestItinerary({ destination: body.destination ?? "", startDate: start, endDate: end, travellers, interests: body.interests ?? {} });
-    return NextResponse.json({ items, source: "library", note: "Suggested from our curated activity library and your group's interests (AI suggestions need ANTHROPIC_API_KEY)." });
+    return NextResponse.json({ items, source: "library", note: "Suggested from our curated activity library and your group's interests." });
   }
   const parsed = parseItineraryText(body.text ?? "", { fallbackYear: Number(start.slice(0, 4)) });
   const items = parsed.items.map((i) => ({ ...i, date: i.date && i.date >= start && i.date <= end ? i.date : start }));

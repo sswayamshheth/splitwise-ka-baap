@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cx, Icon, initials, useFeedback } from "@/components/app/kit";
+import { proxyHealth } from "@/lib/ai/agent";
 import { api, ApiError } from "@/lib/client/api";
 import { portrait, tripCover } from "@/lib/covers";
 import { formatDateRange, isValidIso, todayIso } from "@/lib/dates";
@@ -770,6 +771,14 @@ function ItineraryStep({ created, state, listing, me, append, onDone }: { create
   const estimate = items.reduce((s, i) => s + (parseAmount(i.amount || "0").paise ?? 0), 0);
   const budget = state.trip.budgetPaise;
 
+  // Reading a photo needs the AI assistant; offer it only when the server has one.
+  const [aiReady, setAiReady] = useState(false);
+  useEffect(() => {
+    const ctrl = new AbortController();
+    void proxyHealth(ctrl.signal).then((h) => setAiReady(h.ok && h.hasKey));
+    return () => ctrl.abort();
+  }, []);
+
   const options: { id: Source; icon: string; title: string; hint: string; star?: boolean; onClick: () => void }[] = [
     {
       id: "suggest",
@@ -783,7 +792,7 @@ function ItineraryStep({ created, state, listing, me, append, onDone }: { create
       },
     },
     { id: "pdf", icon: "picture_as_pdf", title: "Upload a PDF", hint: "Read on your device, then parsed", onClick: () => pdfRef.current?.click() },
-    { id: "photo", icon: "photo_camera", title: "Photo of an itinerary", hint: "Screenshot or printout (needs AI)", onClick: () => photoRef.current?.click() },
+    { id: "photo", icon: "photo_camera", title: "Photo of an itinerary", hint: "Screenshot or printout", onClick: () => photoRef.current?.click() },
     {
       id: "refine",
       icon: "edit_note",
@@ -807,7 +816,7 @@ function ItineraryStep({ created, state, listing, me, append, onDone }: { create
       <input ref={photoRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && void onPhoto(e.target.files[0])} />
 
       <div className="grid grid-cols-2 gap-2">
-        {options.map((o) => (
+        {options.filter((o) => o.id !== "photo" || aiReady).map((o) => (
           <button
             key={o.id}
             type="button"

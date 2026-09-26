@@ -30,7 +30,14 @@ export class FileRepo implements Repo {
   private chain: Promise<unknown> = Promise.resolve();
   private db: Db | null = null;
 
-  constructor(private readonly file = DEFAULT_FILE) {}
+  constructor(private readonly file = DEFAULT_FILE) {
+    // Hosted file systems are ephemeral or read-only: fail loudly instead of losing data.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "SUPABASE_SECRET_KEY (and NEXT_PUBLIC_SUPABASE_URL) must be set in production. The local file store is for development only.",
+      );
+    }
+  }
 
   private async load(): Promise<Db> {
     if (this.db) return this.db;

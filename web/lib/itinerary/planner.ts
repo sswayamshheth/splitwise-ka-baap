@@ -210,6 +210,6 @@ export function planOffline(state: TripState, instruction: string): PlanProposal
   return {
     ops: [],
     understood: false,
-    summary: "The built-in planner understands: add <activity type> (water sports, trek, nightlife, culture, food, spa, games, shopping…), remove <item>, move <item> to day N, make it cheaper, or make a new plan. Add ANTHROPIC_API_KEY for free-form requests.",
+    summary: "The built-in planner understands: add <activity type> (water sports, trek, nightlife, culture, food, spa, games, shopping…), remove <item>, move <item> to day N, make it cheaper, or make a new plan.",
   };
 }

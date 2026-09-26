@@ -18,13 +18,19 @@ function Onboarding() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api<{ profile: { name: string; email?: string; phone?: string; upiId?: string }; onboarded: boolean }>("/api/me")
+    api<{ profile: { name: string; email?: string; phone?: string; upiId?: string }; onboarded: boolean; needsInterests: boolean }>("/api/me")
       .then((me) => {
+        // Asked once: if the name is already saved, move on (to preferences if those are still pending).
+        if (me.onboarded) {
+          router.replace(me.needsInterests ? `/onboarding/interests?next=${encodeURIComponent(next)}` : next);
+          return;
+        }
         setName(me.profile.name ?? "");
         setUpi(me.profile.upiId ?? "");
         setIdentity(me.profile.email ?? me.profile.phone);
       })
       .catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function save() {

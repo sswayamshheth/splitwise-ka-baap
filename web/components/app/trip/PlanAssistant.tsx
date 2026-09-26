@@ -169,7 +169,7 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
           <div className="flex items-center justify-between">
             <span className="font-title-md text-title-md text-on-surface">{proposal.ops.length ? "Proposed changes" : "No changes"}</span>
             <span className={cx("rounded-full px-2 py-0.5 font-label-sm text-label-sm", proposal.source === "ai" ? "bg-tertiary-fixed text-on-tertiary-fixed-variant" : "bg-surface-container text-on-surface-variant")}>
-              {proposal.source === "ai" ? "Claude" : "Built-in planner · no AI key"}
+              {proposal.source === "ai" ? "Claude" : "Built-in planner"}
             </span>
           </div>
           {proposal.summary ? <p className="font-body-md text-body-md text-on-surface-variant">{proposal.summary}</p> : null}

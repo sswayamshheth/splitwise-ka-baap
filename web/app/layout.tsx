@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { FeedbackProvider } from "@/components/app/kit";
 import "./globals.css";
@@ -6,6 +6,13 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "GroupTrip Ledger",
   description: "Group travel app where the itinerary is the ledger",
+  manifest: "/manifest.json",
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
+  appleWebApp: { capable: true, title: "GroupTrip" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1e6f64",
 };
 
 export default function RootLayout({

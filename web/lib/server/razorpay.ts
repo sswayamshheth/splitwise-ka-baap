@@ -29,7 +29,7 @@ export interface PaymentGateway {
 
 export class GatewayUnavailable extends Error {
   constructor(public missing: string[]) {
-    super(`Razorpay is not configured. Add ${missing.join(", ")} to final/web/.env.local`);
+    super("Payments are not set up on this server");
   }
 }
 
@@ -82,45 +82,49 @@ class RazorpayGateway implements PaymentGateway {
 /**
  * DEMO checkout, used only when no Razorpay keys are configured (so the
  * presentation flow still works end to end). It is NOT Razorpay and moves no
- * money: orders and payments live in this server's memory, and "payments" are
- * signed with a per-process secret so the normal verification path — signature
- * check, trusted fetch, amount check, idempotent recognition — runs unchanged.
+ * money. It keeps no server memory, so it works when the create, complete and
+ * verify requests land on different serverless instances: the payment id
+ * carries its order, amount and outcome, and the Checkout-style signature over
+ * "order|payment" (checked before the payment is read) makes it tamper-proof.
+ * The signing key is derived from an existing server secret, so it is stable
+ * across instances without a new environment variable.
  * The UI labels it "Demo checkout (simulated)".
  */
-type DemoStore = { secret: string; orders: Map<string, GatewayOrder>; payments: Map<string, GatewayPayment>; n: number };
-const g = globalThis as unknown as { __gtlDemoPay?: DemoStore };
-function demoStore(): DemoStore {
-  if (!g.__gtlDemoPay) {
+let demoKey: string | undefined;
+function demoSecret(): string {
+  if (demoKey) return demoKey;
+  const base = process.env.SUPABASE_SECRET_KEY || process.env.CLERK_SECRET_KEY;
+  if (base) demoKey = createHmac("sha256", base).update("grouptrip-demo-checkout-v1").digest("hex");
+  else {
+    // Local dev / tests without secrets: per-process key.
     const bytes = new Uint8Array(24);
     crypto.getRandomValues(bytes);
-    g.__gtlDemoPay = { secret: Buffer.from(bytes).toString("hex"), orders: new Map(), payments: new Map(), n: 0 };
+    demoKey = Buffer.from(bytes).toString("hex");
   }
-  return g.__gtlDemoPay;
+  return demoKey;
 }
-const demoSign = (data: string) => createHmac("sha256", demoStore().secret).update(data).digest("hex");
+const demoSign = (data: string) => createHmac("sha256", demoSecret()).update(data).digest("hex");
+const demoNonce = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+// pay_demo_<order nonce>_<payment nonce>_<amount in paise>_<ok|fail>
+const DEMO_PAYMENT = /^pay_demo_([a-z0-9]+)_([a-z0-9]+)_(\d+)_(ok|fail)$/;
 
 export class DemoGateway implements PaymentGateway {
   readonly keyId = "demo_checkout";
   readonly mode = "demo" as const;
   async createOrder(input: { amountPaise: number; currency: string; receipt: string }) {
-    const s = demoStore();
-    const o = { id: `order_demo_${Date.now().toString(36)}${++s.n}`, amount: input.amountPaise, currency: input.currency, status: "created", receipt: input.receipt };
-    s.orders.set(o.id, o);
-    return o;
+    return { id: `order_demo_${demoNonce()}`, amount: input.amountPaise, currency: input.currency, status: "created", receipt: input.receipt };
   }
   async fetchPayment(paymentId: string) {
-    const p = demoStore().payments.get(paymentId);
-    if (!p) throw new Error("Unknown demo payment");
-    return { ...p };
+    const m = DEMO_PAYMENT.exec(paymentId);
+    if (!m) throw new Error("Unknown demo payment");
+    const ok = m[4] === "ok";
+    return { id: paymentId, order_id: `order_demo_${m[1]}`, amount: Number(m[3]), currency: "INR", status: ok ? "captured" : "failed", error_description: ok ? null : "Declined in demo checkout" };
   }
   async capturePayment(paymentId: string) {
-    const p = demoStore().payments.get(paymentId);
-    if (!p) throw new Error("Unknown demo payment");
-    p.status = "captured";
-    return { ...p };
+    return { ...(await this.fetchPayment(paymentId)), status: "captured" };
   }
   async refundPayment(paymentId: string, input: { amountPaise: number }) {
-    return { id: `rfnd_demo_${Date.now().toString(36)}`, payment_id: paymentId, amount: input.amountPaise, status: "processed" };
+    return { id: `rfnd_demo_${demoNonce()}`, payment_id: paymentId, amount: input.amountPaise, status: "processed" };
   }
   verifyPaymentSignature(orderId: string, paymentId: string, signature: string) {
     return demoSign(`${orderId}|${paymentId}`) === signature;
@@ -129,12 +133,10 @@ export class DemoGateway implements PaymentGateway {
     return false; // no webhooks in demo mode
   }
   /** Simulates the customer finishing checkout; returns what Checkout would hand the browser. */
-  complete(orderId: string, outcome: "success" | "fail") {
-    const s = demoStore();
-    const o = s.orders.get(orderId);
-    if (!o) throw new Error("Unknown demo order");
-    const id = `pay_demo_${Date.now().toString(36)}${++s.n}`;
-    s.payments.set(id, { id, order_id: orderId, amount: o.amount, currency: o.currency, status: outcome === "success" ? "captured" : "failed", error_description: outcome === "fail" ? "Declined in demo checkout" : null });
+  complete(orderId: string, amountPaise: number, outcome: "success" | "fail") {
+    const m = /^order_demo_([a-z0-9]+)$/.exec(orderId);
+    if (!m) throw new Error("Unknown demo order");
+    const id = `pay_demo_${m[1]}_${demoNonce()}_${Math.round(amountPaise)}_${outcome === "success" ? "ok" : "fail"}`;
     return { razorpay_order_id: orderId, razorpay_payment_id: id, razorpay_signature: demoSign(`${orderId}|${id}`) };
   }
 }

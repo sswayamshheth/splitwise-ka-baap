@@ -384,4 +384,16 @@ describe("demo checkout (no Razorpay keys)", () => {
     expect((await poolView(TRIP, users.C)).collectedAmountPaise).toBe(2_500_00);
     await expectHttp(completeDemoCheckout(users.A, { contributionId: order.contributionId }), 404); // not your order
   });
+
+  it("needs no server memory: a fresh instance verifies the payment", async () => {
+    const { DemoGateway } = await import("@/lib/server/razorpay");
+    const { completeDemoCheckout } = await import("@/lib/server/payments");
+    setGatewayForTests(new DemoGateway());
+    const order = await createPaymentOrder(users.C, { tripId: TRIP, amountPaise: 1_200_00 });
+    const signed = await completeDemoCheckout(users.C, { contributionId: order.contributionId });
+    setGatewayForTests(new DemoGateway()); // e.g. verify lands on another serverless instance
+    const tampered = signed.razorpay_payment_id.replace("_120000_", "_999900_");
+    await expectHttp(verifyPayment(users.C, { contributionId: order.contributionId, ...signed, razorpay_payment_id: tampered }), 400);
+    expect((await verifyPayment(users.C, { contributionId: order.contributionId, ...signed })).status).toBe("VERIFIED");
+  });
 });

@@ -505,5 +505,5 @@ export async function completeDemoCheckout(userId: string, input: { contribution
   const c = await (await repo()).getContribution(input.contributionId);
   if (!c || c.userId !== userId) throw new HttpError(404, "Contribution not found");
   if (!c.orderId) throw new HttpError(409, "This contribution has no order");
-  return g.complete(c.orderId, input.outcome === "fail" ? "fail" : "success");
+  return g.complete(c.orderId, c.amountPaise, input.outcome === "fail" ? "fail" : "success");
 }

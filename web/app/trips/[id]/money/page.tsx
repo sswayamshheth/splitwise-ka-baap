@@ -172,7 +172,7 @@ export default function MoneyPage() {
         </div>
       ) : null}
 
-      <PoolPayments pool={serverPool} onChanged={() => void reloadPool()} />
+      <PoolPayments pool={serverPool} config={payConfig} onChanged={() => void reloadPool()} />
 
       {/* Member holdings */}
       <section className="px-margin pb-space-sm pt-space-md">

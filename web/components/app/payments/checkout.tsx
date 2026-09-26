@@ -72,7 +72,7 @@ export function useCheckout() {
         if (out.status === "VERIFIED") {
           toast(req.purpose === "vendor" ? `Payment verified by the server · ${formatMoney(order.amountPaise)} to ${req.payee} recorded` : `Contribution verified by the server · ${formatMoney(order.amountPaise)} added to the pool`);
         } else if (out.status === "FAILED") toast("The payment failed — nothing was recorded. You can try again.", "error");
-        else toast("Payment received — waiting for confirmation from Razorpay");
+        else toast(order.mode === "demo" ? "Payment pending — the pool updates once it's confirmed" : "Payment received — waiting for confirmation from Razorpay");
         return { status: out.status };
       } catch (e) {
         toast(e instanceof ApiError ? e.message : "We couldn't verify that payment — nothing was recorded", "error");
@@ -173,7 +173,7 @@ function DemoCheckout({ state, onPay, onFail, onClose }: { state: DemoState; onP
         <div className="flex flex-col gap-space-md p-space-lg">
           <div className="flex items-start gap-2 rounded-xl bg-secondary-fixed/60 px-space-md py-space-sm font-label-md text-label-md text-on-secondary-fixed">
             <Icon name="science" className="mt-0.5 text-[16px]" />
-            <span>Demo checkout — simulated, no money moves. Add Razorpay test keys on the server for real test-mode checkout.</span>
+            <span>Demo checkout — simulated, no money moves.</span>
           </div>
           <div className="text-center">
             <p className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Paying {req.payee}</p>
