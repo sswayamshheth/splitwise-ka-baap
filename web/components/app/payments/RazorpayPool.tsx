@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
+import { useOrganiserId } from "@/components/app/money/PoolSheets";
 import { Face } from "@/components/app/money/parts";
 import { useCheckout } from "./checkout";
+import { UpiPayPanel } from "./UpiQr";
 import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
-import { setPoolTarget } from "@/lib/ledger/pool";
+import { depositToPool, setPoolTarget } from "@/lib/ledger/pool";
 import { formatMoney, parseAmount } from "@/lib/money";
 
 /**
@@ -157,6 +159,31 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
   const remaining = pool?.remainingAmountPaise ?? null;
   const quick = [1_000_00, 5_000_00, ...(remaining && remaining > 0 ? [remaining] : [])];
   const demo = config?.mode === "demo";
+  const { toast } = useFeedback();
+  // The organiser holds the pool: everyone else can pay their share straight to the organiser's UPI.
+  const organiserId = useOrganiserId();
+  const organiser = organiserId ? trip.participant(organiserId) : undefined;
+  const iHoldThePool = organiserId === trip.meId;
+  const upiPossible = !!organiser?.upiId && !iHoldThePool;
+  const [via, setVia] = useState<"upi" | "razorpay">(upiPossible ? "upi" : "razorpay");
+  const [recording, setRecording] = useState(false);
+
+  async function recordUpi(utr: string | undefined) {
+    if (!parsed.paise) return;
+    setRecording(true);
+    try {
+      await trip.run((state, ctx) =>
+        depositToPool(state, { participantId: trip.meId, amountPaise: parsed.paise!, method: "upi", reference: utr ? `UPI UTR ${utr} → ${organiser!.upiId}` : `UPI → ${organiser!.upiId}` }, ctx),
+      );
+      toast(`Added ${formatMoney(parsed.paise)} to the pool`);
+      onDone();
+      onClose();
+    } catch (e) {
+      toast(errorText(e), "error");
+    } finally {
+      setRecording(false);
+    }
+  }
 
   async function pay() {
     if (parsed.paise === undefined || !parsed.paise) return;
@@ -179,6 +206,22 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
         <input className="h-16 w-full bg-transparent font-headline-lg text-headline-lg text-on-surface outline-none" inputMode="decimal" value={text} onChange={(e) => setText(e.target.value)} placeholder="5000" autoFocus />
       </div>
       {parsed.error && text ? <p className="mt-1 font-label-sm text-label-sm text-error">{parsed.error}</p> : null}
+      <div className="mt-space-sm flex gap-2">
+        {(
+          [
+            ["upi", "qr_code_2", "UPI to the pool"],
+            ["razorpay", "credit_card", "Card / netbanking"],
+          ] as const
+        ).map(([id, icon, label]) => (
+          <button
+            key={id}
+            onClick={() => setVia(id)}
+            className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 font-label-md text-label-md transition-colors", via === id ? "bg-primary-container text-on-primary" : "bg-surface-container-low text-on-surface-variant")}
+          >
+            <Icon name={icon} className="text-[18px]" /> {label}
+          </button>
+        ))}
+      </div>
       <div className="mt-space-sm flex flex-wrap gap-2">
         {quick.map((q, i) => (
           <button key={`${q}-${i}`} onClick={() => setText(String(q / 100))} className="rounded-full bg-surface-container px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant">
@@ -186,6 +229,34 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
           </button>
         ))}
       </div>
+      {via === "upi" ? (
+        <div className="mt-space-md">
+          {iHoldThePool ? (
+            <p className="rounded-xl bg-surface-container-low p-space-md font-body-md text-body-md text-on-surface-variant">
+              You hold the pool{organiser?.upiId ? ` (${organiser.upiId})` : ""}, so there&apos;s nothing to send. Everyone else pays their share to your UPI here; record your own cash with &quot;Record it manually&quot;.
+            </p>
+          ) : !organiser?.upiId ? (
+            <p className="rounded-xl bg-surface-container-low p-space-md font-body-md text-body-md text-on-surface-variant">
+              {organiser ? `${organiser.name} hasn't added a UPI ID yet` : "This trip has no organiser"} — use card / netbanking, or ask them to add it in Profile.
+            </p>
+          ) : parsed.paise ? (
+            <UpiPayPanel
+              vpa={organiser.upiId}
+              name={organiser.name}
+              amountPaise={parsed.paise}
+              note={`${trip.state.trip.name} pool`.slice(0, 50)}
+              busy={recording}
+              confirmLabel="I've paid — add to the pool"
+              onConfirm={(utr) => void recordUpi(utr)}
+            />
+          ) : (
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Enter an amount — you&apos;ll pay it to {organiser.name} ({organiser.upiId}), who holds the pool.
+            </p>
+          )}
+        </div>
+      ) : null}
+      {via === "razorpay" ? (
       <button
         disabled={checkout.busy || (config ? !config.enabled : false) || parsed.paise === undefined || !parsed.paise}
         onClick={() => void pay()}
@@ -193,6 +264,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
       >
         <Icon name="lock" /> {checkout.busy ? "Opening checkout…" : `Pay ${parsed.paise ? formatMoney(parsed.paise) : ""}${demo ? " (demo checkout)" : " with Razorpay"}`}
       </button>
+      ) : null}
       <p className="mt-space-sm text-center font-label-sm text-label-sm text-on-surface-variant">
         {demo ? (
           <>Demo checkout — simulated, no money moves. </>
