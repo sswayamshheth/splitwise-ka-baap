@@ -71,7 +71,7 @@ export function ExpenseSheet({ expenseId, onClose }: { expenseId: string; onClos
               {c.refundedPaise > 0 ? <Pill tone="lavender">{formatMoney(c.refundedPaise)} refunded</Pill> : null}
               {e.fundedFromPool ? (
                 <Pill tone="teal" icon="savings">
-                  Trip pool · simulated escrow
+                  Trip pool · held by the organiser
                 </Pill>
               ) : null}
             </div>

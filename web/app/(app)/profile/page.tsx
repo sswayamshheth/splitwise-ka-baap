@@ -382,7 +382,7 @@ export default function ProfilePage() {
       <div className="flex items-start gap-3 rounded-xl bg-tertiary-fixed/60 p-space-md">
         <Icon name="shield" className="text-[20px] text-on-tertiary-fixed-variant" />
         <p className="font-body-md text-body-md text-on-tertiary-fixed">
-          Prototype: the trip pool is a simulated escrow tracked by the ledger. Card payments use Razorpay test mode (or a labelled demo checkout) — no real money moves.
+          Prototype: the trip pool is money held by the organiser and tracked to the rupee by the ledger. Card payments use Razorpay test mode (or a labelled demo checkout) — no real money moves.
         </p>
       </div>
 

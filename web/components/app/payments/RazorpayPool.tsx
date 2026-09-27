@@ -285,7 +285,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
             Razorpay <span className="font-semibold">{config?.mode === "live" ? "live" : "test"} mode</span>.{" "}
           </>
         )}
-        The Trip Pool is a simulated escrow layer: GroupTrip records the contribution only after the server verifies the payment.
+        GroupTrip records the contribution only after the server verifies the payment with Razorpay.
       </p>
       {checkout.element}
       {requesting ? <RequestSheet open onClose={() => setRequesting(false)} purpose="pool" amountPaise={parsed.paise} /> : null}

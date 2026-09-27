@@ -331,7 +331,7 @@ function VendorUpi({ item, amountPaise, onPaid, onContribute }: { item: Itinerar
             itineraryItemId: item.id,
             cancellationPolicy: item.cancellationPolicy,
             capture: { kind: "manual", reference: utr ? `UPI UTR ${utr} · ${item.vendorUpi}` : `UPI · ${item.vendorUpi}` },
-            notes: "Paid via UPI outside the app; recorded in the trip pool (simulated escrow).",
+            notes: "Paid via UPI outside the app; recorded against the trip pool.",
           },
           ctx,
         ),
@@ -380,7 +380,7 @@ function VendorUpi({ item, amountPaise, onPaid, onContribute }: { item: Itinerar
       {!short ? (
         <UpiPayPanel vpa={item.vendorUpi} name={item.vendorUpiName ?? item.vendor ?? "Vendor"} amountPaise={amountPaise} note={`${item.title}`.slice(0, 50)} busy={busy} confirmLabel="Record payment from trip pool" onConfirm={(utr) => void record(utr)} />
       ) : null}
-      <p className="text-center font-label-sm text-label-sm text-on-surface-variant">Paid via UPI outside the app; recorded in the trip pool (simulated escrow). GroupTrip never moves the money itself.</p>
+      <p className="text-center font-label-sm text-label-sm text-on-surface-variant">Paid via UPI outside the app; recorded against the trip pool. GroupTrip never moves the money itself.</p>
     </div>
   );
 }
@@ -444,7 +444,7 @@ function PaySomeone({ onContribute, onPaid }: { onContribute: () => void; onPaid
             participants: who.map((participantId) => ({ participantId, weight: 1 })),
             splitMode: "equal",
             capture: { kind: "manual", reference: utr ? `UPI UTR ${utr} · ${handle}` : `UPI · ${handle}` },
-            notes: `${note.trim() ? `${note.trim()} · ` : ""}Paid via UPI outside the app (${tab === "qr" ? "QR" : tab === "upi" ? "UPI ID" : "phone number"}); recorded in the trip pool (simulated escrow)`,
+            notes: `${note.trim() ? `${note.trim()} · ` : ""}Paid via UPI outside the app (${tab === "qr" ? "QR" : tab === "upi" ? "UPI ID" : "phone number"}); recorded against the trip pool`,
           },
           ctx,
         ),
@@ -557,7 +557,7 @@ function PaySomeone({ onContribute, onPaid }: { onContribute: () => void; onPaid
           <Icon name="qr_code_2" /> {`Pay ${amount > 0 ? formatMoney(amount) : ""} via UPI`}
         </button>
       )}
-      <p className="-mt-2 text-center font-label-sm text-label-sm text-on-surface-variant">You pay in your own UPI app; GroupTrip records it against the trip pool (simulated escrow) and splits it among the people you picked.</p>
+      <p className="-mt-2 text-center font-label-sm text-label-sm text-on-surface-variant">You pay in your own UPI app; GroupTrip records it against the trip pool and splits it among the people you picked.</p>
     </div>
   );
 }
@@ -584,7 +584,7 @@ function ReceiptView({ receipt, onDone }: { receipt: Receipt; onDone: () => void
           </div>
         ))}
       </div>
-      <p className="font-label-sm text-label-sm text-on-surface-variant">Paid in your UPI app; recorded against the trip pool (simulated escrow). The ledger and everyone's balances are updated.</p>
+      <p className="font-label-sm text-label-sm text-on-surface-variant">Paid in your UPI app; recorded against the trip pool. The ledger and everyone's balances are updated.</p>
       <button onClick={onDone} className="flex h-12 w-full items-center justify-center rounded-xl bg-primary-container font-title-md text-title-md text-on-primary">
         Done
       </button>
