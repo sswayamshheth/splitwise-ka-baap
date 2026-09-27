@@ -153,6 +153,8 @@ describe("offline mode answers from the same tools", () => {
     const turn = answerOffline("Book me a table at Thalassa", goa());
     expect(turn.calls).toHaveLength(0);
     expect(turn.text).toMatch(/can't answer that in offline mode/);
+    // The help text's example amounts are not answers, so nothing is flagged as unverified.
+    expect(turn.verification).toEqual({ verified: [], unverified: [] });
   });
 });
 

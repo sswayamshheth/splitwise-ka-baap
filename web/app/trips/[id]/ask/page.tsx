@@ -26,7 +26,7 @@ type Entry = { id: number; role: "user"; text: string } | { id: number; role: "a
 
 const SUGGESTIONS: { q: string; tag: string; icon: string }[] = [
   { q: "Who owes the most?", tag: "Balances", icon: "account_balance_wallet" },
-  { q: "What if Siya leaves today?", tag: "What if", icon: "science" },
+  { q: "What if {member} leaves today?", tag: "What if", icon: "science" },
   { q: "What if the hotel price increases by ₹5,000?", tag: "What if", icon: "price_change" },
   { q: "Can we keep the trip below ₹1,00,000?", tag: "Budget", icon: "savings" },
   { q: "Why do I owe money?", tag: "Explain", icon: "help" },
@@ -76,6 +76,9 @@ export default function AskPage() {
   const claudeReady = health.ok && health.hasKey;
   const closed = trip.state.trip.status === "closed";
   const members = trip.state.participants.filter((p) => !p.leftOn);
+  // Pinned questions name a real member of this trip; the "leaves" one is dropped if nobody else is on it.
+  const someone = members.find((p) => !trip.isMe(p.id))?.name.split(" ")[0];
+  const suggestions = SUGGESTIONS.flatMap((s) => (!s.q.includes("{member}") ? [s] : someone ? [{ ...s, q: s.q.replace("{member}", someone) }] : []));
   const ctx = (): ToolContext => ({ state: trip.state, ledger: trip.ledger, events: trip.events, viewerId: trip.meId, now: Date.now() });
 
   const applyChange = async (entryId: number, data: SimData) => {
@@ -175,7 +178,7 @@ export default function AskPage() {
               <FacePair names={members.slice(0, 3).map((p) => p.name)} size={24} />
             </div>
             <div className="grid grid-cols-2 gap-space-sm">
-              {SUGGESTIONS.map((s, i) => (
+              {suggestions.map((s, i) => (
                 <button
                   key={s.q}
                   onClick={() => void ask(s.q)}
@@ -220,7 +223,7 @@ export default function AskPage() {
           ) : null}
           {entries.length > 0 ? (
             <div className="flex gap-space-sm overflow-x-auto pb-1">
-              {SUGGESTIONS.slice(0, 5).map((s) => (
+              {suggestions.slice(0, 5).map((s) => (
                 <button key={s.q} onClick={() => void ask(s.q)} className="shrink-0 rounded-full bg-surface-container-low px-space-md py-space-xs font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant">
                   {s.q}
                 </button>

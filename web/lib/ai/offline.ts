@@ -188,6 +188,8 @@ export function answerOffline(question: string, ctx: ToolContext): AgentTurn {
     ]);
   } else {
     text = "I can't answer that in offline mode. Try: who owes the most, what if <name> leaves, what if the villa costs ₹5,000 more, why does <name> owe money, how much have we spent on stays, can we keep the trip below ₹1,00,000, which bookings is <name> in, is anything inconsistent, or how do we settle.";
+    // Help text, not an answer: its example amounts aren't figures to verify.
+    return { text, calls, verification: { verified: [], unverified: [] }, stopReason: null };
   }
 
   const verification = verifyAnswer(text, calls.filter((c) => c.result.ok).map((c) => (c.result as { data: unknown }).data));
