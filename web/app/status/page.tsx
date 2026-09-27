@@ -22,7 +22,7 @@ function rows(s: Status): Row[] {
     { label: "Sign-in", value: s.auth === "clerk" ? "Ready" : "Not set up", good: s.auth === "clerk" },
     {
       label: "Assistant",
-      value: s.ai === "nugen" ? "NuGen (figures from the ledger engine)" : s.ai === "claude" ? "Claude (figures from the ledger engine)" : "Rule-based (offline mode)",
+      value: s.ai === "nugen" ? "NuGen (figures from the ledger engine)" : s.ai === "gemini" ? "Gemini — stand-in while NuGen access is waitlisted (figures from the ledger engine)" : s.ai === "claude" ? "Claude (figures from the ledger engine)" : "Rule-based (offline mode)",
       good: true,
     },
     {

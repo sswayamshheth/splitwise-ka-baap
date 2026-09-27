@@ -52,13 +52,13 @@ export class ProxyError extends Error {
   }
 }
 
-export async function proxyHealth(signal?: AbortSignal): Promise<{ ok: boolean; hasKey: boolean; nugen: boolean; model?: string }> {
+export async function proxyHealth(signal?: AbortSignal): Promise<{ ok: boolean; hasKey: boolean; nugen: boolean; aiName?: string; model?: string }> {
   try {
     const res = await fetch(HEALTH_URL, { signal });
     if (!res.ok) return { ok: false, hasKey: false, nugen: false };
-    const body = (await res.json()) as { ok?: boolean; ai?: string; hasKey?: boolean; model?: string };
-    // hasKey = Claude drives the tools itself; nugen = the rule-based answers are reworded by NuGen.
-    return { ok: !!body.ok, hasKey: body.ai === "claude" || !!body.hasKey, nugen: body.ai === "nugen", model: body.model };
+    const body = (await res.json()) as { ok?: boolean; ai?: string; aiName?: string; hasKey?: boolean; model?: string };
+    // hasKey = Claude drives the tools itself; nugen = the rule-based answers are reworded by a model (NuGen, or the Gemini stand-in).
+    return { ok: !!body.ok, hasKey: body.ai === "claude" || !!body.hasKey, nugen: body.ai === "nugen" || body.ai === "gemini", aiName: body.aiName, model: body.model };
   } catch {
     return { ok: false, hasKey: false, nugen: false };
   }

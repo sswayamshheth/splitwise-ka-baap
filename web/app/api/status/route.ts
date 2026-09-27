@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { chainConfigured } from "@/lib/server/chain";
 import { gatewayStatus } from "@/lib/server/razorpay";
-import { nugenConfigured } from "@/lib/server/nugen";
+import { aiName, aiProvider } from "@/lib/server/nugen";
 import { repo } from "@/lib/server/repo";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,8 @@ export async function GET() {
     database,
     payments: gatewayStatus().mode ?? "off",
     auth: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? "clerk" : "missing",
-    ai: nugenConfigured() ? "nugen" : process.env.ANTHROPIC_API_KEY ? "claude" : "offline",
+    ai: aiProvider() ?? (process.env.ANTHROPIC_API_KEY ? "claude" : "offline"),
+    aiName: aiProvider() ? aiName() : undefined,
     chain: chainConfigured(),
   });
 }

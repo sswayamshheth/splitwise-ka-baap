@@ -224,7 +224,7 @@ export function DayAlternatives({
       ) : null}
       {day.packing.length ? <span className="font-body-md text-body-md text-on-surface-variant">Pack: {day.packing.join(", ")}.</span> : null}
       <Notice tone="teal" icon="info">
-        Suggestions only — nothing in the plan changes unless you choose it.{worded ? " Some wording by NuGen; the alerts themselves are decided by the forecast rules." : ""}
+        Suggestions only — nothing in the plan changes unless you choose it.{worded ? " Some wording by the AI model; the alerts themselves are decided by the forecast rules." : ""}
       </Notice>
     </div>
   );

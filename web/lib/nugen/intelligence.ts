@@ -42,7 +42,7 @@ export const SYSTEM_PROMPT = [
   "Rules: reply with ONE JSON object and nothing else. Use only ids that appear in the input. Never invent prices, refunds, balances, ratings or reviews — money is computed by the ledger engine, not by you.",
 ].join(" ");
 
-async function run<T>(task: Task, cfg: NugenConfig | null, user: string, validate: (raw: unknown) => Validated<T>, maxTokens = 600, timeoutMs = 25_000): Promise<{ value: T | null; meta: Omit<InferenceMeta, "inputs"> }> {
+async function run<T>(task: Task, cfg: NugenConfig | null, user: string | ChatMessage["content"], validate: (raw: unknown) => Validated<T>, maxTokens = 600, timeoutMs = 25_000): Promise<{ value: T | null; meta: Omit<InferenceMeta, "inputs"> }> {
   if (!cfg) return { value: null, meta: { task, engine: "deterministic", fallbackReason: "NUGEN_API_KEY not configured" } };
   if (timeoutMs < 3_000) return { value: null, meta: { task, engine: "deterministic", model: cfg.model, aligned: cfg.aligned, fallbackReason: "Not enough time left in this request for a model call" } };
   const messages: ChatMessage[] = [
@@ -139,7 +139,15 @@ export async function planWithNugen(state: TripState, instruction: string, cfg =
     "itinerary",
     cfg,
     user,
-    (raw): Validated<PlanProposal> => {
+    planValidator(state),
+    900,
+  );
+  return { proposal: r.value, meta: { ...r.meta, inputs: ["Trip & dates", "Budget", "Member preferences", "Existing itinerary & bookings", "Instruction"] } };
+}
+
+/** Turns a model's {summary, ops[]} into validated plan ops (dates inside the trip, paid items untouched). */
+function planValidator(state: TripState) {
+  return (raw: unknown): Validated<PlanProposal> => {
       const o = raw as { summary?: unknown; ops?: Record<string, unknown>[] };
       if (!Array.isArray(o?.ops)) return { ok: false, error: "Expected ops[]" };
       const ops: PlanOp[] = o.ops.flatMap((x): PlanOp[] => {
@@ -152,8 +160,37 @@ export async function planWithNugen(state: TripState, instruction: string, cfg =
       const valid = validateOps(state, ops);
       if (!valid.length && o.ops.length) return { ok: false, error: "No op survived validation against the trip" };
       return { ok: true, value: { ops: valid, summary: typeof o.summary === "string" ? o.summary : "", understood: true }, repaired: valid.length < o.ops.length ? [`${o.ops.length - valid.length} unsafe op(s) dropped`] : [] };
-    },
-    900,
-  );
-  return { proposal: r.value, meta: { ...r.meta, inputs: ["Trip & dates", "Budget", "Member preferences", "Existing itinerary & bookings", "Instruction"] } };
+    };
+}
+
+// ---------------------------------------------------------------- A · import an uploaded itinerary
+
+export type ItineraryDoc = { text?: string; image?: { mediaType: string; data: string }; name?: string };
+
+/**
+ * Reads an uploaded itinerary (PDF/text already turned into text in the browser, or a photo the model reads)
+ * and proposes it as plan items on the trip's own days. Proposal only — the user reviews and applies.
+ */
+export async function importItineraryDoc(state: TripState, doc: ItineraryDoc, cfg = nugenConfig()): Promise<{ proposal: PlanProposal | null; meta: InferenceMeta }> {
+  const inputs = [doc.image ? "Uploaded photo" : "Uploaded document text", "Trip dates", "Current itinerary"];
+  if (doc.image && cfg?.provider !== "gemini") {
+    return { proposal: null, meta: { task: "itinerary", engine: "deterministic", fallbackReason: cfg ? "This model can't read photos" : "No AI model configured to read photos", inputs } };
+  }
+  const plan = state.itinerary.filter((i) => i.status !== "cancelled").map((i) => ({ title: i.title, date: i.date, category: i.category }));
+  const prompt = [
+    "TASK: itinerary import. Read the uploaded itinerary and turn every bookable or plannable item (stays, transport, activities, meals with a cost, tours) into plan items for THIS trip.",
+    `Map dates onto the trip: it runs ${state.trip.startDate} to ${state.trip.endDate}. If the document says "Day N", Day 1 is ${state.trip.startDate}. Every date must be inside the trip.`,
+    "Skip items already in the current itinerary. estimateRupees = total for the whole group in INR; use 0 when the document gives no price (never guess a price).",
+    `Schema: {"summary":"one line on what you read","ops":[{"op":"add","title":"...","category":one of ${JSON.stringify(EXPENSE_CATEGORIES)},"date":"YYYY-MM-DD","estimateRupees":number,"reason":"the source line"}]}`,
+    `CURRENT ITINERARY: ${JSON.stringify(plan)}`,
+    doc.text ? `DOCUMENT (${doc.name ?? "upload"}):\n${doc.text.slice(0, 15_000)}` : `DOCUMENT: the attached photo (${doc.name ?? "photo"}).`,
+  ].join("\n");
+  const content: ChatMessage["content"] = doc.image
+    ? [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: `data:${doc.image.mediaType};base64,${doc.image.data}` } },
+      ]
+    : prompt;
+  const r = await run("itinerary", cfg, content, planValidator(state), 1500, 40_000);
+  return { proposal: r.value, meta: { ...r.meta, inputs } };
 }

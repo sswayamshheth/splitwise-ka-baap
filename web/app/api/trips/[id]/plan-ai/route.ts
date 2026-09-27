@@ -5,7 +5,9 @@ export const dynamic = "force-dynamic";
 import { extractCommand } from "@/lib/ai/nugenGuards";
 import { planOffline, validateOps, type PlanOp } from "@/lib/itinerary/planner";
 import { nugenConfig, providerLabel } from "@/lib/nugen/client";
-import { planWithNugen } from "@/lib/nugen/intelligence";
+import { importItineraryDoc, planWithNugen } from "@/lib/nugen/intelligence";
+import { parseItineraryText } from "@/lib/itinerary/parse";
+import { addDaysIso } from "@/lib/dates";
 import { reduceEvents } from "@/lib/ledger/reduce";
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "@/lib/ledger/types";
 import { nugenConfigured, nugenTry } from "@/lib/server/nugen";
@@ -58,7 +60,33 @@ export const POST = route(async (req: Request, { params }: { params: { id: strin
   const state = reduceEvents(events);
   if (!state) throw new HttpError(500, "Trip ledger is unreadable");
   if (state.trip.status === "closed") throw new HttpError(409, "This trip is closed");
-  const body = (await req.json().catch(() => ({}))) as { instruction?: string };
+  const body = (await req.json().catch(() => ({}))) as { instruction?: string; document?: { name?: string; text?: string; image?: { mediaType?: string; data?: string } } };
+
+  // An uploaded itinerary (PDF / text read in the browser, or a photo): the AI maps it onto the trip's days.
+  if (body.document) {
+    const d = body.document;
+    const text = typeof d.text === "string" ? d.text.slice(0, 20_000) : undefined;
+    const img = d.image && typeof d.image.data === "string" && /^image\/(png|jpe?g|webp|heic|heif)$/.test(d.image.mediaType ?? "") ? { mediaType: d.image.mediaType!, data: d.image.data } : undefined;
+    if (img && img.data.length > 6_000_000) throw new HttpError(413, "That photo is too large — try a smaller one (under ~4 MB)");
+    if (!text?.trim() && !img) throw new HttpError(400, "Couldn't read anything from that file");
+    const name = typeof d.name === "string" ? d.name.slice(0, 80) : undefined;
+    const gti = nugenConfig();
+    if (gti) {
+      const r = await importItineraryDoc(state, { text, image: img, name }, gti);
+      if (r.proposal && r.proposal.ops.length) return NextResponse.json({ ...r.proposal, source: "ai", model: providerLabel(gti) });
+    }
+    if (!text) throw new HttpError(503, "Reading a photo needs the AI model, which isn't available right now — upload a PDF or text file instead");
+    // Built-in parser fallback for text: "Day N" lines land on the trip's own days.
+    const parsed = parseItineraryText(text);
+    const ops: PlanOp[] = parsed.items.map((it) => ({
+      op: "add" as const,
+      item: { title: it.title, category: it.category, date: it.day ? addDaysIso(state.trip.startDate, it.day - 1) : (it.date ?? state.trip.startDate), vendor: it.vendor, estimatedPaise: it.estimatedPaise },
+      reason: it.evidence,
+    }));
+    const valid = validateOps(state, ops);
+    return NextResponse.json({ ops: valid, summary: valid.length ? `Read ${valid.length} item${valid.length === 1 ? "" : "s"} from ${name ?? "the file"} with the built-in parser` : "Couldn't find plan items in that file", understood: valid.length > 0, source: "builtin" });
+  }
+
   const instruction = (body.instruction ?? "").trim().slice(0, 600);
   if (!instruction) throw new HttpError(400, "Tell the planner what you want");
 

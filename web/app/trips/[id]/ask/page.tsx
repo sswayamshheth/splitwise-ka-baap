@@ -56,7 +56,7 @@ export default function AskPage() {
   const trip = useTrip();
   const router = useRouter();
   const { confirm, toast } = useFeedback();
-  const [health, setHealth] = useState<{ checked: boolean; ok: boolean; hasKey: boolean; nugen: boolean }>({ checked: false, ok: false, hasKey: false, nugen: false });
+  const [health, setHealth] = useState<{ checked: boolean; ok: boolean; hasKey: boolean; nugen: boolean; aiName?: string }>({ checked: false, ok: false, hasKey: false, nugen: false });
   const [mode, setMode] = useState<Mode>("offline");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [input, setInput] = useState("");
@@ -68,7 +68,7 @@ export default function AskPage() {
   useEffect(() => {
     const controller = new AbortController();
     void proxyHealth(controller.signal).then((h) => {
-      setHealth({ checked: true, ok: h.ok, hasKey: h.hasKey, nugen: h.nugen });
+      setHealth({ checked: true, ok: h.ok, hasKey: h.hasKey, nugen: h.nugen, aiName: h.aiName });
       if (h.ok && h.hasKey) setMode("claude");
     });
     return () => controller.abort();
@@ -147,9 +147,9 @@ export default function AskPage() {
               <Icon name={mode === "claude" || health.nugen ? "auto_awesome" : "rule"} className="text-[22px]" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-title-lg text-title-lg text-on-surface">{!health.checked ? "Checking the assistant…" : mode === "claude" ? "Claude · reads through ledger tools" : health.nugen ? "NuGen · answers from ledger tools" : "Offline mode · rule-based"}</p>
+              <p className="font-title-lg text-title-lg text-on-surface">{!health.checked ? "Checking the assistant…" : mode === "claude" ? "Claude · reads through ledger tools" : health.nugen ? `${health.aiName ?? "NuGen"} · answers from ledger tools` : "Offline mode · rule-based"}</p>
               <p className="font-label-md text-label-md text-on-surface-variant">
-                {claudeReady ? "Can read and simulate; only Apply (with confirmation) writes." : health.nugen ? "Every figure comes from the ledger engine; NuGen only words the answer." : "Answers come from fixed templates over the same ledger tools."}
+                {claudeReady ? "Can read and simulate; only Apply (with confirmation) writes." : health.nugen ? `Every figure comes from the ledger engine; ${health.aiName ?? "NuGen"} only words the answer.` : "Answers come from fixed templates over the same ledger tools."}
               </p>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function AskPage() {
                 <Face name={trip.fullName(trip.meId)} size={32} />
               </div>
             ) : (
-              <AnswerCard
+              <AnswerCard aiName={health.aiName}
                 key={e.id}
                 entry={e}
                 closed={closed}
@@ -269,7 +269,7 @@ export default function AskPage() {
   );
 }
 
-function AnswerCard({ entry, closed, onOpenSimulator, onApply }: { entry: Extract<Entry, { role: "assistant" }>; closed: boolean; onOpenSimulator: (c: Change) => void; onApply: (d: SimData) => Promise<void> }) {
+function AnswerCard({ entry, closed, onOpenSimulator, onApply, aiName }: { entry: Extract<Entry, { role: "assistant" }>; closed: boolean; onOpenSimulator: (c: Change) => void; onApply: (d: SimData) => Promise<void>; aiName?: string }) {
   const { turn } = entry;
   const [applying, setApplying] = useState(false);
   const unverified = new Set(turn.verification.unverified);
@@ -287,7 +287,7 @@ function AnswerCard({ entry, closed, onOpenSimulator, onApply }: { entry: Extrac
             )}
           >
             <Icon name={entry.mode !== "offline" ? "auto_awesome" : "rule"} className="text-[13px]" />
-            {entry.mode === "claude" ? `Claude${turn.model ? ` · ${turn.model}` : ""}` : entry.mode === "nugen" ? "Worded by NuGen · figures from the ledger engine" : "Offline — rule-based, no LLM"}
+            {entry.mode === "claude" ? `Claude${turn.model ? ` · ${turn.model}` : ""}` : entry.mode === "nugen" ? `Worded by ${aiName ?? "NuGen"} · figures from the ledger engine` : "Offline — rule-based, no LLM"}
           </span>
           {total > 0 ? (
             unverified.size === 0 ? (

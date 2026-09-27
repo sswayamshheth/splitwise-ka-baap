@@ -6,6 +6,7 @@ import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
 import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate } from "@/lib/dates";
+import { extractPdfText, looksLikePdf } from "@/lib/itinerary/pdf-text";
 import type { PlanOp } from "@/lib/itinerary/planner";
 import { addItineraryItem, removeItineraryItem, updateItineraryItem } from "@/lib/ledger/commands";
 import { applyEvent } from "@/lib/ledger/reduce";
@@ -52,6 +53,38 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
     setProposal(null);
     try {
       const res = await api<Proposal>(`/api/trips/${trip.tripId}/plan-ai`, { body: { instruction } });
+      setProposal(res);
+      setPicked(new Set(res.ops.map((_, i) => i)));
+    } catch (e) {
+      toast(errorText(e), "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Upload an itinerary: PDFs and text files are read here in the browser; photos go to the AI model to read. */
+  async function upload(file: File) {
+    setBusy(true);
+    setProposal(null);
+    setText(`📎 ${file.name}`);
+    try {
+      let document: { name: string; text?: string; image?: { mediaType: string; data: string } };
+      if (file.type.startsWith("image/")) {
+        if (file.size > 4_500_000) throw new Error("That photo is too large — try one under ~4 MB");
+        const data = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(String(r.result).split(",")[1] ?? "");
+          r.onerror = () => reject(new Error("Couldn't read that photo"));
+          r.readAsDataURL(file);
+        });
+        document = { name: file.name, image: { mediaType: file.type === "image/jpg" ? "image/jpeg" : file.type, data } };
+      } else {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const text = looksLikePdf(bytes) ? extractPdfText(bytes) : new TextDecoder().decode(bytes);
+        if (!text.trim()) throw new Error("No text found in that file — if it's a scanned PDF, upload a photo of it instead");
+        document = { name: file.name, text: text.slice(0, 20_000) };
+      }
+      const res = await api<Proposal>(`/api/trips/${trip.tripId}/plan-ai`, { body: { document } });
       setProposal(res);
       setPicked(new Set(res.ops.map((_, i) => i)));
     } catch (e) {
@@ -154,6 +187,19 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
           <Icon name={busy ? "hourglass_top" : "arrow_upward"} />
         </button>
       </div>
+      <label className={cx("mt-space-sm flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-outline-variant px-space-md py-2.5 font-label-md text-label-md text-primary hover:bg-surface-container-low", busy && "pointer-events-none opacity-40")}>
+        <Icon name="upload_file" className="text-[20px]" /> Upload an itinerary — PDF, photo or text file
+        <input
+          type="file"
+          accept=".pdf,.txt,.md,text/plain,application/pdf,image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void upload(f);
+            e.target.value = "";
+          }}
+        />
+      </label>
       <div className="mt-space-sm flex flex-wrap gap-2">
         {SUGGESTIONS.map((s) => (
           <button key={s} disabled={busy} onClick={() => void ask(s)} className="rounded-full bg-surface-container px-3 py-1.5 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant disabled:opacity-40">
@@ -172,7 +218,7 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
               {proposal.source === "ai" ? (proposal.model ?? "Claude") : "Built-in planner"}
             </span>
           </div>
-          {proposal.readAs ? <p className="font-label-md text-label-md text-on-surface-variant">Read as “{proposal.readAs}” (suggested by NuGen)</p> : null}
+          {proposal.readAs ? <p className="font-label-md text-label-md text-on-surface-variant">Read as “{proposal.readAs}” (suggested by the AI model)</p> : null}
           {proposal.summary ? <p className="font-body-md text-body-md text-on-surface-variant">{proposal.summary}</p> : null}
           {proposal.ops.map((op, i) => {
             const on = picked.has(i);

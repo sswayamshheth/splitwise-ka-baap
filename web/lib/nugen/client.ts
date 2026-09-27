@@ -45,7 +45,9 @@ export function nugenConfig(env: Record<string, string | undefined> = process.en
 export const providerLabel = (cfg: Pick<NugenConfig, "provider" | "model" | "aligned">) =>
   cfg.provider === "gemini" ? `Gemini ${cfg.model} (stand-in — Nugen access waitlisted)` : `Nugen ${cfg.model}${cfg.aligned ? " (aligned)" : " (base)"}`;
 
-export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+export type ContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+/** Text for every provider; image parts only for the Gemini stand-in (vision). */
+export type ChatMessage = { role: "system" | "user" | "assistant"; content: string | ContentPart[] };
 export type ChatResult = { text: string; model: string; confidenceScore: number | null; latencyMs: number; usage?: unknown };
 
 export class NugenError extends Error {
