@@ -6,6 +6,9 @@ import { useMemo, useState } from "react";
 import { Button, Card, Chip, cx, Empty, Field, Icon, inputCls, Label, Notice, Sheet, useFeedback } from "@/components/app/kit";
 import { CATEGORY_ICON, PortraitStack, TimelinePin } from "@/components/app/trip/common";
 import { PlanAssistantCard, PlanAssistantSheet } from "@/components/app/trip/PlanAssistant";
+import { DayAlternatives, DayWeatherStrip, ItemWeatherBadge, PlanWeather } from "@/components/app/trip/weather/PlanWeather";
+import { useTripWeather } from "@/components/app/trip/weather/useTripWeather";
+import { useWeatherNotes } from "@/components/app/trip/weather/useWeatherNotes";
 import { WeatherIntel } from "@/components/app/twin/WeatherIntel";
 import { categoryPhoto } from "@/lib/covers";
 import { errorText, useTrip } from "@/lib/client/trip";
@@ -68,6 +71,35 @@ export default function PlanPage() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [assistant, setAssistant] = useState(false);
   const closed = state.trip.status === "closed";
+
+  // Map & weather: code-decided alerts per day; suggestions only, applied by the user.
+  const weatherItems = useMemo(
+    () => state.itinerary.map((i) => ({ id: i.id, title: i.title, category: i.category, date: i.date, location: i.location, vendor: i.vendor, status: i.status })),
+    [state.itinerary],
+  );
+  const w = useTripWeather({ tripId: trip.tripId, destination: state.trip.destination, startDate: state.trip.startDate, endDate: state.trip.endDate, items: weatherItems });
+  const weatherNotes = useWeatherNotes(w.weather);
+  const dayWeather = (date: string) => (w.weather?.status === "ok" ? w.weather.days.find((d) => d.date === date) : undefined);
+  const itemRisk = (id: string) => (w.weather?.status === "ok" ? w.weather.itemRisk[id] : undefined);
+  const canMove = (id: string) => {
+    const it = state.itinerary.find((i) => i.id === id);
+    return !!it && !closed && it.status === "planned" && it.expenseIds.length === 0 && !it.endDate;
+  };
+  async function moveItem(itemId: string, date: string) {
+    const item = state.itinerary.find((i) => i.id === itemId);
+    if (!item) return;
+    const ok = await confirm({ title: `Move "${item.title}" to ${formatDate(date)}?`, message: "Only the date changes — everyone on it stays on it.", confirm: "Move" });
+    if (!ok) return;
+    try {
+      await trip.run((s, ctx) => {
+        const current = s.itinerary.find((i) => i.id === itemId)!;
+        return updateItineraryItem(s, itemId, { ...inputOf(current), date }, ctx);
+      });
+      toast(`Moved to ${formatDate(date)}`);
+    } catch (e) {
+      toast(errorText(e), "error");
+    }
+  }
 
   const days = useMemo(() => {
     const sorted = [...state.itinerary].sort((a, b) => (a.date + (a.time ?? "")).localeCompare(b.date + (b.time ?? "")));
@@ -208,6 +240,8 @@ export default function PlanPage() {
         ) : null}
       </div>
 
+      <PlanWeather w={w} itemTitle={(id) => state.itinerary.find((i) => i.id === id)?.title ?? "Plan item"} />
+
       {days.length === 0 ? (
         <div className="px-margin pt-space-lg">
           <Empty icon="event_note" title="Nothing planned yet" message="Add stays, travel and activities — the budget and everyone's share follow from the plan." action={<Button small icon="add" onClick={() => setSheet({ mode: "add" })}>Add the first item</Button>} />
@@ -224,6 +258,7 @@ export default function PlanPage() {
               {items.length} milestone{items.length === 1 ? "" : "s"}
             </span>
           </div>
+          <DayWeatherStrip day={dayWeather(date)} />
           {/* editorial timeline */}
           <div className="relative">
             <div className="absolute bottom-8 left-[11px] top-6 w-[2px] rounded-full bg-surface-container-highest" />
@@ -318,6 +353,7 @@ export default function PlanPage() {
                         </div>
                         <div className="flex flex-col gap-space-xs p-space-md">
                           <h3 className="min-w-0 break-words font-headline-sm text-headline-sm text-on-surface">{item.title}</h3>
+                          <ItemWeatherBadge risk={itemRisk(item.id)} />
                           {b?.nights ? (
                             <span className="font-body-md text-body-md text-on-surface-variant">
                               {b.nights} night{b.nights === 1 ? "" : "s"} · {formatMoney(amount)} total
@@ -341,6 +377,7 @@ export default function PlanPage() {
                             {perHead ? <span className="font-label-sm text-label-sm text-on-surface-variant">/p</span> : null}
                           </span>
                         </div>
+                        <ItemWeatherBadge risk={itemRisk(item.id)} />
                         {item.endDate ? (
                           <span className="font-body-md text-body-md text-on-surface-variant">
                             until {formatDate(item.endDate)}
@@ -355,6 +392,7 @@ export default function PlanPage() {
               })}
             </div>
           </div>
+          <DayAlternatives day={dayWeather(date)} canMove={canMove} onMove={(id, d) => void moveItem(id, d)} explanations={weatherNotes.notes} order={weatherNotes.order[date]} />
         </section>
       ))}
 

@@ -7,7 +7,7 @@ import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
 import { UpiPayPanel } from "@/components/app/payments/UpiQr";
 import { useCheckout } from "@/components/app/payments/checkout";
 import { RequestSheet } from "@/components/app/payments/PaymentRequest";
-import { usePaymentConfig } from "@/components/app/payments/paymentConfig";
+import { usePaymentConfig, useRealUpiAllowed } from "@/components/app/payments/paymentConfig";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatRelative } from "@/lib/dates";
 import { cancelSettlement, confirmSettlement, initiateSettlement, upiIntentUrl } from "@/lib/ledger/commands";
@@ -361,6 +361,8 @@ function TransferRow({ from, to, amount, sub, footer, muted }: { from: string; t
 
 /** My own UPI QR for the exact amount someone owes me — they scan it with any UPI app; real money, bank to bank. */
 function ReceiveQr({ vpa, name, payer, amountPaise, note, busy, onReceived }: { vpa?: string; name: string; payer: string; amountPaise: number; note: string; busy: boolean; onReceived: () => void }) {
+  // A real payment: like UpiPayPanel, it renders nothing while payments run in demo mode.
+  const allowed = useRealUpiAllowed();
   const [img, setImg] = useState<string | null>(null);
   const url = vpa ? upiIntentUrl({ vpa, name, amountPaise, note }) : null;
   useEffect(() => {
@@ -373,6 +375,7 @@ function ReceiveQr({ vpa, name, payer, amountPaise, note, busy, onReceived }: { 
       alive = false;
     };
   }, [url]);
+  if (!allowed) return null;
   if (!vpa) {
     return <p className="font-body-md text-body-md text-on-surface-variant">Add your UPI ID in Profile first — this QR pays straight into it.</p>;
   }

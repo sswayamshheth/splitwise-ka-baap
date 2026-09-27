@@ -7,6 +7,7 @@ import { cx, Icon, useFeedback } from "@/components/app/kit";
 import { Face, FacePair } from "@/components/app/money/parts";
 import { askClaude, proxyHealth, type AgentState, type AgentTurn, type ToolCallRecord } from "@/lib/ai/agent";
 import { answerOffline } from "@/lib/ai/offline";
+import { phraseTurn } from "@/lib/ai/phrase";
 import type { ToolContext } from "@/lib/ai/tools";
 import { extractAmounts } from "@/lib/ai/verify";
 import { errorText, useTrip } from "@/lib/client/trip";
@@ -21,12 +22,12 @@ import { buildChangeEvents, type Change } from "@/lib/ledger/simulate";
  * button (with confirmation) writes anything.
  */
 
-type Mode = "claude" | "offline";
+type Mode = "claude" | "offline" | "nugen";
 type Entry = { id: number; role: "user"; text: string } | { id: number; role: "assistant"; mode: Mode; turn: AgentTurn; notice?: string; applied?: number };
 
 const SUGGESTIONS: { q: string; tag: string; icon: string }[] = [
   { q: "Who owes the most?", tag: "Balances", icon: "account_balance_wallet" },
-  { q: "What if Siya leaves today?", tag: "What if", icon: "science" },
+  { q: "What if {member} leaves today?", tag: "What if", icon: "science" },
   { q: "What if the hotel price increases by ₹5,000?", tag: "What if", icon: "price_change" },
   { q: "Can we keep the trip below ₹1,00,000?", tag: "Budget", icon: "savings" },
   { q: "Why do I owe money?", tag: "Explain", icon: "help" },
@@ -55,7 +56,7 @@ export default function AskPage() {
   const trip = useTrip();
   const router = useRouter();
   const { confirm, toast } = useFeedback();
-  const [health, setHealth] = useState<{ checked: boolean; ok: boolean; hasKey: boolean }>({ checked: false, ok: false, hasKey: false });
+  const [health, setHealth] = useState<{ checked: boolean; ok: boolean; hasKey: boolean; nugen: boolean }>({ checked: false, ok: false, hasKey: false, nugen: false });
   const [mode, setMode] = useState<Mode>("offline");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [input, setInput] = useState("");
@@ -67,7 +68,7 @@ export default function AskPage() {
   useEffect(() => {
     const controller = new AbortController();
     void proxyHealth(controller.signal).then((h) => {
-      setHealth({ checked: true, ok: h.ok, hasKey: h.hasKey });
+      setHealth({ checked: true, ok: h.ok, hasKey: h.hasKey, nugen: h.nugen });
       if (h.ok && h.hasKey) setMode("claude");
     });
     return () => controller.abort();
@@ -76,6 +77,9 @@ export default function AskPage() {
   const claudeReady = health.ok && health.hasKey;
   const closed = trip.state.trip.status === "closed";
   const members = trip.state.participants.filter((p) => !p.leftOn);
+  // Pinned questions name a real member of this trip; the "leaves" one is dropped if nobody else is on it.
+  const someone = members.find((p) => !trip.isMe(p.id))?.name.split(" ")[0];
+  const suggestions = SUGGESTIONS.flatMap((s) => (!s.q.includes("{member}") ? [s] : someone ? [{ ...s, q: s.q.replace("{member}", someone) }] : []));
   const ctx = (): ToolContext => ({ state: trip.state, ledger: trip.ledger, events: trip.events, viewerId: trip.meId, now: Date.now() });
 
   const applyChange = async (entryId: number, data: SimData) => {
@@ -114,7 +118,10 @@ export default function AskPage() {
         entry = { id: nextId.current++, role: "assistant", mode: "offline", turn: answerOffline(q, ctx()), notice: `Claude unavailable (${reason}) — answered in offline mode.` };
       }
     } else {
-      entry = { id: nextId.current++, role: "assistant", mode: "offline", turn: answerOffline(q, ctx()) };
+      const offline = answerOffline(q, ctx());
+      // With NuGen on, the engine's answer may be reworded; figures are re-checked and the original kept on any doubt.
+      const r = health.nugen ? await phraseTurn(q, offline) : { turn: offline, phrased: false };
+      entry = { id: nextId.current++, role: "assistant", mode: r.phrased ? "nugen" : "offline", turn: r.turn };
     }
     setEntries((e) => [...e, entry]);
     setBusy(false);
@@ -137,12 +144,12 @@ export default function AskPage() {
         <div className="mt-space-md flex flex-col gap-space-sm rounded-2xl bg-surface-container-low p-space-md">
           <div className="flex items-center gap-space-sm">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary">
-              <Icon name={mode === "claude" ? "auto_awesome" : "rule"} className="text-[22px]" />
+              <Icon name={mode === "claude" || health.nugen ? "auto_awesome" : "rule"} className="text-[22px]" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-title-lg text-title-lg text-on-surface">{!health.checked ? "Checking the assistant…" : mode === "claude" ? "Claude · reads through ledger tools" : "Offline mode · rule-based"}</p>
+              <p className="font-title-lg text-title-lg text-on-surface">{!health.checked ? "Checking the assistant…" : mode === "claude" ? "Claude · reads through ledger tools" : health.nugen ? "NuGen · answers from ledger tools" : "Offline mode · rule-based"}</p>
               <p className="font-label-md text-label-md text-on-surface-variant">
-                {claudeReady ? "Can read and simulate; only Apply (with confirmation) writes." : "Answers come from fixed templates over the same ledger tools."}
+                {claudeReady ? "Can read and simulate; only Apply (with confirmation) writes." : health.nugen ? "Every figure comes from the ledger engine; NuGen only words the answer." : "Answers come from fixed templates over the same ledger tools."}
               </p>
             </div>
           </div>
@@ -175,7 +182,7 @@ export default function AskPage() {
               <FacePair names={members.slice(0, 3).map((p) => p.name)} size={24} />
             </div>
             <div className="grid grid-cols-2 gap-space-sm">
-              {SUGGESTIONS.map((s, i) => (
+              {suggestions.map((s, i) => (
                 <button
                   key={s.q}
                   onClick={() => void ask(s.q)}
@@ -220,7 +227,7 @@ export default function AskPage() {
           ) : null}
           {entries.length > 0 ? (
             <div className="flex gap-space-sm overflow-x-auto pb-1">
-              {SUGGESTIONS.slice(0, 5).map((s) => (
+              {suggestions.slice(0, 5).map((s) => (
                 <button key={s.q} onClick={() => void ask(s.q)} className="shrink-0 rounded-full bg-surface-container-low px-space-md py-space-xs font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant">
                   {s.q}
                 </button>
@@ -276,11 +283,11 @@ function AnswerCard({ entry, closed, onOpenSimulator, onApply }: { entry: Extrac
           <span
             className={cx(
               "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-label-sm text-label-sm",
-              entry.mode === "claude" ? "bg-tertiary-fixed text-on-tertiary-fixed-variant" : "bg-surface-container text-on-surface-variant",
+              entry.mode !== "offline" ? "bg-tertiary-fixed text-on-tertiary-fixed-variant" : "bg-surface-container text-on-surface-variant",
             )}
           >
-            <Icon name={entry.mode === "claude" ? "auto_awesome" : "rule"} className="text-[13px]" />
-            {entry.mode === "claude" ? `Claude${turn.model ? ` · ${turn.model}` : ""}` : "Offline — rule-based, no LLM"}
+            <Icon name={entry.mode !== "offline" ? "auto_awesome" : "rule"} className="text-[13px]" />
+            {entry.mode === "claude" ? `Claude${turn.model ? ` · ${turn.model}` : ""}` : entry.mode === "nugen" ? "Worded by NuGen · figures from the ledger engine" : "Offline — rule-based, no LLM"}
           </span>
           {total > 0 ? (
             unverified.size === 0 ? (

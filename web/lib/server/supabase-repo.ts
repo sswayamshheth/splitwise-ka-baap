@@ -106,6 +106,12 @@ export class SupabaseRepo implements Repo {
     this.db = createClient(url.replace(/\/rest\/v1\/?$/, ""), secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
   }
 
+  async ping() {
+    // Reads one id; errors are reported by the client (not hidden by a count-only query).
+    const r = await this.db.from("trips").select("id").limit(1);
+    return !r.error;
+  }
+
   async getProfile(userId: string) {
     const r = check(await this.db.from("profiles").select("*").eq("user_id", userId).maybeSingle());
     return r ? { userId: r.user_id, name: r.name, email: r.email ?? undefined, phone: r.phone ?? undefined, interests: r.interests ?? undefined, interestsAsked: !!r.interests_asked, cards: r.cards ?? [], upiId: r.upi_id ?? undefined, createdAt: Date.parse(r.created_at) } : null;

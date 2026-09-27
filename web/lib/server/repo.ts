@@ -77,6 +77,8 @@ export type AppendResult = { ok: true; seq: number } | { ok: false; conflict: tr
 
 export interface Repo {
   readonly kind: "supabase" | "file";
+  /** Read-only health check for /status: true when the store answers. */
+  ping?(): Promise<boolean>;
   getProfile(userId: string): Promise<Profile | null>;
   upsertProfile(profile: Profile): Promise<Profile>;
 

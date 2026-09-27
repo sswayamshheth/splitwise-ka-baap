@@ -18,7 +18,7 @@ import { formatMoney } from "@/lib/money";
  * never touched (they're cancelled from Activity, where the refund is handled).
  */
 
-type Proposal = { ops: PlanOp[]; summary: string; understood: boolean; source: "ai" | "builtin"; model?: string };
+type Proposal = { ops: PlanOp[]; summary: string; understood: boolean; source: "ai" | "builtin"; model?: string; readAs?: string };
 
 const SUGGESTIONS = ["Add water sports", "Add a food trail", "Add something relaxing on day 2", "Add 2 nightlife options", "Make it cheaper", "Make a new plan for our group"];
 
@@ -172,6 +172,7 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
               {proposal.source === "ai" ? (proposal.model ?? "Claude") : "Built-in planner"}
             </span>
           </div>
+          {proposal.readAs ? <p className="font-label-md text-label-md text-on-surface-variant">Read as “{proposal.readAs}” (suggested by NuGen)</p> : null}
           {proposal.summary ? <p className="font-body-md text-body-md text-on-surface-variant">{proposal.summary}</p> : null}
           {proposal.ops.map((op, i) => {
             const on = picked.has(i);

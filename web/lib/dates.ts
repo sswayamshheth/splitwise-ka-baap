@@ -20,6 +20,14 @@ export function parseIso(iso: string): Date | null {
   return d;
 }
 
+/** The ISO date `days` after `iso` (negative goes back); "" if `iso` isn't a valid date. */
+export function addDaysIso(iso: string, days: number): string {
+  const d = parseIso(iso);
+  if (!d) return "";
+  d.setDate(d.getDate() + days);
+  return toIso(d);
+}
+
 export function isValidIso(iso: string): boolean {
   return parseIso(iso) !== null;
 }

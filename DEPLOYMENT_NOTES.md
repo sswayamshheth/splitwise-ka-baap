@@ -39,6 +39,10 @@ Vercel project settings: framework Next.js, root directory `web`, Node.js 22.x, 
 | `NEXT_PUBLIC_AI_PROXY_URL` | Optional; defaults to `/api/ai`. |
 | `DEMO_PAYMENTS` | Optional. Leave unset so the demo checkout stays on; `off` would switch payments off entirely. |
 | `ANCHOR_PRIVATE_KEY`, `ANCHOR_CONTRACT`, `ANCHOR_SALT`, `ANCHOR_DEPLOY_BLOCK`, `ANCHOR_RPC_URL` | Blockchain sealing on Ethereum Sepolia (testnet). Not set, so the feature is hidden (`/api/status` shows `chain: false`). `ANCHOR_PRIVATE_KEY` is a wallet private key and `ANCHOR_SALT` must be set to a private value if this is ever turned on; both are server-only. |
+| `NUGEN_API_KEY` | Optional, secret, server-only. Not set: the assistant, plan assistant and weather notes run rule-based. When set, NuGen only words/suggests; code computes every number. Used by both NuGen clients (`lib/server/nugen.ts` and the Digital Twin's `lib/nugen/client.ts`). Never tested with a live key. |
+| `NUGEN_MODEL` | Optional model for `lib/server/nugen.ts` (default `nugen-flash-instruct`). The Digital Twin client uses `NUGEN_MODEL_ID` / `NUGEN_BASE_MODEL` / `NUGEN_ALIGNMENT_ID` instead — align these later. `NUGEN_API_BASE` optionally overrides its base URL. |
+| `GOOGLE_PLACES_API_KEY` | Optional, server-only (Digital Twin place ratings). Not set. |
+| `TWIN_DEBUG` | Debug logging for the Digital Twin. Never set in production. |
 | `ALLOW_LOCAL_FILE_STORE` | Local `next start` only. Must never be set on Vercel; the file store refuses to run on Vercel regardless. |
 
 Local source of values: `web/.env.local` (git-ignored). Note that some lines there have a space after `=`; don't `source` the file in a shell.
@@ -99,6 +103,7 @@ The server uses `SUPABASE_SECRET_KEY` (bypasses RLS). In production, if it is mi
 | Trip delete with 0003 trigger | Pass |
 | Chain module | Not applicable (no `lib/chain` / `chain_blocks`) |
 | PWA manifest and icons | Pass — load signed out, linked from the layout |
+| `/status` (27 Sep) | Pass — plain-words page: database connected, sign-in ready, assistant rule-based, payments demo, blockchain off |
 | PWA install on a phone | Pass after fix — installed on iPhone. First attempt: email-code sign-in succeeded but the login page never navigated away, and a retry showed "You're already signed in". Fixed in `33177a5` (see below) and deployed to production; retest on the iPhone PWA passed — sign-in goes straight into the app. |
 | No secrets in pages / bundles / responses | Pass — 22 deployed resources and 47 client chunks scanned |
 
@@ -116,9 +121,15 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 
 - 2026-09-27: merged `origin/main` `7eafce1` (browser extension, blockchain proof on Sepolia, QR scanning, UPI to the organiser, Razorpay settle-ups) as `6e9bffa`, then: every real UPI payment (`upi://` links: Pay anyone, vendor UPI, Contribute UPI, Settle "Open UPI app", Record-a-deposit) is hidden in demo mode and labelled "real payment" when shown, via one `useRealUpiAllowed()` check and a self-hiding `UpiPayPanel`; contributions default to the checkout; Razorpay settle/request buttons need real keys; chain errors are generic and the chain feature is hidden without its variables; the file store always refuses on Vercel. Migrations 0005/0006 applied. Deployed with `vercel deploy --prod` (deployment `group-trip-ledger-2tvsp5vtp`).
 
+- 2026-09-27 overnight + deadline merge (all on `main`, deployed as `group-trip-ledger-qdgdi01qe`):
+  - Demo walk fixes: assistant help text no longer flagged as unverified, pinned what-if names a real member; demo payment ids shown as "Demo payment"; /demo/expenses fits 390px; activity feed/Profile no longer say Razorpay test mode; itinerary parser uses "Day N" markers for dates and cleans titles; calm error wording for network failures (`c8a9a33`, `d6ec4b9`, `812f63e`, `a1eabc1`, `e439a31`).
+  - Plan **Map & weather** (`d9ad71f`): Leaflet/OSM map in day order; Open-Meteo forecast; code-decided alerts (rain ≥60 % or ≥10 mm, ≥38 °C, wind ≥40 km/h, thunderstorms) on days with outdoor items; at-risk badges; Alternatives (clearer day with user-confirmed Move, indoor ideas, packing). Server fallback `/api/forecast` when the browser's Open-Meteo call fails (`ff191a7`).
+  - **NuGen** (`2edf6ec`): optional, server-only; rewords engine answers (figures re-verified), rewrites free-form plan requests into built-in planner commands, words weather alerts. `/api/status` reports `ai: nugen`.
+  - `/status` page in plain words; `/api/status` now checks the database read-only and reports the payment mode (`f67e9c0`).
+  - Merged teammates' Weather Digital Twin, OSM alternatives, NuGen intelligence, destination picker and UPI settle-ups (`869e63e`); their receiver UPI QR also hides itself in demo mode.
+
 ## Known issues
 
-- **No `/status` page.** It is listed as a public route but only `/api/status` exists.
 - **No delete-trip button in the UI.** `DELETE /api/trips/[id]` (owner only) works but nothing in the app calls it.
 - **Next.js 14.2.35 security advisories** (npm audit: critical). Every fix requires Next 15+, a major upgrade we chose not to make. Advisories relevant to this app: denial of service in the App Router / Server Components / Server Actions, cache poisoning of middleware redirects and of React Server Component responses, and cache confusion of response bodies. Others (Image Optimizer, Pages Router i18n, Windows-hosted RCE, Edge Server Actions, custom servers) do not match this setup.
 - Other npm audit findings are dev/build-time only: `vitest` (critical) and `vite` (tests), `glob`, `eslint-config-next`, `@next/eslint-plugin-next` (lint), `postcss` (CSS build).
@@ -127,6 +138,14 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 - **First production deploy was accidental** (a CLI deploy without `--target`); it was kept because it is the same build as the preview.
 - **Clerk secret key was exposed** in a terminal transcript during setup and was rotated before being uploaded to Vercel. The keys in Vercel are the new ones.
 - `ai/`, `simulator/`, `docs/requests.md` and `seed/` are empty placeholders.
+- **Two weather features on the Plan page:** the Digital Twin's "Weather Intelligence" card and the "Map & weather" section overlap. Both kept for the deadline; consolidate afterwards.
+- **Digital Twin uses the wrong "Manali" for trips created before the destination picker** (no stored coordinates): it showed 34 °C (Tamil Nadu). New trips pick a place with coordinates and are fine. The Map & weather section picks Himachal Pradesh from the itinerary's places.
+- **Open-Meteo free quota is per IP per day.** A shared network hit HTTP 429 on 27 Sep; the Plan page now falls back to `/api/forecast`. The Digital Twin also has recorded replay data.
+- **NuGen never tested with a real key** (mocked tests only).
+- **No dispute feature** in the real app (only in the static `/demo` mockups).
+- **Itinerary text parser takes one price per line:** "homestay ₹12,000, paragliding ~₹3,000 each" becomes one item.
+- **Open-Meteo geocoding knows towns, not landmarks** ("Solang Valley", "Hampta Pass" aren't found); such items are listed under the map.
+- npm audit triage (27 Sep): of 45 findings only `next` (critical) runs on the live site; 32 are inside `ganache` (dev-only chain tests; the lockfile makes `npm audit --omit=dev` count them as production), 11 are dev tooling, 1 is PostCSS bundled in Next (build only).
 - **2 on-chain tests fail locally** (`tests/chain-onchain.test.ts`): ganache's native module is missing for Node 24 (`uws_darwin_arm64_137.node`). Not verified on Node 22. The `chain:local-test` npm script points to a file that doesn't exist.
 - **Browser-extension tokens never expire.** They are stored hashed and can be re-issued from Profile, but there is no expiry or revoke list.
 - npm audit is now 45 findings (7 critical); the new critical ones come from `ganache` (dev only). The only runtime critical is still `next`.
@@ -138,7 +157,7 @@ Demo data kept in production: the "Smoke Test" trip (Goa, 30 Sep – 8 Oct 2026)
 
 ## Demo-day checklist
 
-- [ ] A few minutes before judging, open https://group-trip-ledger-six.vercel.app/api/status (there is no `/status` page and no Render services to wake). Check it shows `store: supabase` and `auth: clerk`.
+- [ ] A few minutes before judging, open https://group-trip-ledger-six.vercel.app/status (plain-words page; also wakes the server) or /api/status. Check it says "Everything is up" (database connected, sign-in ready).
 - [ ] Supabase free projects pause after about a week without activity. Open the Supabase dashboard the day before and restore the project if it is paused.
 - [ ] The Clerk development instance allows up to 100 users. Reuse test accounts rather than creating new ones per run.
 - [ ] Chain signing key: not applicable (no chain module). If one is added later, never rotate its key once data exists.
