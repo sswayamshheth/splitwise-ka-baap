@@ -137,7 +137,7 @@ export async function suggestForCheckout(
 /** Records a booking made on a merchant site as an expense in the trip (paid by me, shared by everyone active). */
 export async function captureBooking(
   userId: string,
-  input: { tripId?: unknown; host?: unknown; title?: unknown; amountPaise?: unknown; reference?: unknown; cardLabel?: unknown; category?: unknown; participantIds?: unknown; payerId?: unknown },
+  input: { tripId?: unknown; host?: unknown; title?: unknown; amountPaise?: unknown; reference?: unknown; cardLabel?: unknown; category?: unknown; participantIds?: unknown; payerId?: unknown; pax?: unknown },
 ) {
   const { addExpense, CommandError } = await import("@/lib/ledger/commands");
   const { syncTripRow, validateAppend } = await import("./trips");
@@ -153,6 +153,9 @@ export async function captureBooking(
     const active = state.participants.filter((p) => !p.leftOn);
     const chosenIds = Array.isArray(input.participantIds) ? input.participantIds.filter((x): x is string => typeof x === "string" && active.some((p) => p.id === x)) : [];
     const sharers = chosenIds.length ? chosenIds : active.map((p) => p.id);
+    // The booking says how many people it's for: the cost is split among exactly that many.
+    const pax = typeof input.pax === "number" && Number.isInteger(input.pax) && input.pax > 0 ? input.pax : null;
+    if (pax && sharers.length !== pax) throw new HttpError(400, `This booking is for ${pax} ${pax === 1 ? "person" : "people"} — pick exactly ${pax} to split it between (you picked ${sharers.length})`);
     const payerId = typeof input.payerId === "string" && active.some((p) => p.id === input.payerId) ? input.payerId : member.participantId;
     const payer = state.participants.find((p) => p.id === payerId);
     const method = payer?.paymentMethods?.find((m) => typeof input.cardLabel === "string" && m.label.toLowerCase() === input.cardLabel.toLowerCase());

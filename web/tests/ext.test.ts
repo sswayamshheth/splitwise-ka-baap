@@ -63,6 +63,12 @@ describe("extension checkout advisor", () => {
     expect(res.best?.memberId).not.toBe(ids.C);
   });
 
+  it("splits a booking only among as many people as it's for", async () => {
+    await expect(captureBooking(users.A, { ...page, participantIds: [ids.A, ids.B, ids.C], pax: 2, payerId: ids.A })).rejects.toMatchObject({ status: 400 });
+    const ok = await captureBooking(users.A, { ...page, participantIds: [ids.A, ids.C], pax: 2, payerId: ids.A });
+    expect(ok).toMatchObject({ ok: true, sharedBy: 2 });
+  });
+
   it("records the booking paid by the chosen payer and shared only by the ticked people", async () => {
     const cap = await captureBooking(users.A, { ...page, reference: "PNR123", participantIds: [ids.A, ids.C], payerId: ids.C, cardLabel: "HDFC Regalia" });
     expect(cap).toMatchObject({ ok: true, tripName: "SG Squad", sharedBy: 2, paidBy: "Member C" });
