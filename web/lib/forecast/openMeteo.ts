@@ -117,11 +117,19 @@ export function forecastAt(lat: number, lon: number): Promise<DailyForecast[] | 
     try {
       const url = `${FORECAST_URL}?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=16`;
       const days = parseForecast(await getJson(url));
-      if (!days.length) return null;
+      if (!days.length) throw new Error("empty");
       writeCache(key, days);
       return days;
     } catch {
-      return null;
+      // Direct call failed (offline, blocked, or this network hit Open-Meteo's free daily quota): try via our server.
+      try {
+        const via = (await getJson(`/api/forecast?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`)) as { days?: DailyForecast[] | null };
+        if (!via.days?.length) return null;
+        writeCache(key, via.days);
+        return via.days;
+      } catch {
+        return null;
+      }
     }
   });
 }
