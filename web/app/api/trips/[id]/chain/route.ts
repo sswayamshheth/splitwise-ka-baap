@@ -11,12 +11,14 @@ export const GET = route(async (_req: Request, { params }: Ctx) => {
   const userId = await requireUserId();
   const { trip } = await loadTripForUser(params.id, userId);
   const status = await chainStatus();
+  if (!status.configured) return NextResponse.json({ status, tripKey: null, anchors: [], pending: null, readError: null });
   let anchors: Awaited<ReturnType<typeof readAnchors>> = [];
   let readError: string | null = null;
   try {
     anchors = await readAnchors(trip.id);
   } catch (e) {
-    readError = `Couldn't read the contract: ${(e as Error).message.slice(0, 140)}`;
+    console.error("[chain] read failed:", String((e as { code?: unknown })?.code ?? "unknown"));
+    readError = "Couldn't read the seals from Ethereum right now";
   }
   return NextResponse.json({ status, tripKey: status.configured ? tripKey(trip.id) : null, anchors, pending: pendingAnchor(trip.id), readError });
 });

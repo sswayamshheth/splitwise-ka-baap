@@ -9,6 +9,27 @@ import { useTrip } from "@/lib/client/trip";
 
 type Anchor = { blocks: number; headHash: string; merkleRoot: string };
 
+let chainEnabled: Promise<boolean> | null = null;
+/** Whether the server has blockchain sealing set up (from /api/status). Null while loading; the feature stays hidden until true. */
+export function useChainEnabled() {
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  useEffect(() => {
+    let alive = true;
+    chainEnabled ??= fetch("/api/status")
+      .then((r) => r.json() as Promise<{ chain?: boolean }>)
+      .then((s) => !!s.chain)
+      .catch(() => {
+        chainEnabled = null; // retry on the next mount
+        return false;
+      });
+    void chainEnabled.then((v) => alive && setEnabled(v));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return enabled;
+}
+
 /** Live seal status for the trip page card: checked in the browser against the anchors read from Ethereum. */
 export function ChainBadge() {
   const trip = useTrip();

@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { cx, Icon } from "@/components/app/kit";
+import { useChainEnabled } from "@/components/app/trip/ChainBadge";
 import { buildChain, canonical, commitment, merkleProof, verifyChain, verifyMerkleProof, type Block } from "@/lib/chain/blocks";
 import { api } from "@/lib/client/api";
 import { useTrip } from "@/lib/client/trip";
@@ -41,6 +43,12 @@ function tamperedCopy(events: LedgerEvent[], height: number): { events: LedgerEv
 export default function ChainPage() {
   const trip = useTrip();
   const base = `/trips/${trip.tripId}`;
+  const router = useRouter();
+  // Without the server's blockchain settings the feature is hidden: send direct visits back to the trip.
+  const chainEnabled = useChainEnabled();
+  useEffect(() => {
+    if (chainEnabled === false) router.replace(base);
+  }, [chainEnabled, router, base]);
   const [info, setInfo] = useState<ChainInfo | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -131,6 +139,8 @@ export default function ChainPage() {
   const list = [...blocks].reverse();
   const visible = showAll ? list : list.slice(0, 12);
   const leaves = blocks.map((b) => b.hash);
+
+  if (chainEnabled !== true) return null;
 
   return (
     <main className="mx-auto flex w-full max-w-[520px] flex-1 flex-col gap-space-md px-margin pb-32 pt-space-xs">
