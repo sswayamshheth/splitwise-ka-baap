@@ -137,7 +137,7 @@ export function simulatedDay(real: WeatherDay | null, date: string, s: Scenario,
     const hours = day.hours?.length ? day.hours : Array.from({ length: 24 }, (_, hour) => ({ hour, precipitationMm: 0, precipitationProbability: null, windKmh: base.windMaxKmh * 0.7, tempC: base.tempMaxC - 3, weatherCode: base.weatherCode }));
     day.hours = hours.map((h) => {
       const inStorm = h.hour >= rainStart && h.hour < rainStart + rainHours;
-      return { ...h, precipitationMm: inStorm ? Math.round(perHour * 10) / 10 : spill ? h.precipitationMm : 0, precipitationProbability: inStorm ? 100 : h.precipitationProbability, weatherCode: inStorm ? (perHour >= 7.6 ? 65 : perHour >= 2.5 ? 63 : 61) : h.weatherCode };
+      return { ...h, precipitationMm: inStorm ? Math.round(perHour * 1000) / 1000 : spill ? h.precipitationMm : 0, precipitationProbability: inStorm ? 100 : h.precipitationProbability, weatherCode: inStorm ? (perHour >= 7.6 ? 65 : perHour >= 2.5 ? 63 : 61) : h.weatherCode };
     });
     day.precipitationMm = Math.round(day.hours.reduce((a, h) => a + h.precipitationMm, 0) * 10) / 10;
     day.precipitationHours = day.hours.filter((h) => h.precipitationMm > 0).length;

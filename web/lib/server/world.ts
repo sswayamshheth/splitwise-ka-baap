@@ -174,6 +174,23 @@ async function overpassFetch(point: LatLon, radiusKm: number): Promise<{ candida
 
 const clusterKey = (p: LatLon) => `${(Math.round(p.lat * 4) / 4).toFixed(2)},${(Math.round(p.lon * 4) / 4).toFixed(2)}`;
 
+/** Resolves to `fallback` if `p` takes longer than `ms` — the page must not wait on one slow public API. */
+function budget<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(fallback), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      () => {
+        clearTimeout(t);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 /** Runs `fn` over `items` with at most `limit` in flight (public APIs throttle bursts). */
 async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
@@ -220,13 +237,22 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
 
   // Independent real sources in parallel: item places, nearby alternatives, news/social/guide.
   const [pins, near, news, social, guide] = await Promise.all([
-    Promise.all(live.map(async (item) => [item.id, await pinFor(item, destination, region)] as const)),
-    overpass(destination, 10),
-    gdeltProvider(ctx),
-    mastodonProvider(ctx),
-    wikivoyageProvider(ctx),
+    Promise.all(live.map(async (item) => [item.id, await budget(pinFor(item, destination, region), 8_000, { ...destination, precision: "destination" as const })] as const)),
+    budget(overpass(destination, 10), 15_000, { candidates: [], ok: false, note: "OpenStreetMap search timed out" }),
+    budget(gdeltProvider(ctx), 12_000, { signals: [], status: { source: "gdelt-news" as const, ok: false, configured: true, count: 0, note: "GDELT timed out", fetchedAt: Date.now() } }),
+    budget(mastodonProvider(ctx), 10_000, { signals: [], status: { source: "mastodon" as const, ok: false, configured: true, count: 0, note: "Mastodon timed out", fetchedAt: Date.now() } }),
+    budget(wikivoyageProvider(ctx), 10_000, { signals: [], status: { source: "wikivoyage" as const, ok: false, configured: true, count: 0, note: "Wikivoyage timed out", fetchedAt: Date.now() } }),
   ]);
   const places: Record<string, PlacePin> = Object.fromEntries(pins);
+  // Geocoders are shared public services; if one timed out for an item, reuse that item's pin from the
+  // last successful capture (real geocoded data) rather than leaving it at the destination centre.
+  if (Object.values(places).some((p) => p.precision === "destination")) {
+    const prev = await loadReplay(state.trip.destination, tripId);
+    for (const [id, p] of Object.entries(places)) {
+      const old = prev?.places[id];
+      if (p.precision === "destination" && old?.precision === "item") places[id] = old;
+    }
+  }
 
   // One forecast per ~25 km cluster: far-off items (a waterfall inland) get their own weather.
   const clusters = new Map<string, { point: LatLon; label: string }>();
@@ -252,7 +278,7 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
         }
       }),
     ),
-    Promise.all(farPoints.map((c) => overpass(c.point, 8))),
+    Promise.all(farPoints.map((c) => budget(overpass(c.point, 8), 15_000, { candidates: [] as Candidate[], ok: false, note: "timed out" }))),
   ]);
   for (const [id, k] of Object.entries(itemForecast)) if (!forecasts.some((f) => f.key === k)) itemForecast[id] = forecasts[0].key;
 
@@ -272,7 +298,10 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
 
   // Ratings are looked up for the places most likely to be recommended: indoor, closest first.
   const shortlist = [...candidates].sort((a, b) => Number(b.indoor) - Number(a.indoor) || distanceKm(a, destination) - distanceKm(b, destination));
-  const [views, google] = await Promise.all([pageviewsProvider(shortlist), googlePlacesProvider(shortlist, process.env.GOOGLE_PLACES_API_KEY)]);
+  const [views, google] = await Promise.all([
+    budget(pageviewsProvider(shortlist), 8_000, { signals: [], ratings: {}, status: { source: "wikipedia-pageviews" as const, ok: false, configured: true, count: 0, note: "Wikipedia page views timed out", fetchedAt: Date.now() } }),
+    budget(googlePlacesProvider(shortlist, process.env.GOOGLE_PLACES_API_KEY), 10_000, { signals: [], ratings: {}, status: { source: "google-places" as const, ok: false, configured: true, count: 0, note: "Google Places timed out", fetchedAt: Date.now() } }),
+  ]);
   const signals: PublicSignal[] = [...news.signals, ...social.signals, ...guide.signals, ...views.signals, ...google.signals].sort((a, b) => b.relevance - a.relevance);
   const providers: ProviderStatus[] = [
     { source: "openstreetmap", ok: near.ok || candidates.length > 0, configured: true, count: candidates.length, note: poiNote, fetchedAt: Date.now() },

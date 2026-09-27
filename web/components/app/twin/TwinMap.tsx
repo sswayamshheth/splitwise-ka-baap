@@ -27,7 +27,7 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
       if (cancelled || !el.current) return;
       if (!map.current) {
         map.current = L.map(el.current, { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · weather: Open-Meteo' }).addTo(map.current);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · weather: Open-Meteo' }).addTo(map.current);
         layer.current = L.layerGroup().addTo(map.current);
       }
       const g = layer.current!;
@@ -75,7 +75,14 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
         if (twin.mode === "simulated" && day.twin.length > 1) L.polyline(day.twin.map((p) => [p.lat, p.lon] as [number, number]), { color: "#6750a4", weight: 4, opacity: 0.9, dashArray: "10 8" }).bindTooltip("Digital Twin route (simulated)").addTo(g);
       }
       if (!pts.length) pts.push([world.destination.lat, world.destination.lon]);
-      map.current!.fitBounds(pts, { padding: [28, 28], maxZoom: 13 });
+      const m = map.current!;
+      m.fitBounds(pts, { padding: [28, 28], maxZoom: 13 });
+      // Sheets animate in: re-measure once laid out so tiles fill the box.
+      setTimeout(() => {
+        if (map.current !== m) return;
+        m.invalidateSize();
+        m.fitBounds(pts, { padding: [28, 28], maxZoom: 13 });
+      }, 250);
     });
     return () => {
       cancelled = true;
