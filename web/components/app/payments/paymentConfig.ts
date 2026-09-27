@@ -34,10 +34,9 @@ export function usePaymentConfig() {
 
 /**
  * Whether real UPI payments (upi:// links that open the payer's own UPI app) may be offered.
- * They move real money, so they stay hidden while payments run in demo mode (and while loading).
+ * They go bank to bank without Razorpay, so they're offered even when Razorpay has no keys
+ * (a fresh deploy runs Razorpay in demo mode) — every screen labels them as real payments.
  */
 export function useRealUpiAllowed() {
-  const config = usePaymentConfig();
-  // Hidden only when the server has said payments run in demo mode — not while loading or after a network blip.
-  return !config || config.mode !== "demo";
+  return true;
 }

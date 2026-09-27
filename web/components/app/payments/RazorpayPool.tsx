@@ -6,6 +6,7 @@ import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
 import { useOrganiserId } from "@/components/app/money/PoolSheets";
 import { Face } from "@/components/app/money/parts";
 import { useCheckout } from "./checkout";
+import { useRealUpiAllowed } from "./paymentConfig";
 import { RequestSheet } from "./PaymentRequest";
 import { UpiPayPanel } from "./UpiQr";
 import { api } from "@/lib/client/api";
@@ -165,9 +166,9 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
   const organiserId = useOrganiserId();
   const organiser = organiserId ? trip.participant(organiserId) : undefined;
   const iHoldThePool = organiserId === trip.meId;
-  // Paying the organiser by UPI moves real money, so it's only offered when payments aren't in demo mode;
-  // the checkout is the default either way.
-  const upiAllowed = !!config && config.mode !== "demo";
+  // Paying the organiser by UPI goes bank to bank without Razorpay, so it's offered with or without
+  // Razorpay keys; the checkout is the default either way.
+  const upiAllowed = useRealUpiAllowed();
   const [via, setVia] = useState<"upi" | "razorpay">("razorpay");
   const [recording, setRecording] = useState(false);
   const [requesting, setRequesting] = useState(false);

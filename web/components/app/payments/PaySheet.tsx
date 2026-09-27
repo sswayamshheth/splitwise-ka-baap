@@ -71,7 +71,7 @@ function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () 
   return (
     <div className="flex flex-col gap-space-sm">
       <Option icon="storefront" tone="bg-primary-fixed/60 text-primary" title="Pay a vendor from the itinerary" sub="Villa, cab, activity… with the best card in the group" onClick={onVendor} />
-      {/* A real payment from the payer's own UPI app, so it's hidden while payments run in demo mode. */}
+      {/* A real payment from the payer's own UPI app — no Razorpay needed, so it's always offered. */}
       {upiAllowed ? (
         <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay anyone · real UPI payment" sub="Scan a QR, UPI ID or phone number — the money leaves your bank; recorded in the trip pool" onClick={onSomeone} />
       ) : null}

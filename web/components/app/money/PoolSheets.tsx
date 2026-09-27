@@ -55,7 +55,7 @@ function PoolSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
   const put = member ? member.depositedPaise - member.withdrawnPaise : 0;
   const available = member?.availablePaise ?? 0;
   const organiser = organiserId ? trip.participant(organiserId) : undefined;
-  // The "pay in your UPI app" link is a real payment, so it's hidden in demo mode.
+  // The "pay in your UPI app" link is a real payment, straight from the payer's bank (no Razorpay).
   const upiAllowed = useRealUpiAllowed();
   const upi =
     upiAllowed && mode === "add" && method === "upi" && paise && organiser?.upiId && organiserId !== who

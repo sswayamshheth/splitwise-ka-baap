@@ -13,7 +13,7 @@ import { useRealUpiAllowed } from "./paymentConfig";
  * app) and as a button (opens the UPI app on a phone). The money moves in the
  * payer's own UPI app — GroupTrip never touches it. Afterwards the payer
  * confirms here (optionally with the UTR) and the payment is recorded.
- * Because it moves real money it renders nothing while payments run in demo mode.
+ * It moves real money bank to bank (no Razorpay), and says so on screen.
  */
 export function UpiPayPanel({
   vpa,

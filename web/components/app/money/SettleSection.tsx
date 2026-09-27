@@ -33,8 +33,8 @@ export function SettleSection() {
   // Razorpay settle-ups and payment requests need real Razorpay keys; hidden in demo mode.
   const payConfig = usePaymentConfig();
   const razorpayLive = !!payConfig?.enabled && payConfig.mode !== "demo";
-  // "Open UPI app" is a real payment from the payer's own UPI app, so it's hidden in demo mode too.
-  const upiAllowed = !!payConfig && payConfig.mode !== "demo";
+  // "Open UPI app" goes bank to bank without Razorpay, so it's offered with or without Razorpay keys.
+  const upiAllowed = useRealUpiAllowed();
   const { ledger, state } = trip;
   const transfers = ledger.transfers;
   const pending = ledger.pendingSettlements;
@@ -361,7 +361,7 @@ function TransferRow({ from, to, amount, sub, footer, muted }: { from: string; t
 
 /** My own UPI QR for the exact amount someone owes me — they scan it with any UPI app; real money, bank to bank. */
 function ReceiveQr({ vpa, name, payer, amountPaise, note, busy, onReceived }: { vpa?: string; name: string; payer: string; amountPaise: number; note: string; busy: boolean; onReceived: () => void }) {
-  // A real payment: like UpiPayPanel, it renders nothing while payments run in demo mode.
+  // A real payment, bank to bank, like UpiPayPanel.
   const allowed = useRealUpiAllowed();
   const [img, setImg] = useState<string | null>(null);
   const url = vpa ? upiIntentUrl({ vpa, name, amountPaise, note }) : null;
