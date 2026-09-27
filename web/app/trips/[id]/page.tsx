@@ -8,6 +8,7 @@ import { BudgetCard } from "@/components/app/trip/BudgetCard";
 import { ChainBadge, useChainEnabled } from "@/components/app/trip/ChainBadge";
 import { EventRow, HeroBadge, PhotoHero, Portrait, ProgressBar } from "@/components/app/trip/common";
 import { HarmonyCard } from "@/components/app/trip/HarmonyCard";
+import { PersonalLedger } from "@/components/app/trip/PersonalLedger";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { tripCover } from "@/lib/covers";
 import { daysBetween, formatDateRange, todayIso } from "@/lib/dates";
@@ -138,6 +139,7 @@ export default function TripPage() {
           </div>
         </section>
 
+        <PersonalLedger />
         <HarmonyCard />
         <BudgetCard />
 

@@ -6,6 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { Chip, cx, Empty, Icon, inputCls, Spinner } from "@/components/app/kit";
 import { CATEGORY_ICON, Portrait, symbol } from "@/components/app/trip/common";
 import { ExpenseSheet } from "@/components/app/trip/ExpenseSheet";
+import { PersonalLedger } from "@/components/app/trip/PersonalLedger";
 import { useTrip } from "@/lib/client/trip";
 import { formatDate, formatRelative } from "@/lib/dates";
 import { buildNameLookup, describeEvent, type Described } from "@/lib/ledger/describe";
@@ -66,6 +67,8 @@ function Activity() {
   const [sort, setSort] = useState<Sort>("new");
   const [q, setQ] = useState("");
   const [sheet, setSheet] = useState<string | null>(null);
+  const [tab, setTab] = useState<"timeline" | "personal">(params.get("tab") === "personal" ? "personal" : "timeline");
+  const [person, setPerson] = useState<string>(meId);
 
   const names = useMemo(() => buildNameLookup(events, meId), [events, meId]);
   const settlements = useMemo(() => new Map(state.settlements.map((s) => [s.id, s])), [state.settlements]);
@@ -198,6 +201,42 @@ function Activity() {
 
   return (
     <main className="mx-auto w-full max-w-[520px] flex-1 px-margin pb-10 pt-space-md">
+      {/* tabs */}
+      <div className="mb-space-md grid grid-cols-2 gap-1 rounded-full bg-surface-container-low p-1">
+        {(
+          [
+            ["timeline", "Timeline", "history"],
+            ["personal", "Personal ledger", "account_balance_wallet"],
+          ] as const
+        ).map(([v, l, icon]) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setTab(v)}
+            aria-pressed={tab === v}
+            className={cx("flex h-9 items-center justify-center gap-1.5 rounded-full font-label-md text-label-md transition-colors", tab === v ? "bg-primary-container text-on-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-variant")}
+          >
+            <Icon name={icon} className="text-[18px]" /> {l}
+          </button>
+        ))}
+      </div>
+
+      {tab === "personal" ? (
+        <div className="flex flex-col gap-space-md">
+          <div className="flex gap-space-xs overflow-x-auto pb-1">
+            {[...state.participants]
+              .sort((a, b) => (a.id === meId ? -1 : b.id === meId ? 1 : a.name.localeCompare(b.name)))
+              .map((p) => (
+                <Chip key={p.id} selected={person === p.id} onClick={() => setPerson(p.id)}>
+                  {p.id === meId ? "Me" : trip.short(p.id)}
+                  {p.leftOn ? " (left)" : ""}
+                </Chip>
+              ))}
+          </div>
+          <PersonalLedger pid={person} showSettlements />
+        </div>
+      ) : (
+      <>
       {/* summary */}
       <div className="flex items-center justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
         <div className="flex flex-col">
@@ -263,6 +302,9 @@ function Activity() {
         <Icon name="shield" className="text-[20px] text-primary" />
         Every line comes from the trip&apos;s append-only ledger — nothing is edited in place, and each update keeps who did it and when.
       </p>
+
+      </>
+      )}
 
       {sheet && ledger.byExpenseId[sheet] ? <ExpenseSheet expenseId={sheet} onClose={() => setSheet(null)} /> : null}
     </main>
