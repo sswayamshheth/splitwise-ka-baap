@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Chip, cx, Icon, inputCls, Sheet, useFeedback } from "@/components/app/kit";
 import { Face } from "@/components/app/money/parts";
-import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate, todayIso } from "@/lib/dates";
 import { isValidUpiId, parseUpiIntent, updateItineraryItem } from "@/lib/ledger/commands";
@@ -14,7 +13,7 @@ import { payVendorFromPool, poolPayers, poolSummary } from "@/lib/ledger/pool";
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type ItineraryItem, type PaymentMethod } from "@/lib/ledger/types";
 import { formatMoney, parseAmount } from "@/lib/money";
 import { useCheckout } from "./checkout";
-import type { Config } from "./RazorpayPool";
+import { usePaymentConfig } from "./RazorpayPool";
 import { QrScanner } from "./QrScanner";
 import { UpiPayPanel } from "./UpiQr";
 
@@ -57,20 +56,12 @@ export function PaySheet({ open, onClose, onContribute }: { open: boolean; onClo
 
 /** The UPI flows open a real UPI payment, so they are hidden while payments run in demo mode. */
 function useUpiAllowed() {
-  const [allowed, setAllowed] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    api<Config>("/api/payments/config")
-      .then((c) => !cancelled && setAllowed(c.mode !== "demo"))
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  return allowed;
+  const config = usePaymentConfig();
+  return !!config && config.mode !== "demo";
 }
 
 function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () => void }) {
+  const upiAllowed = useUpiAllowed();
   const Option = ({ icon, title, sub, onClick, tone }: { icon: string; title: string; sub: string; onClick: () => void; tone: string }) => (
     <button onClick={onClick} className="flex w-full items-center gap-space-md rounded-2xl bg-surface-container-lowest p-space-md text-left shadow-sm ring-1 ring-outline-variant/40 transition-shadow hover:shadow-md">
       <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full", tone)}>
@@ -86,8 +77,10 @@ function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () 
   return (
     <div className="flex flex-col gap-space-sm">
       <Option icon="storefront" tone="bg-primary-fixed/60 text-primary" title="Pay a vendor from the itinerary" sub="Villa, cab, activity… with the best card in the group" onClick={onVendor} />
-      {/* Always offered: the money moves in the payer's own UPI app, so it doesn't depend on Razorpay's mode. */}
-      <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay anyone" sub="Scan a QR, UPI ID or phone number — recorded in the trip pool" onClick={onSomeone} />
+      {/* A real payment from the payer's own UPI app, so it's hidden while payments run in demo mode. */}
+      {upiAllowed ? (
+        <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay anyone · real UPI payment" sub="Scan a QR, UPI ID or phone number — the money leaves your bank; recorded in the trip pool" onClick={onSomeone} />
+      ) : null}
     </div>
   );
 }
