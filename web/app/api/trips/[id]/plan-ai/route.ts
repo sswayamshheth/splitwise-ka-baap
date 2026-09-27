@@ -2,9 +2,11 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
+import { extractCommand } from "@/lib/ai/nugenGuards";
 import { planOffline, validateOps, type PlanOp } from "@/lib/itinerary/planner";
 import { reduceEvents } from "@/lib/ledger/reduce";
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "@/lib/ledger/types";
+import { nugenConfigured, nugenTry } from "@/lib/server/nugen";
 import { HttpError, loadTripForUser, requireUserId, route } from "@/lib/server/trips";
 
 /**
@@ -104,5 +106,27 @@ export const POST = route(async (req: Request, { params }: { params: { id: strin
       console.error("[plan-ai] Claude failed, using the built-in planner", e);
     }
   }
-  return NextResponse.json({ ...planOffline(state, instruction), source: "builtin" });
+  const builtin = planOffline(state, instruction);
+  // NuGen only rewrites a free-form request into a command the built-in planner understands;
+  // the planner (code) still builds every proposal, and the user still applies it.
+  if (!builtin.understood && nugenConfigured()) {
+    const reply = await nugenTry(
+      [
+        {
+          role: "system",
+          content:
+            "Rewrite a travel group's request as ONE short command for a trip planner. The planner understands only: add <activity type> (water sports, trek, nightlife, culture, food, spa, games, shopping…) optionally \"on day N\" or \"N options\"; remove <item>; move <item> to day N; make it cheaper; make a new plan. Reply with the command only. If none fits, reply NONE.",
+        },
+        { role: "user", content: instruction },
+      ],
+      { maxTokens: 40, temperature: 0 },
+      "nugen-plan",
+    );
+    const command = reply ? extractCommand(reply) : "";
+    if (command && !/^none$/i.test(command)) {
+      const retried = planOffline(state, command);
+      if (retried.understood) return NextResponse.json({ ...retried, source: "builtin", readAs: command });
+    }
+  }
+  return NextResponse.json({ ...builtin, source: "builtin" });
 });

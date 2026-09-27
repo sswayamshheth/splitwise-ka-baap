@@ -8,6 +8,7 @@ import { CATEGORY_ICON, PortraitStack, TimelinePin } from "@/components/app/trip
 import { PlanAssistantCard, PlanAssistantSheet } from "@/components/app/trip/PlanAssistant";
 import { DayAlternatives, DayWeatherStrip, ItemWeatherBadge, PlanWeather } from "@/components/app/trip/weather/PlanWeather";
 import { useTripWeather } from "@/components/app/trip/weather/useTripWeather";
+import { useWeatherNotes } from "@/components/app/trip/weather/useWeatherNotes";
 import { categoryPhoto } from "@/lib/covers";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate, isValidIso, todayIso } from "@/lib/dates";
@@ -76,6 +77,7 @@ export default function PlanPage() {
     [state.itinerary],
   );
   const w = useTripWeather({ tripId: trip.tripId, destination: state.trip.destination, startDate: state.trip.startDate, endDate: state.trip.endDate, items: weatherItems });
+  const weatherNotes = useWeatherNotes(w.weather);
   const dayWeather = (date: string) => (w.weather?.status === "ok" ? w.weather.days.find((d) => d.date === date) : undefined);
   const itemRisk = (id: string) => (w.weather?.status === "ok" ? w.weather.itemRisk[id] : undefined);
   const canMove = (id: string) => {
@@ -388,7 +390,7 @@ export default function PlanPage() {
               })}
             </div>
           </div>
-          <DayAlternatives day={dayWeather(date)} canMove={canMove} onMove={(id, d) => void moveItem(id, d)} />
+          <DayAlternatives day={dayWeather(date)} canMove={canMove} onMove={(id, d) => void moveItem(id, d)} explanations={weatherNotes.notes} order={weatherNotes.order[date]} />
         </section>
       ))}
 

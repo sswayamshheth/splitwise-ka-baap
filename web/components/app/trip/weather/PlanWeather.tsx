@@ -158,13 +158,19 @@ export function DayAlternatives({
   canMove,
   onMove,
   explanations,
+  order,
 }: {
   day?: DayWeather;
   canMove: (itemId: string) => boolean;
   onMove: (itemId: string, date: string) => void;
+  /** Optional NuGen wording per at-risk item (already checked on the server). */
   explanations?: Record<string, string>;
+  /** Optional NuGen ordering of this day's indoor ideas (only the code's own ideas). */
+  order?: string[];
 }) {
   if (!day || !day.alerts.length) return null;
+  const ideas = order ? [...day.alternatives].sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title)) : day.alternatives;
+  const worded = !!order || day.atRisk.some((r) => explanations?.[r.itemId]);
   return (
     <div className="mt-space-md flex flex-col gap-space-sm rounded-xl bg-secondary-fixed/40 p-space-md">
       <span className="flex items-center gap-1.5 font-title-md text-title-md text-on-secondary-fixed">
@@ -200,11 +206,11 @@ export function DayAlternatives({
           </div>
         );
       })}
-      {day.alternatives.length ? (
+      {ideas.length ? (
         <div className="flex flex-col gap-1">
           <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Indoor ideas</span>
           <ul className="flex flex-col gap-0.5 font-body-md text-body-md text-on-surface">
-            {day.alternatives.map((a) => (
+            {ideas.map((a) => (
               <li key={a.title} className="flex items-start gap-1.5">
                 <Icon name="home" className="mt-0.5 text-[16px] text-on-surface-variant" />
                 <span>
@@ -218,7 +224,7 @@ export function DayAlternatives({
       ) : null}
       {day.packing.length ? <span className="font-body-md text-body-md text-on-surface-variant">Pack: {day.packing.join(", ")}.</span> : null}
       <Notice tone="teal" icon="info">
-        Suggestions only — nothing in the plan changes unless you choose it.
+        Suggestions only — nothing in the plan changes unless you choose it.{worded ? " Some wording by NuGen; the alerts themselves are decided by the forecast rules." : ""}
       </Notice>
     </div>
   );

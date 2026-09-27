@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { chainConfigured } from "@/lib/server/chain";
+import { nugenConfigured } from "@/lib/server/nugen";
 import { repo } from "@/lib/server/repo";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export async function GET() {
     ok: true,
     store: r.kind,
     auth: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? "clerk" : "missing",
-    ai: process.env.ANTHROPIC_API_KEY ? "claude" : "offline",
+    ai: nugenConfigured() ? "nugen" : process.env.ANTHROPIC_API_KEY ? "claude" : "offline",
     chain: chainConfigured(),
   });
 }

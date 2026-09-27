@@ -52,14 +52,15 @@ export class ProxyError extends Error {
   }
 }
 
-export async function proxyHealth(signal?: AbortSignal): Promise<{ ok: boolean; hasKey: boolean; model?: string }> {
+export async function proxyHealth(signal?: AbortSignal): Promise<{ ok: boolean; hasKey: boolean; nugen: boolean; model?: string }> {
   try {
     const res = await fetch(HEALTH_URL, { signal });
-    if (!res.ok) return { ok: false, hasKey: false };
+    if (!res.ok) return { ok: false, hasKey: false, nugen: false };
     const body = (await res.json()) as { ok?: boolean; ai?: string; hasKey?: boolean; model?: string };
-    return { ok: !!body.ok, hasKey: body.ai === "claude" || !!body.hasKey, model: body.model };
+    // hasKey = Claude drives the tools itself; nugen = the rule-based answers are reworded by NuGen.
+    return { ok: !!body.ok, hasKey: body.ai === "claude" || !!body.hasKey, nugen: body.ai === "nugen", model: body.model };
   } catch {
-    return { ok: false, hasKey: false };
+    return { ok: false, hasKey: false, nugen: false };
   }
 }
 
