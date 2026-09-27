@@ -161,3 +161,19 @@ describe("payment requests (Razorpay payment links)", () => {
     await expect(createPaymentRequest(users.A, { tripId: TRIP, fromId: ids.B, amountPaise: 5_000_00, purpose: "settle" })).rejects.toMatchObject({ status: 409 });
   });
 });
+
+describe("real UPI between members", () => {
+  it("the receiver can record and confirm a UPI settle-up in one step; the debt clears", async () => {
+    const { initiateSettlement, confirmSettlement } = await import("@/lib/ledger/commands");
+    const s = await state();
+    const sent = initiateSettlement(s, { from: ids.B, to: ids.A, amountPaise: 1_000_00, method: "upi", reference: "UPI · confirmed by the receiver" }, { actor: ids.A, now: Date.now() });
+    expect(sent.type).toBe("SETTLEMENT_INITIATED");
+    if (sent.type !== "SETTLEMENT_INITIATED") return;
+    const after = { ...s, settlements: [...s.settlements, sent.settlement] };
+    const ok = confirmSettlement(after, sent.settlement.id, { actor: ids.A, now: Date.now() + 1 });
+    const final = reduceEvents([...(await r.getEvents(TRIP)), sent, ok])!;
+    expect(final.settlements[0]).toMatchObject({ from: ids.B, to: ids.A, status: "confirmed", method: "upi" });
+    expect(computeLedger(final).balances[ids.B].netPaise).toBe(0);
+    expect(computeLedger(final).reconciliationPaise).toBe(0);
+  });
+});

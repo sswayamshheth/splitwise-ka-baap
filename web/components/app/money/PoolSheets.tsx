@@ -93,7 +93,7 @@ function PoolSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             {trip.state.trip.name} pool
           </span>
-          <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Simulated escrow</span>
+          <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Held by the organiser</span>
         </div>
         <p className="font-body-lg text-body-lg text-on-surface-variant">
           {mode === "add" ? "Top up the shared pool the group pays vendors from." : "Take back money you put in that hasn't been spent on a vendor yet."}
@@ -230,7 +230,7 @@ function PoolSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
 
             <p className="flex items-start gap-space-sm font-label-md text-label-md text-on-surface-variant">
               <Icon name="shield" className="text-[18px]" />
-              Simulated escrow: the ledger records this; no bank holds the money in this prototype.{organiser ? ` ${organiser.name} holds the pool for the group.` : ""}
+              The ledger records this. The money itself sits with whoever holds the pool, not with GroupTrip or a bank.{organiser ? ` ${organiser.name} holds the pool for the group.` : ""}
             </p>
 
             <button

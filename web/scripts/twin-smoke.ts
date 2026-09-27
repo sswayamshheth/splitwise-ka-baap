@@ -1,0 +1,25 @@
+import { readFileSync } from "node:fs";
+import { reduceEvents } from "@/lib/ledger/reduce";
+import { buildWorld } from "@/lib/server/world";
+import { buildTwin } from "@/lib/twin/twin";
+
+const tripId = process.argv[2] ?? "trip_demo_goa_QtDkil0Rpk3Z_muizwygj";
+const db = JSON.parse(readFileSync(".data/db.json", "utf8"));
+const events = db.events[tripId];
+const state = reduceEvents(events)!;
+const t0 = Date.now();
+const world = await buildWorld(tripId, state);
+console.log("world ms", Date.now() - t0, world.weatherNote);
+console.log(Object.entries(world.places).map(([k, p]) => `${k} ${p.label} ${p.precision} ${p.lat.toFixed(3)},${p.lon.toFixed(3)}`).join("\n"));
+console.log(world.providers.map((p) => `${p.source} ok=${p.ok} n=${p.count} ${p.note}`).join("\n"));
+console.log("candidates", world.candidates.length, world.candidates.slice(0, 8).map((c) => `${c.name}(${c.kind},${c.indoor ? "in" : "out"})`).join(", "));
+console.log("signals", world.signals.slice(0, 5).map((s) => `[${s.source}] ${s.summary.slice(0, 90)} rel=${s.relevance}`).join("\n"));
+const real = buildTwin(state, events, world, null, { now: Date.now() });
+console.log("REAL headline", real.headline);
+for (const i of real.items) console.log(i.title, i.date, i.conditions.source, i.assessment.availability, i.assessment.impactScore, i.assessment.drivers[0]);
+const sim = buildTwin(state, events, world, { date: state.trip.startDate.replace(/\d\d$/, String(Number(state.trip.startDate.slice(8)) + 1).padStart(2, "0")), rainfallMm: 100, stormStartHour: 6, stormHours: 10, unavailableItemIds: [], skippingParticipantIds: [], hotelRemoved: false }, { now: Date.now() });
+console.log("SIM headline", sim.headline);
+for (const i of sim.items) console.log(i.title, i.date, i.conditions.source, i.assessment.availability, i.assessment.impactScore, i.assessment.drivers[0], i.bestSlot?.start);
+for (const e of sim.effects) console.log(e.kind, e.text);
+for (const r of sim.recommendations) console.log("REC", r.kind, r.forTitle, "->", r.alternative?.candidate.name ?? r.newTime, r.score, r.chain.join(" > "));
+console.log("finance", JSON.stringify(sim.finance)?.slice(0, 600));

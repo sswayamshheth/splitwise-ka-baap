@@ -21,7 +21,7 @@ function trip() {
   return { events, ids, state, ctx };
 }
 
-describe("trip pool (simulated escrow)", () => {
+describe("trip pool (organiser-held)", () => {
   it("vendor payments from the pool are funded pro rata by deposits, and balances stay exact", () => {
     const t = trip();
     t.events.push(depositToPool(t.state(), { participantId: t.ids.A, amountPaise: 10_000_00, method: "upi" }, t.ctx()));

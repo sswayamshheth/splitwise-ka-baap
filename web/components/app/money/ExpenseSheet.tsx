@@ -392,7 +392,7 @@ export function ExpenseSheet({ open, onClose, source }: { open: boolean; onClose
             </Notice>
           ) : (
             <Notice icon="account_balance">
-              Funded from the pool by {funding.payers!.map((p) => `${trip.short(p.participantId)} ${formatMoney(p.amountPaise)}`).join(" · ")} — in proportion to what each still has in it (simulated escrow).
+              Funded from the pool by {funding.payers!.map((p) => `${trip.short(p.participantId)} ${formatMoney(p.amountPaise)}`).join(" · ")} — in proportion to what each still has in it.
             </Notice>
           )
         ) : null}

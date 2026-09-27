@@ -49,7 +49,7 @@ export default function MoneyPage() {
       <section className="px-margin pb-space-sm pt-space-xs">
         <div className="flex items-center justify-between">
           <div>
-            <Eyebrow className="mb-0.5">Trip pool · simulated escrow</Eyebrow>
+            <Eyebrow className="mb-0.5">Trip pool · held by the organiser</Eyebrow>
             <h2 className="font-headline-md text-headline-md tracking-tight text-on-surface">Trip Pool</h2>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-high text-primary">
@@ -85,7 +85,7 @@ export default function MoneyPage() {
               <Icon name="shield" className="text-[18px] text-primary" />
               <span className="font-label-md text-label-md text-on-surface">Held by {organiserId ? trip.short(organiserId) : "the organiser"}</span>
             </div>
-            <span className="text-right font-label-sm text-label-sm text-on-surface-variant">Prototype · no bank holds it</span>
+            <span className="text-right font-label-sm text-label-sm text-on-surface-variant">Organiser-held · tracked to the rupee</span>
           </div>
           <PoolFundingBar pool={serverPool} onSetTarget={trip.role === "owner" && !closed ? () => setSheet("target") : undefined} />
         </div>
@@ -321,9 +321,9 @@ export default function MoneyPage() {
             <Icon name="account_balance" className="text-[20px]" />
           </div>
           <div>
-            <p className="font-title-md text-title-md text-on-surface">Simulated escrow</p>
+            <p className="font-title-md text-title-md text-on-surface">How the pool works</p>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Prototype: the pool is tracked by the ledger — no bank holds it. Deposits, vendor payments and settlements are records you confirm; UPI links open your own UPI app.
+              The pool is money held by the organiser, tracked to the rupee by the ledger. GroupTrip and no bank hold it. Razorpay payments are recorded automatically once verified; UPI payments to a person are recorded when marked paid.
             </p>
           </div>
         </div>

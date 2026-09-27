@@ -35,6 +35,7 @@ export const POST = route(async (req: Request) => {
   const stamped = events.map((e) => ({ ...e, actor: selfId ?? "system" })) as LedgerEvent[];
   const state = reduceEvents(stamped);
   if (!state) throw new HttpError(400, "Those trip details don't form a valid trip");
+  if (!state.trip.place) throw new HttpError(400, "Pick the destination from the search list, so weather and planning use the right place");
   if (!selfId || !state.participants.some((p) => p.id === selfId)) throw new HttpError(400, "You must be one of the trip's members");
   if (computeLedger(state).reconciliationPaise !== 0) throw new HttpError(422, "Rejected: the ledger would not balance");
 

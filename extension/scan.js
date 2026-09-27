@@ -82,7 +82,34 @@
     return list.filter((t) => !list.some((o) => o !== t && t.includes(o) && o.length > 25)).slice(0, 25);
   }
 
+  /** How many people the booking is for: "2 Adults, 1 Child", "3 Travellers", "4 Guests", or the site's URL (paxType=A-2_C-1_I-0, group_adults=2). Infants ride free, so they aren't counted. */
+  function findTravellers(text, url) {
+    const u = decodeURIComponent(url || "");
+    const mmt = /paxType=A-(\d+)_C-(\d+)/i.exec(u);
+    if (mmt) return Number(mmt[1]) + Number(mmt[2]);
+    const ga = /[?&]group_adults=(\d+)/i.exec(u);
+    if (ga) return Number(ga[1]) + Number((/[?&]group_children=(\d+)/i.exec(u) || [0, 0])[1]);
+    const t = text.slice(0, 20000);
+    const n = (re) => {
+      const m = re.exec(t);
+      return m ? Number(m[1]) : 0;
+    };
+    const adults = n(/\b(\d{1,2})\s*adults?\b/i);
+    const children = n(/\b(\d{1,2})\s*(?:child|children|kids?)\b/i);
+    const total = adults ? adults + children : n(/\b(\d{1,2})\s*(?:travell?ers?|passengers?|pax|guests?|persons?|people)\b/i);
+    return total >= 1 && total <= 30 ? total : null;
+  }
+
   window.__groupTripScan = function () {
-    return { host: location.hostname, title: document.title, amountPaise: findTotal(), offerTexts: findOffers(), url: location.href, pageText: ((document.body && document.body.innerText) || "").slice(0, 6000) };
+    const text = (document.body && document.body.innerText) || "";
+    return {
+      host: location.hostname,
+      title: document.title,
+      amountPaise: findTotal(),
+      offerTexts: findOffers(),
+      url: location.href,
+      pageText: text.slice(0, 12000),
+      travellers: findTravellers(text, location.href),
+    };
   };
 })();

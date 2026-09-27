@@ -6,29 +6,7 @@ import { computeBudget } from "./budget";
 import { computeExpense, computeLedger } from "./engine";
 import { planScalesWithHeadcount, pricingOf, refundPercentOn, sortedTiers, withoutPlanParticipant } from "./policy";
 import { applyEvent } from "./reduce";
-import type {
-  CancellationPolicy,
-  ContributionData,
-  ExpenseCategory,
-  ExpenseData,
-  ExpenseId,
-  ExpenseView,
-  FixedLeaveRule,
-  ItineraryItem,
-  ItineraryItemId,
-  LedgerEvent,
-  ParticipantData,
-  ParticipantId,
-  PaymentMethod,
-  PaymentMethodId,
-  RefundData,
-  SettlementData,
-  SettlementId,
-  SettlementMethod,
-  TripMeta,
-  TripState,
-  Withdrawal,
-} from "./types";
+import type { CancellationPolicy, ContributionData, ExpenseCategory, ExpenseData, ExpenseId, ExpenseView, FixedLeaveRule, ItineraryItem, ItineraryItemId, LedgerEvent, ParticipantData, ParticipantId, PaymentMethod, PaymentMethodId, RefundData, SettlementData, SettlementId, SettlementMethod, TripMeta, TripState, Withdrawal, TripPlace } from "./types";
 
 /**
  * Commands validate intent against current state and return the event(s) to
@@ -66,7 +44,23 @@ function assertOpen(state: TripState) {
 
 // ---------------------------------------------------------------- trips
 
-export type TripInput = { name: string; destination: string; startDate: string; endDate: string; description?: string };
+export type TripInput = { name: string; destination: string; startDate: string; endDate: string; description?: string; place?: TripPlace };
+
+/** Keeps a picked place only if its coordinates are real numbers in range. */
+export function cleanPlace(p: unknown): TripPlace | undefined {
+  const x = p as Partial<TripPlace> | null | undefined;
+  if (!x || typeof x.name !== "string" || !x.name.trim()) return undefined;
+  const lat = Number(x.lat);
+  const lon = Number(x.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return undefined;
+  const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim().slice(0, 80) : undefined);
+  return { lat, lon, name: x.name.trim().slice(0, 80), admin: str(x.admin), country: str(x.country), source: "open-meteo-geocoding" };
+}
+
+/** "Manali, Himachal Pradesh, India" — the label a picked place is shown and stored as. */
+export function placeLabel(p: Pick<TripPlace, "name" | "admin" | "country">): string {
+  return [p.name, p.admin, p.country].filter((v, i, a) => v && a.indexOf(v) === i).join(", ");
+}
 
 export function validateTrip(input: TripInput): Partial<Record<keyof TripInput, string>> {
   const errors: Partial<Record<keyof TripInput, string>> = {};
@@ -87,6 +81,7 @@ export function createTrip(input: TripInput, ctx: Ctx): { tripId: string; events
     id: newId("trip"),
     name: normaliseName(input.name),
     destination: normaliseName(input.destination),
+    place: cleanPlace(input.place),
     startDate: input.startDate,
     endDate: input.endDate,
     description: input.description?.trim() || undefined,

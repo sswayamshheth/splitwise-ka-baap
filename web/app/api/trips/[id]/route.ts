@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
+import { reduceEvents } from "@/lib/ledger/reduce";
 import { repo } from "@/lib/server/repo";
+import { prefetchWorld } from "@/lib/server/world";
 import { HttpError, loadTripForUser, requireUserId, route } from "@/lib/server/trips";
 
 type Ctx = { params: { id: string } };
@@ -11,6 +13,9 @@ export const GET = route(async (_req: Request, { params }: Ctx) => {
   const userId = await requireUserId();
   const { trip, member, events } = await loadTripForUser(params.id, userId);
   const members = await (await repo()).listMembers(trip.id);
+  // Warm the Digital Twin's live inputs (weather, places, signals) so the Plan tab finds them ready.
+  const state = reduceEvents(events);
+  if (state && state.trip.status !== "closed") prefetchWorld(trip.id, state);
   return NextResponse.json({
     trip: { id: trip.id, joinCode: trip.joinCode, ownerId: trip.ownerId },
     me: { participantId: member.participantId, role: member.role },

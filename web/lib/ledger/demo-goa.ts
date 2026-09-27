@@ -66,6 +66,7 @@ export function buildGoaEvents(now = Date.now()): LedgerEvent[] {
     id: GOA_TRIP_ID,
     name: "Goa with the gang",
     destination: "Candolim, North Goa",
+    place: { lat: 15.51807, lon: 73.76259, name: "Candolim", admin: "Goa", country: "India", source: "open-meteo-geocoding" },
     startDate: iso(S),
     endDate: iso(S + 4),
     currency: "INR",

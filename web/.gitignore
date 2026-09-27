@@ -37,3 +37,6 @@ next-env.d.ts
 
 # local dev database (file store)
 /.data/
+
+# Nugen alignment corpus: built locally from the trips in .data/db.json (private data) — never commit
+/data/nugen/
