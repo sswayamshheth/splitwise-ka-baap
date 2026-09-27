@@ -1,0 +1,1031 @@
+{
+ "tripId": "trip_muigp0c2cnfa3db5ey",
+ "mode": "replay",
+ "fetchedAt": 1790490847919,
+ "destination": {
+  "lat": 15.3004543,
+  "lon": 74.0855134,
+  "label": "Goa, India",
+  "precision": "destination",
+  "source": "open-meteo-geocoding"
+ },
+ "places": {
+  "it_muigwd4a8yvebav4y1": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_muj9t3bop4oitn90yz": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujbkyfjwtmnezr53z": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7t36qftt0y1": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7edqj3g1l7v": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7c2gqmtiwo5": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7lhf5cvcimj": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7mc9v0p83xi": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7ex9gbrdl62": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7ygiws9u613": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin78r1fuu4342": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7dc85ca8ssg": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin7m1kkeedu1j": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin77iez2xiva5": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin79ffng3ubuo": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujexin75jorukk2oh": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  },
+  "it_mujfamwrdwah5zp567": {
+   "lat": 15.3004543,
+   "lon": 74.0855134,
+   "label": "Goa, India",
+   "precision": "destination",
+   "source": "open-meteo-geocoding"
+  }
+ },
+ "forecasts": [
+  {
+   "key": "15.25,74.00",
+   "point": {
+    "lat": 15.3004543,
+    "lon": 74.0855134,
+    "label": "Goa, India",
+    "precision": "destination",
+    "source": "open-meteo-geocoding"
+   },
+   "label": "Goa, India",
+   "forecast": {
+    "location": {
+     "lat": 15.3004543,
+     "lon": 74.0855134,
+     "label": "Goa, India",
+     "precision": "destination",
+     "source": "open-meteo-geocoding"
+    },
+    "grid": {
+     "lat": 15.3004543,
+     "lon": 74.0855134,
+     "label": "Goa, India",
+     "precision": "destination",
+     "source": "open-meteo-geocoding"
+    },
+    "timezone": "UTC+5:30",
+    "fetchedAt": 1790490847918,
+    "source": "met-norway",
+    "sourceUrl": "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=15.3005&lon=74.0855",
+    "current": {
+     "time": "2026-09-27T06:00:00Z",
+     "temperatureC": 30.6,
+     "precipitationMm": 0.1,
+     "windKmh": 10,
+     "weatherCode": 80
+    },
+    "daily": [
+     {
+      "date": "2026-09-27",
+      "hours": [
+       {
+        "hour": 11,
+        "precipitationMm": 0.1,
+        "precipitationProbability": null,
+        "windKmh": 9.72,
+        "tempC": 30.6,
+        "weatherCode": 80
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 13.32,
+        "tempC": 30.8,
+        "weatherCode": 1
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 13.32,
+        "tempC": 30.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 12.96,
+        "tempC": 30.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 12.6,
+        "tempC": 29.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 11.520000000000001,
+        "tempC": 28.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 9,
+        "tempC": 28.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.32,
+        "tempC": 26.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.52,
+        "tempC": 26.6,
+        "weatherCode": 1
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 1.4400000000000002,
+        "tempC": 26,
+        "weatherCode": 0
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.8800000000000003,
+        "tempC": 25.3,
+        "weatherCode": 1
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 24.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.4,
+        "tempC": 23.9,
+        "weatherCode": 0
+       }
+      ],
+      "precipitationMm": 0.1,
+      "precipitationProbability": null,
+      "precipitationHours": 1,
+      "tempMaxC": 30.8,
+      "tempMinC": 23.9,
+      "windMaxKmh": 13,
+      "gustMaxKmh": null,
+      "weatherCode": 80
+     },
+     {
+      "date": "2026-09-28",
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.680000000000001,
+        "tempC": 23.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.680000000000001,
+        "tempC": 23,
+        "weatherCode": 0
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 22.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.760000000000001,
+        "tempC": 22.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 6.12,
+        "tempC": 22.3,
+        "weatherCode": 1
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.760000000000001,
+        "tempC": 22.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 22.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 24.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.32,
+        "tempC": 26.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.8800000000000003,
+        "tempC": 28.5,
+        "weatherCode": 2
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.680000000000001,
+        "tempC": 29.3,
+        "weatherCode": 2
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 6.12,
+        "tempC": 30.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.2,
+        "precipitationProbability": null,
+        "windKmh": 10.08,
+        "tempC": 31.2,
+        "weatherCode": 80
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.8,
+        "precipitationProbability": null,
+        "windKmh": 13.68,
+        "tempC": 30.6,
+        "weatherCode": 80
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.2,
+        "precipitationProbability": null,
+        "windKmh": 13.32,
+        "tempC": 29.4,
+        "weatherCode": 80
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 12.96,
+        "tempC": 29.1,
+        "weatherCode": 1
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 11.16,
+        "tempC": 28.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 9.72,
+        "tempC": 27.9,
+        "weatherCode": 1
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.760000000000001,
+        "tempC": 26.7,
+        "weatherCode": 2
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.8800000000000003,
+        "tempC": 26.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.16,
+        "tempC": 26.3,
+        "weatherCode": 2
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.32,
+        "tempC": 25.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.4,
+        "tempC": 24.9,
+        "weatherCode": 1
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.32,
+        "tempC": 24.4,
+        "weatherCode": 1
+       }
+      ],
+      "precipitationMm": 1.2,
+      "precipitationProbability": null,
+      "precipitationHours": 3,
+      "tempMaxC": 31.2,
+      "tempMinC": 22.3,
+      "windMaxKmh": 14,
+      "gustMaxKmh": null,
+      "weatherCode": 80
+     },
+     {
+      "date": "2026-09-29",
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 23.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 23.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.4,
+        "tempC": 23.3,
+        "weatherCode": 45
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.4,
+        "tempC": 23.2,
+        "weatherCode": 45
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.4,
+        "tempC": 23.1,
+        "weatherCode": 45
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.760000000000001,
+        "tempC": 22.9,
+        "weatherCode": 45
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 22.8,
+        "weatherCode": 45
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 5.04,
+        "tempC": 24.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 1.4400000000000002,
+        "tempC": 27.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.8800000000000003,
+        "tempC": 28.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 6.12,
+        "tempC": 30,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 9.360000000000001,
+        "tempC": 30.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.6,
+        "precipitationProbability": null,
+        "windKmh": 13.32,
+        "tempC": 31.3,
+        "weatherCode": 80
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 1.2,
+        "precipitationProbability": null,
+        "windKmh": 12.24,
+        "tempC": 29.7,
+        "weatherCode": 81
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.2,
+        "precipitationProbability": null,
+        "windKmh": 10.44,
+        "tempC": 29.3,
+        "weatherCode": 80
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.7,
+        "precipitationProbability": null,
+        "windKmh": 11.16,
+        "tempC": 28.6,
+        "weatherCode": 80
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.3,
+        "precipitationProbability": null,
+        "windKmh": 10.8,
+        "tempC": 28.4,
+        "weatherCode": 80
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.1,
+        "precipitationProbability": null,
+        "windKmh": 9.72,
+        "tempC": 27.3,
+        "weatherCode": 80
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 6.84,
+        "tempC": 26.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 4.32,
+        "tempC": 26.1,
+        "weatherCode": 1
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 3.9600000000000004,
+        "tempC": 25.9,
+        "weatherCode": 2
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.8800000000000003,
+        "tempC": 25.5,
+        "weatherCode": 2
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": null,
+        "windKmh": 2.52,
+        "tempC": 25.2,
+        "weatherCode": 2
+       }
+      ],
+      "precipitationMm": 3.1,
+      "precipitationProbability": null,
+      "precipitationHours": 6,
+      "tempMaxC": 31.3,
+      "tempMinC": 22.8,
+      "windMaxKmh": 13,
+      "gustMaxKmh": null,
+      "weatherCode": 81
+     },
+     {
+      "date": "2026-09-30",
+      "precipitationMm": 0.6,
+      "precipitationProbability": null,
+      "precipitationHours": 12,
+      "tempMaxC": 31,
+      "tempMinC": 22.9,
+      "windMaxKmh": 8,
+      "gustMaxKmh": null,
+      "weatherCode": 2
+     },
+     {
+      "date": "2026-10-01",
+      "precipitationMm": 3,
+      "precipitationProbability": null,
+      "precipitationHours": 24,
+      "tempMaxC": 31.1,
+      "tempMinC": 23.8,
+      "windMaxKmh": 4,
+      "gustMaxKmh": null,
+      "weatherCode": 80
+     },
+     {
+      "date": "2026-10-02",
+      "precipitationMm": 8.9,
+      "precipitationProbability": null,
+      "precipitationHours": 18,
+      "tempMaxC": 31.5,
+      "tempMinC": 24.5,
+      "windMaxKmh": 3,
+      "gustMaxKmh": null,
+      "weatherCode": 81
+     },
+     {
+      "date": "2026-10-03",
+      "precipitationMm": 1.4,
+      "precipitationProbability": null,
+      "precipitationHours": 12,
+      "tempMaxC": 30.9,
+      "tempMinC": 24.1,
+      "windMaxKmh": 5,
+      "gustMaxKmh": null,
+      "weatherCode": 80
+     },
+     {
+      "date": "2026-10-04",
+      "precipitationMm": 5.7,
+      "precipitationProbability": null,
+      "precipitationHours": 18,
+      "tempMaxC": 30.6,
+      "tempMinC": 24.6,
+      "windMaxKmh": 4,
+      "gustMaxKmh": null,
+      "weatherCode": 81
+     },
+     {
+      "date": "2026-10-05",
+      "precipitationMm": 4.3,
+      "precipitationProbability": null,
+      "precipitationHours": 24,
+      "tempMaxC": 30.7,
+      "tempMinC": 25.3,
+      "windMaxKmh": 3,
+      "gustMaxKmh": null,
+      "weatherCode": 80
+     },
+     {
+      "date": "2026-10-06",
+      "precipitationMm": 8,
+      "precipitationProbability": null,
+      "precipitationHours": 12,
+      "tempMaxC": 31.2,
+      "tempMinC": 25,
+      "windMaxKmh": 6,
+      "gustMaxKmh": null,
+      "weatherCode": 81
+     }
+    ]
+   }
+  }
+ ],
+ "itemForecast": {
+  "it_muigwd4a8yvebav4y1": "15.25,74.00",
+  "it_muj9t3bop4oitn90yz": "15.25,74.00",
+  "it_mujbkyfjwtmnezr53z": "15.25,74.00",
+  "it_mujexin7t36qftt0y1": "15.25,74.00",
+  "it_mujexin7edqj3g1l7v": "15.25,74.00",
+  "it_mujexin7c2gqmtiwo5": "15.25,74.00",
+  "it_mujexin7lhf5cvcimj": "15.25,74.00",
+  "it_mujexin7mc9v0p83xi": "15.25,74.00",
+  "it_mujexin7ex9gbrdl62": "15.25,74.00",
+  "it_mujexin7ygiws9u613": "15.25,74.00",
+  "it_mujexin78r1fuu4342": "15.25,74.00",
+  "it_mujexin7dc85ca8ssg": "15.25,74.00",
+  "it_mujexin7m1kkeedu1j": "15.25,74.00",
+  "it_mujexin77iez2xiva5": "15.25,74.00",
+  "it_mujexin79ffng3ubuo": "15.25,74.00",
+  "it_mujexin75jorukk2oh": "15.25,74.00",
+  "it_mujfamwrdwah5zp567": "15.25,74.00"
+ },
+ "signals": [
+  {
+   "id": "wikivoyage:Goa",
+   "source": "wikivoyage",
+   "kind": "travel-guide",
+   "url": "https://en.wikivoyage.org/wiki/Goa",
+   "timestamp": 1790481796000,
+   "location": {
+    "name": "Goa",
+    "lat": 15.3004543,
+    "lon": 74.0855134
+   },
+   "title": "Wikivoyage: Goa",
+   "summary": "With better connectivity by air and rail, there has been an influx of people from neighbouring states that has brought with it different cultures. Many old Goan ancestral properties therefore lie either abandoned or mired in legal tangles brought about by disagreements within the widely dispersed inheritors of the property. It is advised to make bookings for trains, buses and flights well in advan",
+   "sentiment": 0,
+   "relevance": 0.5,
+   "confidence": 0.6,
+   "weatherTerms": [
+    "rain"
+   ]
+  }
+ ],
+ "providers": [
+  {
+   "source": "openstreetmap",
+   "ok": true,
+   "configured": true,
+   "count": 10,
+   "note": "10 real places from OpenStreetMap (Photon search)",
+   "fetchedAt": 1790490847919
+  },
+  {
+   "source": "gdelt-news",
+   "ok": false,
+   "configured": true,
+   "count": 0,
+   "note": "GDELT unavailable: fetch failed",
+   "fetchedAt": 1790490846135
+  },
+  {
+   "source": "mastodon",
+   "ok": true,
+   "configured": true,
+   "count": 0,
+   "note": "No relevant public #goa posts right now",
+   "fetchedAt": 1790490836415
+  },
+  {
+   "source": "wikivoyage",
+   "ok": true,
+   "configured": true,
+   "count": 1,
+   "note": "Travel guide: Goa",
+   "fetchedAt": 1790490836875
+  },
+  {
+   "source": "wikipedia-pageviews",
+   "ok": true,
+   "configured": true,
+   "count": 0,
+   "note": "No nearby alternative has a Wikipedia article",
+   "fetchedAt": 1790490847919
+  },
+  {
+   "source": "google-places",
+   "ok": false,
+   "configured": false,
+   "count": 0,
+   "note": "Ratings & reviews need GOOGLE_PLACES_API_KEY (Places API New). Not configured — no ratings shown, none invented.",
+   "fetchedAt": 1790490847919
+  }
+ ],
+ "candidates": [
+  {
+   "id": "osm:node/4270037210",
+   "name": "Goa Chitra museum",
+   "lat": 15.2648205,
+   "lon": 73.9413442,
+   "kind": "museum",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 20000,
+   "estimateBasis": "planning estimate for a museum (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/4270037210"
+  },
+  {
+   "id": "osm:node/4270094091",
+   "name": "Big Foot Cross Museum",
+   "lat": 15.339523,
+   "lon": 73.9876,
+   "kind": "museum",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 20000,
+   "estimateBasis": "planning estimate for a museum (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/4270094091"
+  },
+  {
+   "id": "osm:node/4270038692",
+   "name": "Ashvek Vintage world- Car Museum",
+   "lat": 15.3208441,
+   "lon": 73.9416552,
+   "kind": "museum",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 20000,
+   "estimateBasis": "planning estimate for a museum (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/4270038692"
+  },
+  {
+   "id": "osm:node/4269324291",
+   "name": "Monte Hill Viewpoint",
+   "lat": 15.2798058,
+   "lon": 73.9625311,
+   "kind": "viewpoint",
+   "tags": [
+    "nature",
+    "mountain"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a viewpoint (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/4269324291"
+  },
+  {
+   "id": "osm:way/431595802",
+   "name": "New Market Complex",
+   "lat": 15.2605306,
+   "lon": 74.1056807,
+   "kind": "marketplace",
+   "tags": [
+    "shopping"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 100000,
+   "estimateBasis": "planning estimate for a marketplace (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/431595802"
+  },
+  {
+   "id": "osm:node/11160193946",
+   "name": "Raia Fish Market",
+   "lat": 15.3132639,
+   "lon": 73.9843011,
+   "kind": "marketplace",
+   "tags": [
+    "shopping"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 100000,
+   "estimateBasis": "planning estimate for a marketplace (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/11160193946"
+  },
+  {
+   "id": "osm:node/1889370739",
+   "name": "Margao Fish Market",
+   "lat": 15.2860649,
+   "lon": 73.9580987,
+   "kind": "marketplace",
+   "tags": [
+    "shopping"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 100000,
+   "estimateBasis": "planning estimate for a marketplace (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/1889370739"
+  },
+  {
+   "id": "osm:node/1889370743",
+   "name": "Margao Market",
+   "lat": 15.2854284,
+   "lon": 73.958029,
+   "kind": "marketplace",
+   "tags": [
+    "shopping"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 100000,
+   "estimateBasis": "planning estimate for a marketplace (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/1889370743"
+  },
+  {
+   "id": "osm:way/322213261",
+   "name": "MMC New Market",
+   "lat": 15.2713523,
+   "lon": 73.9598531,
+   "kind": "marketplace",
+   "tags": [
+    "shopping"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 100000,
+   "estimateBasis": "planning estimate for a marketplace (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/322213261"
+  },
+  {
+   "id": "osm:way/428127049",
+   "name": "SGPDA Wholesale Fish Market",
+   "lat": 15.2885366,
+   "lon": 73.9503382,
+   "kind": "marketplace",
+   "tags": [
+    "shopping"
+   ],
+   "indoor": false,
+   "free": false,
+   "estPerPersonPaise": 100000,
+   "estimateBasis": "planning estimate for a marketplace (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/428127049"
+  }
+ ],
+ "ratings": {},
+ "weatherNote": "MET Norway forecast (backup — Open-Meteo refused this network) for 1 location, to 2026-10-06",
+ "capturedAt": 1790490847919
+}
