@@ -1,4 +1,4 @@
-import { toIso } from "@/lib/dates";
+import { addDaysIso, toIso } from "@/lib/dates";
 import { parseAmount, type Paise } from "@/lib/money";
 import type { ExpenseCategory } from "@/lib/ledger/types";
 
@@ -19,6 +19,8 @@ export type DraftItem = {
   vendor?: string;
   location?: string;
   estimatedPaise: Paise;
+  /** 1-based trip day from a "Day N" marker, when the text gives no calendar date. */
+  day?: number;
   /** The source line, shown in the review screen so the user can check it. */
   evidence: string;
   confidence: "high" | "medium" | "low";
@@ -184,7 +186,9 @@ function cleanTitle(raw: string): string {
     .replace(/(?:₹|rs\.?|inr)\s*[\d,]+(?:\.\d{1,2})?/gi, "")
     .replace(/[\d,]+(?:\.\d{1,2})?\s*\/-/g, "")
     .replace(/^[\s•\-–—*·>|]+/, "")
+    .replace(/^day\s*\d{1,2}\b\s*[:·\-–—.)]?\s*/i, "")
     .replace(/^\d+[.)]\s*/, "")
+    .replace(/~\s*(?:each|per (?:person|head)|pp)?(?=[\s,;]|$)/gi, "")
     .replace(/[\s:;,\-–—|]+$/, "")
     .replace(/\s{2,}/g, " ")
     .trim();
@@ -208,9 +212,13 @@ export function parseItineraryText(text: string, opts: { fallbackYear?: number }
 
   const items: DraftItem[] = [];
   const unmatched: string[] = [];
+  // "Day 2" (as a heading or a line prefix) applies to the lines that follow it.
+  let currentDay: number | undefined;
 
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
+    const dayMark = /^day\s*(\d{1,2})\b/i.exec(line);
+    if (dayMark) currentDay = Number(dayMark[1]);
     const amount = findAmount(line);
     if (amount === null) continue;
     if (NOISE.test(line.trim())) continue;
@@ -238,7 +246,8 @@ export function parseItineraryText(text: string, opts: { fallbackYear?: number }
     items.push({
       title: title.slice(0, 80),
       category,
-      date: dates.start ?? tripDates.start,
+      date: dates.start ?? (currentDay && tripDates.start ? addDaysIso(tripDates.start, currentDay - 1) : tripDates.start),
+      day: dates.start ? undefined : currentDay,
       endDate: category === "Stay" ? (dates.end ?? undefined) : undefined,
       vendor: vendorMatch ? vendorMatch[1].trim() : undefined,
       estimatedPaise: amount,

@@ -109,3 +109,31 @@ describe("pdf text extraction", () => {
     expect(extractPdfText(new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34]))).toBe("");
   });
 });
+
+describe("day markers in a typed plan", () => {
+  const typed = [
+    "Day 1 · homestay in Old Manali ₹12,000, paragliding at Solang Valley ~₹3,000 each",
+    "Day 2 · river rafting on the Beas ₹4,000",
+    "Day 3",
+    "Hampta Pass day trek ₹6,000",
+  ].join("\n");
+  const parsed = parseItineraryText(typed, { fallbackYear: 2026 });
+
+  it("keeps the day number for each item and strips it from the title", () => {
+    expect(parsed.items.map((i) => i.day)).toEqual([1, 2, 3]);
+    expect(parsed.items[1].title).toBe("river rafting on the Beas");
+    expect(parsed.items.every((i) => !/^day\s*\d/i.test(i.title))).toBe(true);
+  });
+
+  it("drops the '~ each' left behind when the price is removed", () => {
+    expect(parsed.items[0].title).not.toMatch(/~|\beach\b/);
+  });
+
+  it("dates items from Day N when the text has its own trip dates", () => {
+    const withDates = parseItineraryText(SAMPLE_ITINERARY_TEXT);
+    const byTitle = (needle: string) => withDates.items.find((i) => i.title.toLowerCase().includes(needle))!;
+    expect(byTitle("volvo bus delhi").date).toBe("2026-12-12");
+    expect(byTitle("paragliding").date).toBe("2026-12-14");
+    expect(byTitle("return volvo").date).toBe("2026-12-16");
+  });
+});

@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
+import { addDaysIso } from "@/lib/dates";
 import { parseItineraryText, type DraftItem } from "@/lib/itinerary/parse";
 import { suggestItinerary } from "@/lib/itinerary/suggest";
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "@/lib/ledger/types";
@@ -133,6 +134,8 @@ export const POST = route(async (req: Request) => {
     return NextResponse.json({ items, source: "library", note: "Suggested from our curated activity library and your group's interests." });
   }
   const parsed = parseItineraryText(body.text ?? "", { fallbackYear: Number(start.slice(0, 4)) });
-  const items = parsed.items.map((i) => ({ ...i, date: i.date && i.date >= start && i.date <= end ? i.date : start }));
+  // A calendar date inside the trip wins; else a "Day N" marker counts from the trip start; else the first day.
+  const inTrip = (d: string) => (d && d >= start && d <= end ? d : "");
+  const items = parsed.items.map((i) => ({ ...i, date: inTrip(i.date ?? "") || (i.day ? inTrip(addDaysIso(start, i.day - 1)) : "") || start }));
   return NextResponse.json({ items, source: "rules", note: items.length ? "Read by our rule-based parser — check each line against the source text shown." : "Couldn't find itinerary lines — add one item per line, e.g. '12 Oct · Villa check-in · ₹18,000'." });
 });
