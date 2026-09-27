@@ -3,6 +3,7 @@ import { diffBudget, type BudgetDiff } from "./budget";
 import { formatMoney, sumPaise, type Paise } from "@/lib/money";
 import {
   addExpense,
+  addItineraryItem,
   addParticipant,
   cancelExpense,
   CommandError,
@@ -11,8 +12,10 @@ import {
   recordRefund,
   removeItineraryItem,
   repriceBooking,
+  updateItineraryItem,
   withdrawFromBooking,
   type ExpenseInput,
+  type ItineraryInput,
   type RefundInput,
 } from "./commands";
 import { computeLedger, type Ledger } from "./engine";
@@ -38,7 +41,9 @@ export type Change =
   | { kind: "add-expense"; input: ExpenseInput }
   | { kind: "record-refund"; input: RefundInput }
   | { kind: "reprice"; expenseId?: string; itemId?: string; newAmountPaise: Paise; payerId?: ParticipantId }
-  | { kind: "drop-item"; itemId: string };
+  | { kind: "drop-item"; itemId: string }
+  | { kind: "add-item"; input: ItineraryInput }
+  | { kind: "update-item"; itemId: string; input: ItineraryInput; why?: string };
 
 type Ctx = { actor: ParticipantId | "system"; now?: number };
 
@@ -74,6 +79,10 @@ export function buildChangeEvents(state: TripState, change: Change, ctx: Ctx): L
       return [repriceBooking(state, change, ctx)];
     case "drop-item":
       return [removeItineraryItem(state, change.itemId, ctx)];
+    case "add-item":
+      return [addItineraryItem(state, change.input, ctx)];
+    case "update-item":
+      return [updateItineraryItem(state, change.itemId, change.input, ctx)];
   }
 }
 
@@ -102,6 +111,10 @@ export function describeChange(state: TripState, change: Change): string {
     }
     case "drop-item":
       return `${state.itinerary.find((i) => i.id === change.itemId)?.title ?? "A plan item"} is dropped from the plan`;
+    case "add-item":
+      return `${change.input.title} is added to the plan (${formatMoney(change.input.estimatedPaise)} estimated)`;
+    case "update-item":
+      return change.why ?? `${state.itinerary.find((i) => i.id === change.itemId)?.title ?? "A plan item"} is changed`;
   }
 }
 
