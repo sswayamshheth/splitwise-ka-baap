@@ -16,7 +16,7 @@ import { assess, betterSlot, dayRainHazard, imdCategory, profileOf, slotsFor } f
 import { explainDeterministic, factsFor, intentOf } from "@/lib/twin/explain";
 import { parseScenarioText } from "@/lib/twin/parse-scenario";
 import { EMPTY_SCENARIO, simulatedDay, validateScenario, type Scenario } from "@/lib/twin/scenario";
-import { buildTwin, newsPressureOf, primaryPerItem, type PlacePin, type TwinWorld } from "@/lib/twin/twin";
+import { buildTwin, newsPressureOf, primaryPerItem, type PlacePin, type TwinWorld, type Recommendation } from "@/lib/twin/twin";
 import { parseForecast, parseGeocode, WeatherParseError, type WeatherDay } from "@/lib/weather/openmeteo";
 
 // ---------------------------------------------------------------- fixtures
@@ -89,6 +89,9 @@ function world(rain: number[], extra: Partial<TwinWorld> = {}): TwinWorld {
 }
 
 const heavy: Scenario = { ...EMPTY_SCENARIO, date: day(1), rainfallMm: 100, stormStartHour: 6, stormHours: 10 };
+/** Heavy rain all day on every trip day: no dry slot or dry day to move to. */
+const heavyAll: Scenario = { ...EMPTY_SCENARIO, rainfallMm: 100, stormStartHour: 0, stormHours: 24 };
+const swapFor = (t: { recommendations: Recommendation[] }, itemId: string) => t.recommendations.find((r) => r.forItemId === itemId && r.kind === "replace" && !!r.alternative);
 
 // ---------------------------------------------------------------- weather parsing
 
@@ -258,7 +261,7 @@ describe("rating / review integration", () => {
     const base = world([0, 0, 0, 0, 0]);
     const plain = buildTwin(state, events, base, heavy, { now: NOW });
     const rated = buildTwin(state, events, { ...base, ratings: { "osm:node/2": { placeRef: "osm:node/2", rating: 4.8, reviewCount: 4000, recentSentiment: 0.9, signalIds: [] }, "osm:node/1": { placeRef: "osm:node/1", rating: 3.1, reviewCount: 900, recentSentiment: -0.6, signalIds: [] } } }, heavy, { now: NOW });
-    const pick = (t: typeof plain) => primaryPerItem(t.recommendations).find((r) => r.forItemId === "it_scuba" && r.kind === "replace")?.alternative?.candidate.id;
+    const pick = (t: typeof plain) => swapFor(t, "it_scuba")?.alternative?.candidate.id;
     expect(pick(rated)).toBe("osm:node/2");
     expect(pick(plain)).toBeDefined();
     // The outdoor viewpoint never wins in heavy rain, whatever its rating.
@@ -282,7 +285,11 @@ describe("digital twin", () => {
     const scuba = t.items.find((i) => i.id === "it_scuba")!;
     expect(scuba.conditions.source).toBe("live-forecast");
     expect(scuba.assessment.availability).toBe("unavailable");
-    const rec = primaryPerItem(t.recommendations).find((r) => r.forItemId === "it_scuba")!;
+    // Keeping the experience comes first: scuba moves to a dry trip day rather than being swapped.
+    const primary = primaryPerItem(t.recommendations).find((r) => r.forItemId === "it_scuba")!;
+    expect(primary.strategy).toBe("move-day");
+    expect(primary.newDate).not.toBe(day(1));
+    const rec = swapFor(t, "it_scuba")!;
     expect(rec.alternative?.candidate.indoor).toBe(true);
     expect(rec.evidence.map((e) => e.label)).toEqual(expect.arrayContaining(["Weather", "Location", "Group fit"]));
     expect(rec.breakdown.map((b) => b.label)).toEqual(["Weather suitability", "Public / social signals", "Group preferences", "Trip constraints", "Itinerary fit"]);
@@ -303,13 +310,19 @@ describe("digital twin", () => {
   });
   it("booking/cost effects come from the ledger (paid scuba → refund under its policy)", () => {
     const hard = buildTwin(state, events, world([0, 0, 0, 0, 0]), heavy, { now: NOW });
-    const rec = primaryPerItem(hard.recommendations).find((r) => r.forItemId === "it_scuba")!;
+    const moved = primaryPerItem(hard.recommendations).find((r) => r.forItemId === "it_scuba")!;
+    expect(moved.strategy).toBe("move-day");
+    expect(moved.changes).toEqual([]); // paid booking: the vendor moves the date, the ledger doesn't change
+    const rec = swapFor(hard, "it_scuba")!;
     expect(rec.changes[0]).toMatchObject({ kind: "cancel-booking", expenseId: "x_scuba" });
     expect(rec.finance?.ok).toBe(true);
     // 100% refundable until 5 days before the trip day → full ₹10,500 back to Siya, who paid.
     expect(rec.finance?.refunds).toEqual([{ amountPaise: 10_500_00, to: "Siya", expense: "Scuba at Grande Island" }]);
     expect(rec.chain.at(-1)).toMatch(/Ledger recalculated/);
-    expect(hard.paths.find((p) => p.date === day(1))!.twin.some((p) => p.alt)).toBe(true);
+    // The twin's day-2 route no longer includes scuba (it moved to another day).
+    expect(hard.paths.find((p) => p.date === day(1))!.twin.some((p) => p.itemId === "it_scuba")).toBe(false);
+    const allWet = buildTwin(state, events, world([0, 0, 0, 0, 0]), heavyAll, { now: NOW });
+    expect(allWet.paths.find((p) => p.date === day(1))!.twin.some((p) => p.alt)).toBe(true);
   });
   it("the real trip is never modified by the twin", () => {
     const before = JSON.stringify(events);
@@ -344,11 +357,47 @@ describe("digital twin", () => {
   it("GroupTrip Intelligence picks are honoured only inside the engine's shortlist", () => {
     const w = world([0, 0, 0, 0, 0]);
     const t = buildTwin(state, events, w, heavy, { now: NOW, nugenPicks: { it_scuba: "osm:node/2" } });
-    const rec = primaryPerItem(t.recommendations).find((r) => r.forItemId === "it_scuba")!;
-    expect(rec.alternative?.candidate.id).toBe("osm:node/2");
+    const rec = t.recommendations.find((r) => r.forItemId === "it_scuba" && r.alternative?.candidate.id === "osm:node/2")!;
     expect(rec.chosenBy).toBe("nugen");
     const bogus = buildTwin(state, events, w, heavy, { now: NOW, nugenPicks: { it_scuba: "osm:node/999" } });
-    expect(primaryPerItem(bogus.recommendations).find((r) => r.forItemId === "it_scuba")!.chosenBy).toBe("deterministic");
+    expect(bogus.recommendations.filter((r) => r.forItemId === "it_scuba").every((r) => r.chosenBy === "deterministic")).toBe(true);
+  });
+});
+
+describe("keep-the-experience ladder", () => {
+  it("1 → 2: rain on one day moves the activity to a dry trip day before any swap", () => {
+    const t = buildTwin(state, events, world([0, 0, 0, 0, 0]), heavy, { now: NOW });
+    const recs = t.recommendations.filter((r) => r.forItemId === "it_scuba");
+    expect(recs[0].strategy).toBe("move-day");
+    // Never onto a travel day (a flight in or out that day).
+    const flightDays = state.itinerary.filter((i) => /IndiGo|flight/i.test(i.title)).map((i) => i.date);
+    expect(flightDays.length).toBeGreaterThan(0);
+    expect(flightDays).not.toContain(recs[0].newDate);
+    // The list is ordered by rung: keeping the activity first, swaps after.
+    const ranks = recs.map((r) => ["same-day-slot", "move-day", "similar-elsewhere", "different-plan", "stay-in"].indexOf(r.strategy));
+    expect([...ranks].sort((a, b) => a - b)).toEqual(ranks);
+    expect(recs.some((r) => r.strategy === "stay-in")).toBe(false);
+  });
+  it("3 → 4: every day wet → same kind of experience if any, otherwise a different weather-proof plan", () => {
+    const t = buildTwin(state, events, world([0, 0, 0, 0, 0]), heavyAll, { now: NOW });
+    const recs = t.recommendations.filter((r) => r.forItemId === "it_scuba");
+    expect(recs.some((r) => r.strategy === "move-day")).toBe(false);
+    expect(recs.some((r) => r.strategy === "different-plan")).toBe(true);
+    // A water-sports alternative nearby counts as the same kind of experience and outranks a museum.
+    const pool = { id: "osm:node/9", name: "Candolim Aqua Centre", lat: 15.521, lon: 73.763, kind: "swimming_pool", tags: ["water", "indoor"], indoor: true, free: false, estPerPersonPaise: 50000, estimateBasis: "estimate", source: "openstreetmap", url: "https://www.openstreetmap.org/node/9" };
+    const base = world([0, 0, 0, 0, 0]);
+    const t2 = buildTwin(state, events, { ...base, candidates: [...base.candidates, pool as (typeof base.candidates)[number]] }, heavyAll, { now: NOW });
+    const top = primaryPerItem(t2.recommendations).find((r) => r.forItemId === "it_scuba")!;
+    expect(top.strategy).toBe("similar-elsewhere");
+    expect(top.alternative?.candidate.id).toBe("osm:node/9");
+  });
+  it("5: when nothing outside works, the group stays in — matched to their interests, ₹0, through the ledger", () => {
+    const t = buildTwin(state, events, { ...world([0, 0, 0, 0, 0]), candidates: [] }, heavyAll, { now: NOW });
+    const rec = primaryPerItem(t.recommendations).find((r) => r.forItemId === "it_scuba")!;
+    expect(rec.strategy).toBe("stay-in");
+    expect(rec.stayIn?.title).toMatch(/ at /);
+    expect(rec.changes.at(-1)).toMatchObject({ kind: "add-item", input: { estimatedPaise: 0 } });
+    expect(rec.finance?.ok).toBe(true);
   });
 });
 
@@ -462,7 +511,7 @@ describe("invalid AI response & API failure handling", () => {
     expect(r.meta.engine).toBe("deterministic");
   });
   it("explanations fall back to the grounded deterministic answer", async () => {
-    const t = buildTwin(state, events, world([0, 0, 0, 0, 0]), heavy, { now: NOW });
+    const t = buildTwin(state, events, world([0, 0, 0, 0, 0]), heavyAll, { now: NOW });
     const facts = factsFor(t, "it_scuba");
     const r = await explain("Why did my cost change?", facts, null);
     expect(r.meta.engine).toBe("deterministic");

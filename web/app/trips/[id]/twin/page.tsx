@@ -276,7 +276,7 @@ function TwinInner() {
                         Movement: {t.movement.fromStayKm} km from stay · {t.movement.minutesNormal} min normally{t.movement.minutesNow !== t.movement.minutesNormal ? ` → ~${t.movement.minutesNow} min` : ""}
                       </span>
                     ) : null}
-                    {rec ? <span className="font-label-md text-label-md text-primary">Twin: {rec.kind === "replace" ? `→ ${rec.alternative?.candidate.name}` : `→ ${rec.newTime}`}</span> : null}
+                    {rec ? <span className="font-label-md text-label-md text-primary">Twin: {rec.stayIn ? `→ ${rec.stayIn.title}` : rec.kind === "replace" ? `→ ${rec.alternative?.candidate.name}` : `→ ${rec.newDate ? `${rec.newDate}${rec.newTime ? ` ${rec.newTime}` : ""}` : rec.newTime}`}</span> : null}
                   </div>
                 </details>
               );

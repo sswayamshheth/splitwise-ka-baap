@@ -70,13 +70,37 @@ export type Effect = { id: string; kind: "direct" | "cascading" | "secondary"; i
 
 export type Evidence = { icon: string; label: string; text: string; source?: string; url?: string };
 
+/**
+ * Keep-the-experience ladder, tried in this order — the group keeps the plan it
+ * wanted unless that is truly impossible:
+ *   1 same-day-slot     the same activity at a drier/cooler time that day
+ *   2 move-day          the same activity on another trip day with good weather
+ *   3 similar-elsewhere the same kind of experience at an unaffected place
+ *   4 different-plan    a different, weather-proof plan nearby
+ *   5 stay-in           last resort: a plan at the stay (board games, cooking…)
+ */
+export type Strategy = "same-day-slot" | "move-day" | "similar-elsewhere" | "different-plan" | "stay-in";
+export const STRATEGY_RANK: Record<Strategy, number> = { "same-day-slot": 1, "move-day": 2, "similar-elsewhere": 3, "different-plan": 4, "stay-in": 5 };
+export const STRATEGY_LABEL: Record<Strategy, string> = {
+  "same-day-slot": "Keep it · later slot",
+  "move-day": "Keep it · another day",
+  "similar-elsewhere": "Same kind of experience",
+  "different-plan": "Different plan nearby",
+  "stay-in": "Last resort · stay in",
+};
+
 export type Recommendation = {
   id: string;
   forItemId: string;
   forTitle: string;
   kind: "replace" | "reschedule";
+  strategy: Strategy;
   alternative?: { candidate: Candidate; distanceKm: number; estTotalPaise: Paise; ratings?: PlaceRatings };
   newTime?: string;
+  /** move-day: the trip day the activity moves to. */
+  newDate?: string;
+  /** stay-in: the plan at the stay. */
+  stayIn?: { title: string; detail: string; place: string };
   /** 0 … 100 */
   score: number;
   breakdown: ScoreComponent[];
@@ -335,18 +359,18 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
       reviews: world.ratings[x.c.id]?.reviewCount,
       groupLikes: x.breakdown[2].detail,
     }));
-    const nugenPick = opts.nugenPicks?.[t.id];
     // GroupTrip Intelligence may choose within the top five the engine ranked — never outside it.
-    const picked = (nugenPick && scored.slice(0, 5).find((s) => s.c.id === nugenPick)) || scored[0];
+    const nugenPick = opts.nugenPicks?.[t.id];
     const recs: Recommendation[] = [];
-    if (t.bestSlot) {
+    const item = state.itinerary.find((i) => i.id === t.id)!;
+    if (t.bestSlot && t.bestSlot.suitability >= 60) {
       const hh = `${String(t.bestSlot.start).padStart(2, "0")}:00`;
-      const item = state.itinerary.find((i) => i.id === t.id)!;
       recs.push({
         id: `rec_${t.id}_slot`,
         forItemId: t.id,
         forTitle: t.title,
         kind: "reschedule",
+        strategy: "same-day-slot",
         newTime: hh,
         score: t.bestSlot.suitability,
         breakdown: [
@@ -360,42 +384,133 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
         chain: [],
       });
     }
-    if (picked) {
-      used.add(picked.c.id);
-      const item = state.itinerary.find((i) => i.id === t.id)!;
-      const changes: Change[] = [];
-      if (t.paid && t.expenseId) changes.push({ kind: "cancel-booking", expenseId: t.expenseId, date: today });
-      else changes.push({ kind: "drop-item", itemId: t.id });
-      const participantIds = going.length ? going : item.participantIds;
-      changes.push({
-        kind: "add-item",
-        input: {
-          title: picked.c.name.slice(0, 80),
-          category: categoryFor(picked.c),
-          date: t.date,
-          time: t.bestSlot ? undefined : item.time,
-          location: picked.c.name,
-          estimatedPaise: picked.c.estPerPersonPaise * participantIds.length,
-          participantIds,
-          notes: `Weather alternative for ${t.title}. ${picked.c.url}`,
-        },
-      });
+    const participantIds = going.length ? going : item.participantIds;
+    const removeOriginal = (): Change[] => (t.paid && t.expenseId ? [{ kind: "cancel-booking", expenseId: t.expenseId, date: today }] : [{ kind: "drop-item", itemId: t.id }]);
+
+    // 2 · the same activity on another trip day whose (real or simulated) weather is good.
+    const multiDay = !!item.endDate && item.endDate !== item.date;
+    if (!t.forcedUnavailable && !multiDay) {
+      // Travel days (a flight in or out) can't take an activity; days beyond the forecast are allowed but ranked
+      // after days with a known good forecast, and labelled as unconfirmed.
+      const travelDays = new Set(items.filter((o) => o.profile === "air").map((o) => o.date));
+      const days2 = days
+        .filter((d) => d !== t.date && d >= today && !travelDays.has(d))
+        .map((d) => {
+          const { c } = conditionsFor(item, d, t.place);
+          return { d, c, a: assess(item, c, newsPressure), known: c.source !== "no-data" };
+        })
+        .filter((o) => (o.known ? o.a.availability === "open" && o.a.suitability >= 70 : o.a.availability !== "unavailable"))
+        .sort((x, y) => Number(y.known) - Number(x.known) || Math.abs(dayDiff(t.date, x.d)) - Math.abs(dayDiff(t.date, y.d)) || y.a.suitability - x.a.suitability);
+      const best = days2[0];
+      if (best) {
+        const unconfirmed = !best.known;
+        const busy = items.filter((o) => o.id !== t.id && o.date === best.d && o.category !== "Stay").map((o) => o.title);
+        recs.push({
+          id: `rec_${t.id}_day_${best.d}`,
+          forItemId: t.id,
+          forTitle: t.title,
+          kind: "reschedule",
+          strategy: "move-day",
+          newDate: best.d,
+          newTime: item.time,
+          score: unconfirmed ? 60 : best.a.suitability,
+          breakdown: [
+            { label: `Planned day (${t.date})`, value: t.assessment.suitability, detail: t.assessment.drivers[0] },
+            { label: `New day (${best.d})`, value: unconfirmed ? -1 : best.a.suitability, detail: unconfirmed ? "no forecast yet — not scored" : (best.a.drivers[0] ?? "conditions fine") },
+          ],
+          evidence: [
+            unconfirmed
+              ? { icon: "event", label: "Other trip days", text: `${best.d}: no forecast yet (beyond Open-Meteo's 16-day window) — re-check closer to the date`, source: "Open-Meteo forecast" }
+              : { icon: "event", label: "Other trip days", text: `${best.d}: ${best.c.day ? `${best.c.day.precipitationMm.toFixed(0)} mm, ${Math.round(best.c.day.tempMaxC)}°C` : "fine"} — ${t.title} stays ${best.a.suitability}/100 suitable`, source: best.c.source === "simulated" ? "Simulated" : "Open-Meteo forecast" },
+            ...(travelDays.size ? [{ icon: "flight", label: "Travel days skipped", text: [...travelDays].sort().join(", "), source: "Trip itinerary" }] : []),
+            { icon: "calendar_month", label: "That day's plan", text: busy.length ? `Already on ${best.d}: ${busy.join(", ")}` : `${best.d} is free`, source: "Trip itinerary" },
+          ],
+          rationale: `Keeps ${t.title} in the trip: ${t.date} is ${t.assessment.availability} (${t.assessment.drivers[0]}), ${unconfirmed ? `so it moves to ${best.d} — no forecast is out for that day yet, so re-check closer to the date` : `but ${best.d} stays ${best.a.suitability}/100 suitable`}.${t.paid ? " It is already booked, so ask the vendor to move the date — the ledger does not change." : ""}`,
+          chosenBy: "deterministic",
+          changes: t.paid ? [] : [{ kind: "update-item", itemId: t.id, input: { ...inputOf(item), date: best.d }, why: `${t.title} moves to ${best.d}` }],
+          chain: [],
+        });
+      }
+    }
+
+    // 3 · the same kind of experience somewhere unaffected, then 4 · a different weather-proof plan nearby.
+    const top5 = scored.slice(0, 5);
+    const nugenChoice = nugenPick ? top5.find((s) => s.c.id === nugenPick) : undefined;
+    const similar = scored.filter((x) => ownTags.some((tag) => x.c.tags.includes(tag) && tag !== "indoor"));
+    const different = scored.filter((x) => !similar.includes(x));
+    const pickSimilar = nugenChoice && similar.includes(nugenChoice) ? nugenChoice : similar[0];
+    const pickDifferent = nugenChoice && different.includes(nugenChoice) ? nugenChoice : different[0];
+    for (const [pick, strategy] of [
+      [pickSimilar, "similar-elsewhere"],
+      [pickDifferent, "different-plan"],
+    ] as const) {
+      if (!pick) continue;
+      used.add(pick.c.id);
       recs.push({
-        id: `rec_${t.id}_${picked.c.id}`,
+        id: `rec_${t.id}_${pick.c.id}`,
         forItemId: t.id,
         forTitle: t.title,
         kind: "replace",
-        alternative: { candidate: picked.c, distanceKm: picked.km, estTotalPaise: picked.c.estPerPersonPaise * participantIds.length, ratings: world.ratings[picked.c.id] },
-        score: picked.score,
-        breakdown: picked.breakdown,
-        evidence: picked.evidence,
-        rationale: picked.rationale(t),
-        chosenBy: nugenPick && nugenPick === picked.c.id ? "nugen" : "deterministic",
-        changes,
+        strategy,
+        alternative: { candidate: pick.c, distanceKm: pick.km, estTotalPaise: pick.c.estPerPersonPaise * participantIds.length, ratings: world.ratings[pick.c.id] },
+        score: pick.score,
+        breakdown: pick.breakdown,
+        evidence: pick.evidence,
+        rationale: strategy === "similar-elsewhere" ? `Same kind of experience as ${t.title}, away from the weather. ${pick.rationale(t)}` : pick.rationale(t),
+        chosenBy: nugenChoice === pick ? "nugen" : "deterministic",
+        changes: [
+          ...removeOriginal(),
+          {
+            kind: "add-item",
+            input: {
+              title: pick.c.name.slice(0, 80),
+              category: categoryFor(pick.c),
+              date: t.date,
+              time: t.bestSlot ? undefined : item.time,
+              location: pick.c.name,
+              estimatedPaise: pick.c.estPerPersonPaise * participantIds.length,
+              participantIds,
+              notes: `Weather alternative for ${t.title}. ${pick.c.url}`,
+            },
+          },
+        ],
         chain: [],
       });
     }
-    recs.sort((a, b) => b.score - a.score);
+
+    // 5 · only when nothing outside works: a plan at the stay, matched to what the group enjoys.
+    if (!recs.length) {
+      const idea = stayInIdea(goingPeople.length ? goingPeople : members);
+      const where = stayItem?.title.split("·")[0].trim() || "the stay";
+      recs.push({
+        id: `rec_${t.id}_stayin`,
+        forItemId: t.id,
+        forTitle: t.title,
+        kind: "replace",
+        strategy: "stay-in",
+        stayIn: { title: `${idea.title} at ${where}`, detail: idea.detail, place: where },
+        score: idea.fit,
+        breakdown: [
+          { label: "Weather suitability", value: 100, detail: "indoors at the stay — unaffected" },
+          { label: "Group preferences", value: idea.fit, detail: idea.why },
+          { label: "Trip constraints", value: 100, detail: "no travel, ₹0 extra" },
+        ],
+        evidence: [
+          { icon: "block", label: "Outside options", text: `No other time, trip day or nearby place stays suitable for ${t.title} in these conditions`, source: "Twin engine" },
+          { icon: "group", label: "Group fit", text: idea.why, source: "Member preferences" },
+        ],
+        rationale: `Nothing outside works for ${t.title} — no drier slot, no better trip day and no suitable place nearby — so the group stays in: ${idea.title.toLowerCase()} (${idea.detail}).`,
+        chosenBy: "deterministic",
+        changes: [
+          ...removeOriginal(),
+          { kind: "add-item", input: { title: `${idea.title} at ${where}`.slice(0, 80), category: "Activity", date: t.date, time: item.time, location: where, estimatedPaise: 0, participantIds, notes: `Stay-in plan instead of ${t.title} (weather).` } },
+        ],
+        chain: [],
+      });
+    }
+
+    // Best rung first: keeping the planned experience outranks a higher-scoring swap.
+    recs.sort((a, b) => STRATEGY_RANK[a.strategy] - STRATEGY_RANK[b.strategy] || b.score - a.score);
     recommendations.push(...recs);
   }
 
@@ -456,6 +571,8 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
     const twin: PathPoint[] = todays.flatMap((t): PathPoint[] => {
       const rec = primary.find((r) => r.forItemId === t.id);
       if (rec?.kind === "replace" && rec.alternative) return [{ lat: rec.alternative.candidate.lat, lon: rec.alternative.candidate.lon, itemId: t.id, title: rec.alternative.candidate.name, alt: true }];
+      if (rec?.strategy === "stay-in") return [{ lat: origin.lat, lon: origin.lon, itemId: t.id, title: rec.stayIn!.title, alt: true }];
+      if (rec?.strategy === "move-day") return [];
       if (t.assessment.availability === "unavailable") return [];
       return [{ lat: t.place.lat, lon: t.place.lon, itemId: t.id, title: t.title }];
     });
@@ -505,8 +622,30 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
 /** The top recommendation per affected item. */
 export function primaryPerItem(recs: Recommendation[]): Recommendation[] {
   const out = new Map<string, Recommendation>();
-  for (const r of recs) if (!out.has(r.forItemId) || out.get(r.forItemId)!.score < r.score) out.set(r.forItemId, r);
+  const better = (a: Recommendation, b: Recommendation) => STRATEGY_RANK[a.strategy] < STRATEGY_RANK[b.strategy] || (STRATEGY_RANK[a.strategy] === STRATEGY_RANK[b.strategy] && a.score > b.score);
+  for (const r of recs) if (!out.has(r.forItemId) || better(r, out.get(r.forItemId)!)) out.set(r.forItemId, r);
   return [...out.values()];
+}
+
+// ---------------------------------------------------------------- stay-in ideas (last resort)
+
+const STAY_IN = [
+  { title: "Board-game night", detail: "cards, board games and snacks", tags: ["indoor", "nightlife", "relaxing"] },
+  { title: "Cook-together dinner", detail: "a local-recipe session in the stay's kitchen", tags: ["food"] },
+  { title: "Spa & pool downtime", detail: "slow afternoon at the stay's pool or a massage", tags: ["relaxing"] },
+  { title: "Movie & stories evening", detail: "a film and local-history stories from the host", tags: ["culture", "indoor"] },
+];
+
+/** The stay-in plan most of the going group would enjoy (board games when nobody said otherwise). */
+function stayInIdea(people: TripState["participants"]) {
+  const scored = STAY_IN.map((idea) => {
+    const liking = people.filter((p) => p.interests?.activities.some((a) => idea.tags.includes(a)));
+    return { idea, liking };
+  }).sort((a, b) => b.liking.length - a.liking.length);
+  const top = scored[0];
+  const fit = people.length ? Math.round((top.liking.length / people.length) * 100) : 50;
+  const why = top.liking.length ? `${top.liking.map((p) => first(p.name)).join(", ")} list ${top.idea.tags.filter((t) => top.liking.some((p) => p.interests?.activities.includes(t))).join("/")} among their interests` : "no stated preference — a relaxed default everyone can join";
+  return { title: top.idea.title, detail: top.idea.detail, fit: top.liking.length ? fit : 50, why };
 }
 
 // ---------------------------------------------------------------- candidate scoring
@@ -622,11 +761,17 @@ function chainFor(r: Recommendation, t: TwinItem): string[] {
   chain.push(d ? `${t.conditions.source === "simulated" ? "Simulated" : "Forecast"}: ${d.precipitationMm.toFixed(0)} mm (${imdCategory(d.precipitationMm)}), ${Math.round(d.tempMaxC)}°C, wind ${Math.round(d.windMaxKmh)} km/h` : "Scenario change");
   chain.push(`${PROFILE_LABEL[t.profile]} risk ${t.assessment.impactScore}/100 (${t.assessment.level})`);
   chain.push(t.assessment.availability === "unavailable" ? `${t.title} becomes unavailable` : `${t.title} at risk`);
-  if (r.kind === "reschedule") {
+  if (r.strategy === "move-day") {
+    chain.push(`Other trip days checked: ${r.newDate} is ${r.score}/100 suitable`);
+    chain.push(r.changes.length ? `Itinerary: ${t.title} moves to ${r.newDate}` : `Itinerary: ask the vendor to move it to ${r.newDate}`);
+  } else if (r.kind === "reschedule") {
     chain.push(`Hourly view: ${r.newTime} slot is ${r.score}/100 suitable`);
     chain.push(r.changes.length ? `Itinerary: ${t.title} moves to ${r.newTime}` : "Itinerary: ask the vendor for the later slot");
+  } else if (r.strategy === "stay-in" && r.stayIn) {
+    chain.push("No slot, trip day or nearby place works");
+    chain.push(`Itinerary: − ${t.title}, + ${r.stayIn.title}`);
   } else if (r.alternative) {
-    chain.push("Alternative required");
+    chain.push(r.strategy === "similar-elsewhere" ? "Same activity not possible — same kind of experience elsewhere" : "Alternative required");
     chain.push(`${r.alternative.candidate.name} selected · score ${r.score}/100 (weather + public signals + group + constraints)`);
     chain.push(`Itinerary: − ${t.title}, + ${r.alternative.candidate.name}`);
   }

@@ -46,8 +46,9 @@ export function factsFor(twin: Twin, focusItemId?: string): Facts {
     recommendation: rec
       ? {
           kind: rec.kind,
-          alternative: rec.alternative?.candidate.name,
-          newTime: rec.newTime,
+          strategy: rec.strategy,
+          alternative: rec.alternative?.candidate.name ?? rec.stayIn?.title,
+          newTime: rec.newDate ? `${rec.newDate}${rec.newTime ? ` ${rec.newTime}` : ""}` : rec.newTime,
           score: rec.score,
           breakdown: rec.breakdown.map((b) => `${b.label}: ${b.value < 0 ? "no data" : b.value} — ${b.detail}`),
           evidence: rec.evidence.map((e) => `${e.label}: ${e.text} [${e.source ?? ""}]`),
@@ -56,7 +57,7 @@ export function factsFor(twin: Twin, focusItemId?: string): Facts {
           chosenBy: rec.chosenBy,
         }
       : undefined,
-    runnerUps: others.map((o) => ({ kind: o.kind, alternative: o.alternative?.candidate.name, newTime: o.newTime, score: o.score })),
+    runnerUps: others.map((o) => ({ kind: o.kind, strategy: o.strategy, alternative: o.alternative?.candidate.name ?? o.stayIn?.title, newTime: o.newDate ?? o.newTime, score: o.score })),
     money: rec?.finance?.ok
       ? {
           changes: rec.finance.lines,

@@ -14,7 +14,7 @@ import type { TripState } from "@/lib/ledger/types";
 import { formatMoney } from "@/lib/money";
 import type { InferenceMeta } from "@/lib/nugen/intelligence";
 import type { Scenario } from "@/lib/twin/scenario";
-import { inputOf, type Recommendation, type Twin, type TwinItem, type TwinWorld } from "@/lib/twin/twin";
+import { inputOf, type Recommendation, type Twin, type TwinItem, type TwinWorld, STRATEGY_LABEL } from "@/lib/twin/twin";
 import { describeWeatherCode } from "@/lib/weather/openmeteo";
 
 export const TwinMap = dynamic(() => import("./TwinMap"), { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-xl bg-surface-container" /> });
@@ -221,8 +221,13 @@ export function RecommendationCard({ rec, onAccept, onDismiss, onSimulate, onWhy
     <div className={cx("flex flex-col gap-space-sm rounded-xl p-space-md", simulated ? "bg-tertiary-fixed/40 ring-1 ring-tertiary/40" : "bg-surface-container-lowest shadow-sm")}>
       <div className="flex items-start justify-between gap-space-sm">
         <div className="flex min-w-0 flex-col">
-          <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary">{rec.kind === "replace" ? `Instead of ${rec.forTitle}` : `Reschedule ${rec.forTitle}`}</span>
-          <span className="font-headline-sm text-headline-sm text-on-surface">{alt ? alt.candidate.name : `Move to ${rec.newTime}`}</span>
+          <span className={cx("font-label-sm text-label-sm uppercase tracking-wider", rec.strategy === "stay-in" ? "text-secondary" : "text-primary")}>
+            {STRATEGY_LABEL[rec.strategy]} · {rec.forTitle}
+          </span>
+          <span className="font-headline-sm text-headline-sm text-on-surface">
+            {alt ? alt.candidate.name : rec.stayIn ? rec.stayIn.title : rec.newDate ? `Move to ${rec.newDate}${rec.newTime ? ` · ${rec.newTime}` : ""}` : `Move to ${rec.newTime}`}
+          </span>
+          {rec.stayIn ? <span className="font-label-sm text-label-sm text-on-surface-variant">{rec.stayIn.detail} · no travel · ₹0 extra</span> : null}
           {alt ? (
             <span className="font-label-sm text-label-sm text-on-surface-variant">
               {alt.candidate.kind.replace(/_/g, " ")} · {alt.distanceKm} km · {alt.candidate.indoor ? "indoor" : "outdoor"} · est. {formatMoney(alt.estTotalPaise)} ({alt.candidate.estimateBasis})
