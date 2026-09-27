@@ -62,7 +62,7 @@ async function nominatim(query: string, near: LatLon): Promise<GeoPlace | null> 
   const d = 0.9;
   const url = `https://nominatim.openstreetmap.org/search?${new URLSearchParams({ q: query, format: "jsonv2", limit: "1", viewbox: `${near.lon - d},${near.lat + d},${near.lon + d},${near.lat - d}` })}`;
   try {
-    const hit = parseNominatim(await getJson(url, {}, 8000), query);
+    const hit = parseNominatim(await getJson(url, {}, 6000), query);
     geoCache.set(key, hit);
     return hit;
   } catch {
@@ -92,7 +92,7 @@ async function geocodeDestination(destination: string): Promise<GeoPlace | null>
   const parts = destination.split(",").map((p) => p.trim()).filter(Boolean);
   for (const q of [parts[0], destination]) {
     try {
-      const hit = parseGeocode(await getJson(`https://geocoding-api.open-meteo.com/v1/search?${new URLSearchParams({ name: q, count: "1", language: "en", format: "json" })}`), q);
+      const hit = parseGeocode(await getJson(`https://geocoding-api.open-meteo.com/v1/search?${new URLSearchParams({ name: q, count: "1", language: "en", format: "json" })}`, {}, 6000), q);
       if (hit) {
         geoCache.set(key, hit);
         return hit;
@@ -102,7 +102,8 @@ async function geocodeDestination(destination: string): Promise<GeoPlace | null>
     }
   }
   const n = await nominatim(destination, { lat: 20, lon: 78 });
-  geoCache.set(key, n);
+  // A miss may just be a network failure: only successes are cached.
+  if (n) geoCache.set(key, n);
   return n;
 }
 
@@ -229,7 +230,7 @@ export function prefetchWorld(tripId: string, state: TripState) {
 }
 
 async function assemble(tripId: string, state: TripState, cacheKey: string): Promise<TwinWorld> {
-  const geo = await geocodeDestination(state.trip.destination);
+  const geo = await budget(geocodeDestination(state.trip.destination), 12_000, null);
   if (!geo) throw new Error(`Could not locate "${state.trip.destination}" (Open-Meteo geocoding and Nominatim found nothing)`);
   const region = [geo.admin, geo.country].filter(Boolean).join(", ") || state.trip.destination;
   const destination: PlacePin = { lat: geo.lat, lon: geo.lon, label: state.trip.destination, precision: "destination", source: geo.source };
@@ -253,7 +254,7 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
     const prev = await loadReplay(state.trip.destination, tripId);
     for (const [id, p] of Object.entries(places)) {
       const old = prev?.places[id];
-      if (p.precision === "destination" && old?.precision === "item") places[id] = old;
+      if (p.precision === "destination" && old?.precision === "item") places[id] = { ...old, source: `recorded capture ${new Date(prev!.capturedAt ?? prev!.fetchedAt).toISOString().slice(0, 10)}` };
     }
   }
 
@@ -275,13 +276,13 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
       [...clusters.entries()].slice(0, 6).map(async ([key, c]): Promise<WorldForecast> => {
         const url = forecastUrl(c.point);
         try {
-          return { key, point: c.point, label: c.label, forecast: parseForecast(await getJson(url), c.label, c.point, url) };
+          return { key, point: c.point, label: c.label, forecast: parseForecast(await getJson(url, {}, 10_000), c.label, c.point, url) };
         } catch (e) {
           return { key, point: c.point, label: c.label, forecast: null, error: (e as Error).message };
         }
       }),
     ),
-    Promise.all(farPoints.map((c) => budget(overpass(c.point, 8), 15_000, { candidates: [] as Candidate[], ok: false, note: "timed out" }))),
+    Promise.all(farPoints.map((c) => budget(overpass(c.point, 8), 10_000, { candidates: [] as Candidate[], ok: false, note: "timed out" }))),
   ]);
   for (const [id, k] of Object.entries(itemForecast)) if (!forecasts.some((f) => f.key === k)) itemForecast[id] = forecasts[0].key;
 
@@ -302,8 +303,8 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
   // Ratings are looked up for the places most likely to be recommended: indoor, closest first.
   const shortlist = [...candidates].sort((a, b) => Number(b.indoor) - Number(a.indoor) || distanceKm(a, destination) - distanceKm(b, destination));
   const [views, google] = await Promise.all([
-    budget(pageviewsProvider(shortlist), 8_000, { signals: [], ratings: {}, status: { source: "wikipedia-pageviews" as const, ok: false, configured: true, count: 0, note: "Wikipedia page views timed out", fetchedAt: Date.now() } }),
-    budget(googlePlacesProvider(shortlist, process.env.GOOGLE_PLACES_API_KEY), 10_000, { signals: [], ratings: {}, status: { source: "google-places" as const, ok: false, configured: true, count: 0, note: "Google Places timed out", fetchedAt: Date.now() } }),
+    budget(pageviewsProvider(shortlist), 6_000, { signals: [], ratings: {}, status: { source: "wikipedia-pageviews" as const, ok: false, configured: true, count: 0, note: "Wikipedia page views timed out", fetchedAt: Date.now() } }),
+    budget(googlePlacesProvider(shortlist, process.env.GOOGLE_PLACES_API_KEY), 6_000, { signals: [], ratings: {}, status: { source: "google-places" as const, ok: false, configured: true, count: 0, note: "Google Places timed out", fetchedAt: Date.now() } }),
   ]);
   const signals: PublicSignal[] = [...news.signals, ...social.signals, ...guide.signals, ...views.signals, ...google.signals].sort((a, b) => b.relevance - a.relevance);
   const providers: ProviderStatus[] = [

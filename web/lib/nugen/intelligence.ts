@@ -39,14 +39,15 @@ export const SYSTEM_PROMPT = [
   "Rules: reply with ONE JSON object and nothing else. Use only ids that appear in the input. Never invent prices, refunds, balances, ratings or reviews — money is computed by the ledger engine, not by you.",
 ].join(" ");
 
-async function run<T>(task: Task, cfg: NugenConfig | null, user: string, validate: (raw: unknown) => Validated<T>, maxTokens = 600): Promise<{ value: T | null; meta: Omit<InferenceMeta, "inputs"> }> {
+async function run<T>(task: Task, cfg: NugenConfig | null, user: string, validate: (raw: unknown) => Validated<T>, maxTokens = 600, timeoutMs = 25_000): Promise<{ value: T | null; meta: Omit<InferenceMeta, "inputs"> }> {
   if (!cfg) return { value: null, meta: { task, engine: "deterministic", fallbackReason: "NUGEN_API_KEY not configured" } };
+  if (timeoutMs < 3_000) return { value: null, meta: { task, engine: "deterministic", model: cfg.model, aligned: cfg.aligned, fallbackReason: "Not enough time left in this request for a model call" } };
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
     { role: "user", content: user },
   ];
   try {
-    const res = await nugenChat(cfg, messages, { maxTokens });
+    const res = await nugenChat(cfg, messages, { maxTokens, timeoutMs });
     let raw: unknown;
     try {
       raw = extractJson(res.text);
@@ -71,14 +72,14 @@ export type AdaptationInput = {
   preferences: Record<string, string[]>;
 };
 
-export async function adaptToWeather(input: AdaptationInput, cfg = nugenConfig()): Promise<{ picks: AdaptationPick[] | null; meta: InferenceMeta }> {
+export async function adaptToWeather(input: AdaptationInput, cfg = nugenConfig(), timeoutMs = 25_000): Promise<{ picks: AdaptationPick[] | null; meta: InferenceMeta }> {
   const shortlist: Shortlist = Object.fromEntries(Object.entries(input.shortlist).map(([k, v]) => [k, v.map((c) => c.candidateId)]));
   const user = [
     "TASK: weather-adaptation. For each affected item choose the best alternative from ITS shortlist, balancing weather suitability, public signals (ratings/reviews/reports), group preferences, distance and the existing itinerary.",
     'Return {"picks":[{"itemId":"...","candidateId":"...","reason":"one sentence citing the evidence"}]}.',
     `INPUT: ${JSON.stringify(input)}`,
   ].join("\n");
-  const r = await run("weather-adaptation", cfg, user, (raw) => validateAdaptation(raw, shortlist));
+  const r = await run("weather-adaptation", cfg, user, (raw) => validateAdaptation(raw, shortlist), 600, timeoutMs);
   return { picks: r.value, meta: { ...r.meta, inputs: ["Open-Meteo forecast", "Public signals", "Itinerary & bookings", "Member preferences", "Candidate places (OSM)"] } };
 }
 
@@ -104,7 +105,7 @@ export async function scenarioFromText(text: string, state: TripState, cfg = nug
 
 // ---------------------------------------------------------------- D
 
-export async function explain(question: string, facts: Facts, cfg = nugenConfig()): Promise<{ answer: string; citedFacts: string[]; meta: InferenceMeta }> {
+export async function explain(question: string, facts: Facts, cfg = nugenConfig(), timeoutMs = 25_000): Promise<{ answer: string; citedFacts: string[]; meta: InferenceMeta }> {
   const factsJson = JSON.stringify(facts);
   const user = [
     "TASK: explanation. Answer the traveller's question in 2-4 plain sentences using ONLY these facts. Quote numbers exactly as given. Say clearly when something is simulated.",
@@ -112,7 +113,7 @@ export async function explain(question: string, facts: Facts, cfg = nugenConfig(
     `FACTS: ${factsJson}`,
     `QUESTION: ${question}`,
   ].join("\n");
-  const r = await run("explanation", cfg, user, (raw) => validateExplanation(raw, factsJson), 500);
+  const r = await run("explanation", cfg, user, (raw) => validateExplanation(raw, factsJson), 500, timeoutMs);
   const inputs = ["Twin facts (weather, scores, evidence)", "Ledger simulation results", "Question"];
   if (r.value) return { ...r.value, meta: { ...r.meta, inputs } };
   return { answer: explainDeterministic(question, facts), citedFacts: [], meta: { ...r.meta, inputs } };

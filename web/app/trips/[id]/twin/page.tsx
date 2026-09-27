@@ -85,6 +85,7 @@ function TwinInner() {
   function exit() {
     setSim(null);
     setNlMeta(null);
+    if (judge) setMode("live");
     setJudge(false);
     toast("Back to the real trip — the simulation was never saved");
   }
@@ -107,7 +108,7 @@ function TwinInner() {
     <main className="mx-auto w-full max-w-[520px] flex-1 px-margin pb-16 pt-space-md">
       <div className="flex items-center justify-between">
         <span className="font-label-sm text-label-sm uppercase tracking-widest text-primary">Digital Twin · Weather What-If</span>
-        <SourceBadge simulated={simulated} replay={mode === "replay"} />
+        <SourceBadge simulated={simulated} replay={world?.mode === "replay"} />
       </div>
 
       {/* REAL vs SIMULATED banner */}
@@ -118,7 +119,7 @@ function TwinInner() {
           <span className="font-label-md text-label-md opacity-90">
             {simulated
               ? `${twin!.scenario?.label ?? "Scenario"} — computed on a copy. The real trip still has ${trip.events.length} ledger events and ${formatMoney(trip.ledger.budget.estimatedPaise)} planned.`
-              : `Live forecast and the real ledger (${trip.events.length} events, ${formatMoney(trip.ledger.budget.estimatedPaise)} planned).`}
+              : `${world?.mode === "replay" ? "Recorded (not live) forecast capture" : "Live forecast"} and the real ledger (${trip.events.length} events, ${formatMoney(trip.ledger.budget.estimatedPaise)} planned).`}
           </span>
           {judge ? <span className="mt-1 font-label-sm text-label-sm">JUDGE DEMO MODE · recorded real capture ({world?.capturedAt ? new Date(world.capturedAt).toLocaleString("en-IN") : "—"}) + simulated heavy rain. Not live data.</span> : null}
         </div>
@@ -269,7 +270,7 @@ function TwinInner() {
                     </span>
                   </summary>
                   <div className="mt-space-xs flex flex-col gap-space-xs">
-                    <ItemImpact item={t} />
+                    <ItemImpact item={t} replay={world.mode === "replay"} />
                     {t.movement.minutesNormal !== null ? (
                       <span className="font-label-sm text-label-sm text-on-surface-variant">
                         Movement: {t.movement.fromStayKm} km from stay · {t.movement.minutesNormal} min normally{t.movement.minutesNow !== t.movement.minutesNormal ? ` → ~${t.movement.minutesNow} min` : ""}

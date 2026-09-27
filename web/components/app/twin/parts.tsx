@@ -1,17 +1,20 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button, cx, Icon, Pill, useFeedback } from "@/components/app/kit";
 import { buildAll } from "@/components/app/money/build";
 import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate } from "@/lib/dates";
+import { CommandError } from "@/lib/ledger/commands";
+import type { Change } from "@/lib/ledger/simulate";
+import type { TripState } from "@/lib/ledger/types";
 import { formatMoney } from "@/lib/money";
 import type { InferenceMeta } from "@/lib/nugen/intelligence";
 import type { Scenario } from "@/lib/twin/scenario";
-import type { Recommendation, Twin, TwinItem, TwinWorld } from "@/lib/twin/twin";
+import { inputOf, type Recommendation, type Twin, type TwinItem, type TwinWorld } from "@/lib/twin/twin";
 import { describeWeatherCode } from "@/lib/weather/openmeteo";
 
 export const TwinMap = dynamic(() => import("./TwinMap"), { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-xl bg-surface-container" /> });
@@ -24,16 +27,20 @@ export function useRealTwin(tripId: string, mode: WorldMode) {
   const [data, setData] = useState<TwinPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const seq = useRef(0);
   const load = useCallback(
     async (refresh = false) => {
+      // Only the latest request may update the page (a slow live answer must not replace a newer recorded one).
+      const mine = ++seq.current;
       setLoading(true);
       setError(null);
       try {
-        setData(await api<TwinPayload>(`/api/trips/${tripId}/twin?mode=${mode}${refresh ? "&refresh=1" : ""}`));
+        const res = await api<TwinPayload>(`/api/trips/${tripId}/twin?mode=${mode}${refresh ? "&refresh=1" : ""}`);
+        if (mine === seq.current) setData(res);
       } catch (e) {
-        setError(errorText(e, "Could not load weather intelligence"));
+        if (mine === seq.current) setError(errorText(e, "Could not load weather intelligence"));
       } finally {
-        setLoading(false);
+        if (mine === seq.current) setLoading(false);
       }
     },
     [tripId, mode],
@@ -119,7 +126,7 @@ export function ImpactChain({ steps }: { steps: string[] }) {
   );
 }
 
-export function ItemImpact({ item }: { item: TwinItem }) {
+export function ItemImpact({ item, replay }: { item: TwinItem; replay?: boolean }) {
   const a = item.assessment;
   return (
     <div className="flex flex-col gap-space-xs">
@@ -129,7 +136,7 @@ export function ItemImpact({ item }: { item: TwinItem }) {
         </Pill>
         <Pill tone="grey">{a.availability}</Pill>
         <Pill tone="grey">confidence {Math.round(a.confidence * 100)}%</Pill>
-        <SourceBadge simulated={item.conditions.source === "simulated"} />
+        <SourceBadge simulated={item.conditions.source === "simulated"} replay={replay} />
       </div>
       {a.components.map((c) => (
         <ScoreBar key={c.label} value={c.value} label={c.label} detail={c.detail} />
@@ -156,6 +163,31 @@ export function ItemImpact({ item }: { item: TwinItem }) {
   );
 }
 
+/**
+ * The recommendation was computed on the server from a snapshot. Before
+ * writing, re-check it against the trip as it is NOW: the item / booking must
+ * still be in the state the twin saw, and a reschedule changes only the time
+ * (never overwrites fields someone else edited since).
+ */
+function rebase(s: TripState, changes: Change[]): Change[] {
+  return changes.map((c) => {
+    if (c.kind === "update-item") {
+      const cur = s.itinerary.find((i) => i.id === c.itemId);
+      if (!cur || cur.status === "cancelled") throw new CommandError("That plan item changed since this was suggested — refresh and try again");
+      return { ...c, input: { ...inputOf(cur), time: c.input.time } };
+    }
+    if (c.kind === "drop-item") {
+      const cur = s.itinerary.find((i) => i.id === c.itemId);
+      if (!cur || cur.expenseIds.length) throw new CommandError("That plan item changed since this was suggested — refresh and try again");
+    }
+    if (c.kind === "cancel-booking") {
+      const cur = s.expenses.find((e) => e.id === c.expenseId);
+      if (!cur || cur.status !== "active") throw new CommandError("That booking changed since this was suggested — refresh and try again");
+    }
+    return c;
+  });
+}
+
 /** Applies a recommendation to the REAL trip — only after the user confirms, via the ledger's validated commands. */
 export function useAccept() {
   const trip = useTrip();
@@ -173,7 +205,7 @@ export function useAccept() {
     });
     if (!ok) return;
     try {
-      await trip.run((s, ctx) => buildAll(s, r.changes, ctx));
+      await trip.run((s, ctx) => buildAll(s, rebase(s, r.changes), ctx));
       toast("Applied · every share re-derived by the ledger");
       onDone?.();
     } catch (e) {

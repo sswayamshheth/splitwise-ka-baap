@@ -42,7 +42,7 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
         if (mm < 2.5) continue;
         const sim = days.some((t) => t.conditions.source === "simulated");
         L.circle([f.point.lat, f.point.lon], { radius: 4000 + Math.min(mm, 200) * 60, color: sim ? "#6750a4" : "#3b6fb6", weight: 1, fillOpacity: Math.min(0.35, 0.08 + mm / 400), dashArray: sim ? "6 4" : undefined })
-          .bindTooltip(`${sim ? "SIMULATED" : "Forecast"} rain ${mm.toFixed(0)} mm`)
+          .bindTooltip(`${sim ? "SIMULATED" : world.mode === "replay" ? "Recorded forecast" : "Forecast"} rain ${mm.toFixed(0)} mm`)
           .addTo(g);
       }
 
@@ -52,7 +52,11 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
         const color = a.availability === "unknown" ? "#74777f" : a.availability === "open" ? LEVEL_COLOR.Low : LEVEL_COLOR[a.level];
         const focus = t.id === focusItemId;
         L.circleMarker([t.place.lat, t.place.lon], { radius: focus ? 11 : 8, color: "#fff", weight: 2, fillColor: color, fillOpacity: 0.95 })
-          .bindPopup(`<b>${esc(t.title)}</b><br/>${t.date}${t.time ? ` · ${t.time}` : ""}<br/>${a.availability.toUpperCase()} · impact ${a.impactScore}/100<br/><small>${esc(a.drivers[0])}</small>${t.place.precision === "destination" ? "<br/><small>(pinned at destination — exact place not found)</small>" : ""}`)
+          .bindPopup(
+            `<b>${esc(t.title)}</b><br/>${esc(t.date)}${t.time ? ` · ${esc(t.time)}` : ""}<br/>${esc(a.availability.toUpperCase())} · impact ${Number(a.impactScore)}/100<br/><small>${esc(a.drivers[0] ?? "")}</small>${
+              t.place.precision === "destination" ? "<br/><small>(pinned at destination — exact place not found)</small>" : t.place.source.startsWith("recorded") ? `<br/><small>(location from ${esc(t.place.source)})</small>` : ""
+            }`,
+          )
           .addTo(g);
         pts.push([t.place.lat, t.place.lon]);
       }
@@ -63,7 +67,7 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
         if (date && from && from.date !== date) continue;
         const c = r.alternative.candidate;
         L.circleMarker([c.lat, c.lon], { radius: 8, color: "#fff", weight: 2, fillColor: "#6750a4", fillOpacity: 0.95 })
-          .bindPopup(`<b>Alternative: ${esc(c.name)}</b><br/>for ${esc(r.forTitle)} · score ${r.score}/100<br/><a href="${esc(c.url)}" target="_blank" rel="noreferrer">OpenStreetMap</a>`)
+          .bindPopup(`<b>Alternative: ${esc(c.name)}</b><br/>for ${esc(r.forTitle)} · score ${Number(r.score)}/100<br/><a href="${esc(c.url)}" target="_blank" rel="noreferrer">OpenStreetMap</a>`)
           .addTo(g);
         if (from) L.polyline([[from.place.lat, from.place.lon], [c.lat, c.lon]], { color: "#6750a4", weight: 2, dashArray: "2 6" }).addTo(g);
         pts.push([c.lat, c.lon]);

@@ -27,7 +27,7 @@ export function factsFor(twin: Twin, focusItemId?: string): Facts {
   const item = twin.items.find((t) => t.id === (rec?.forItemId ?? focusItemId ?? twin.headline.itemId));
   const others = rec ? twin.recommendations.filter((r) => r.forItemId === rec.forItemId && r.id !== rec.id) : [];
   return {
-    mode: twin.mode === "simulated" ? "SIMULATED digital twin (real trip unchanged)" : "REAL trip with live forecast",
+    mode: twin.mode === "simulated" ? "SIMULATED digital twin (real trip unchanged)" : twin.worldMode === "replay" ? "REAL trip with a RECORDED (not live) forecast capture" : "REAL trip with live forecast",
     scenario: twin.scenario ?? undefined,
     item: item
       ? {

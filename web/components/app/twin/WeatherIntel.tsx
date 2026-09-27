@@ -144,7 +144,7 @@ export function WeatherIntel() {
                 <span className="font-title-md text-title-md">
                   {t.title} <span className="font-label-sm text-label-sm text-on-surface-variant">· {formatDate(t.date)}</span>
                 </span>
-                <ItemImpact item={t} />
+                <ItemImpact item={t} replay={world.mode === "replay"} />
               </div>
             ))}
           {twin.effects.length ? (

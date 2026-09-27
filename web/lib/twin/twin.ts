@@ -204,7 +204,8 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
 
   const conditionsFor = (item: ItineraryItem, date: string, pin: PlacePin): { c: Conditions; key: string } => {
     const key = world.itemForecast[item.id] ?? destKey ?? "";
-    const f = forecastByKey.get(key)?.forecast ?? null;
+    // If this location's forecast failed, fall back to the destination's rather than showing "no data".
+    const f = forecastByKey.get(key)?.forecast ?? (destKey ? forecastByKey.get(destKey)?.forecast : null) ?? null;
     const real = f ? dayFor(f, date) : null;
     const leadDays = Math.max(0, dayDiff(today, date));
     if (simulatedMode && inArea(pin)) {
@@ -432,7 +433,18 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
   const names = (id: string) => first(name(id));
   for (const r of recommendations) r.finance = financeOf(state, events, r.changes, names, now);
   const primary = primaryPerItem(recommendations);
-  const allChanges = [...scenarioChanges, ...primary.flatMap((r) => r.changes)];
+  // A reschedule on an item the scenario already edits (someone skipping) is folded into that edit,
+  // so the skipper is not put back by a full-item update built from the original.
+  const recChanges = primary.flatMap((r) =>
+    r.changes.filter((c) => {
+      if (c.kind !== "update-item" || r.kind !== "reschedule") return true;
+      const prior = scenarioChanges.find((x) => x.kind === "update-item" && x.itemId === c.itemId) as Extract<Change, { kind: "update-item" }> | undefined;
+      if (!prior) return true;
+      prior.input = { ...prior.input, time: r.newTime };
+      return false;
+    }),
+  );
+  const allChanges = [...scenarioChanges, ...recChanges];
   const finance = allChanges.length ? financeOf(state, events, allChanges, names, now) : null;
 
   for (const r of recommendations) r.chain = chainFor(r, items.find((t) => t.id === r.forItemId)!);
@@ -469,11 +481,17 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
     };
   } else {
     const covered = items.filter((t) => t.conditions.source !== "no-data");
+    const src = world.mode === "replay" ? "recorded" : "live";
+    const ended = state.trip.endDate < today;
     headline = {
-      title: covered.length ? `Weather looks workable for your plan in ${city}` : `No live forecast for ${city} on your trip dates yet`,
-      detail: covered.length
-        ? `${covered.length} of ${items.length} plan items are inside the live forecast window; none is at risk.`
-        : `Open-Meteo forecasts 16 days ahead — your trip starts ${state.trip.startDate}. Current conditions are shown; use What-If to stress-test the plan.`,
+      title: !items.length ? `No plan items to check against the weather in ${city}` : ended ? `This trip has ended` : covered.length ? `Weather looks workable for your plan in ${city}` : `No ${src} forecast for ${city} on your trip dates yet`,
+      detail: !items.length
+        ? "Add stays and activities to the plan — each one is then checked against the forecast."
+        : ended
+          ? "Forecasts only look ahead, so past days are not assessed."
+          : covered.length
+            ? `${covered.length} of ${items.length} plan items are inside the ${src} forecast window; none is at risk.`
+            : `Open-Meteo forecasts 16 days ahead — your trip starts ${state.trip.startDate}. Current conditions are shown; use What-If to stress-test the plan.`,
       level: "Low",
       normal: true,
     };
@@ -506,7 +524,7 @@ function scoreCandidate(
 ): Scored | null {
   const km = Math.round(distanceKm(t.place, c) * 10) / 10;
   if (km > 30) return null;
-  const hour = t.time ? Number(t.time.slice(0, 2)) : t.assessment.window[0];
+  const hour = t.assessment.window[0];
   const open = openAt(c.openingHours, t.date, hour);
   if (open === false) return null;
   const pseudo = { title: `${c.name} ${c.kind}`, category: categoryFor(c), vendor: undefined, time: t.time } as ItineraryItem;

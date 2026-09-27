@@ -38,7 +38,11 @@ export async function worldFor(tripId: string, state: TripState, mode: WorldMode
   }
 }
 
-export async function twinWithIntelligence(state: TripState, events: LedgerEvent[], world: TwinWorld, scenario: Scenario | null): Promise<{ twin: Twin; adaptation: InferenceMeta | null }> {
+/** Requests must finish inside Vercel's 60 s limit: every step gets what is left of this budget. */
+export const REQUEST_BUDGET_MS = 52_000;
+export const remaining = (startedAt: number) => REQUEST_BUDGET_MS - (Date.now() - startedAt);
+
+export async function twinWithIntelligence(state: TripState, events: LedgerEvent[], world: TwinWorld, scenario: Scenario | null, startedAt = Date.now()): Promise<{ twin: Twin; adaptation: InferenceMeta | null }> {
   const now = Date.now();
   const first = buildTwin(state, events, world, scenario, { now });
   const affected = Object.keys(first.shortlists).filter((k) => first.shortlists[k].length);
@@ -53,7 +57,7 @@ export async function twinWithIntelligence(state: TripState, events: LedgerEvent
     shortlist: Object.fromEntries(affected.map((id) => [id, first.shortlists[id]])),
     signals: world.signals.slice(0, 8).map((s) => `[${s.source}] ${s.summary}`),
     preferences: Object.fromEntries(members.map((m) => [m.name.split(" ")[0], m.interests?.activities ?? []])),
-  });
+  }, undefined, Math.min(25_000, remaining(startedAt) - 2_000));
   if (!picks) return { twin: first, adaptation: meta };
   const twin = buildTwin(state, events, world, scenario, { now, nugenPicks: Object.fromEntries(picks.map((p) => [p.itemId, p.candidateId])) });
   return { twin, adaptation: meta };

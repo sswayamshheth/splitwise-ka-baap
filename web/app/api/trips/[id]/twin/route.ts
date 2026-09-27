@@ -16,19 +16,21 @@ import { HttpError, route } from "@/lib/server/trips";
 const modeOf = (v: unknown): WorldMode => (v === "replay" ? "replay" : "live");
 
 export const GET = route(async (req: Request, { params }: { params: { id: string } }) => {
+  const startedAt = Date.now();
   const url = new URL(req.url);
   const { events, state } = await loadTripContext(params.id);
   const world = await worldFor(params.id, state, modeOf(url.searchParams.get("mode")), url.searchParams.get("refresh") === "1");
-  const { twin, adaptation } = await twinWithIntelligence(state, events, world, null);
+  const { twin, adaptation } = await twinWithIntelligence(state, events, world, null, startedAt);
   return NextResponse.json({ world, twin, adaptation });
 });
 
 export const POST = route(async (req: Request, { params }: { params: { id: string } }) => {
+  const startedAt = Date.now();
   const body = (await req.json().catch(() => ({}))) as { scenario?: unknown; mode?: string };
   const { events, state } = await loadTripContext(params.id);
   if (!body.scenario) throw new HttpError(400, "Send a scenario");
   const { scenario, warnings } = validateScenario(body.scenario, state);
   const world = await worldFor(params.id, state, modeOf(body.mode));
-  const { twin, adaptation } = await twinWithIntelligence(state, events, world, scenario);
+  const { twin, adaptation } = await twinWithIntelligence(state, events, world, scenario, startedAt);
   return NextResponse.json({ twin, adaptation, warnings });
 });

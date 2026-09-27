@@ -11,7 +11,7 @@ import { adaptToWeather, explain, scenarioFromText } from "@/lib/nugen/intellige
 import { extractJson, ungroundedNumbers, validateAdaptation, validateExplanation, validateScenarioOutput } from "@/lib/nugen/schemas";
 import { openAt, parseOverpass, parsePhoton } from "@/lib/signals/osm";
 import { gdeltProvider, googlePlacesProvider, mastodonProvider, parseGdelt, parseGdeltDate, parseGooglePlace, parseMastodon, parsePageviews, parseWikivoyage } from "@/lib/signals/providers";
-import { ratingScore, relevanceOf, sentimentOf, stripHtml, weatherTermsIn } from "@/lib/signals/score";
+import { ratingScore, relevanceOf, safeUrl, sentimentOf, stripHtml, weatherTermsIn } from "@/lib/signals/score";
 import { assess, betterSlot, dayRainHazard, imdCategory, profileOf, slotsFor } from "@/lib/twin/impact";
 import { explainDeterministic, factsFor, intentOf } from "@/lib/twin/explain";
 import { parseScenarioText } from "@/lib/twin/parse-scenario";
@@ -349,6 +349,42 @@ describe("digital twin", () => {
     expect(rec.chosenBy).toBe("nugen");
     const bogus = buildTwin(state, events, w, heavy, { now: NOW, nugenPicks: { it_scuba: "osm:node/999" } });
     expect(primaryPerItem(bogus.recommendations).find((r) => r.forItemId === "it_scuba")!.chosenBy).toBe("deterministic");
+  });
+});
+
+describe("review fixes", () => {
+  it("a skipper stays removed when the same item is also rescheduled", () => {
+    // Rain concentrated in the morning makes the 09:00 heritage walk risky but the afternoon viable.
+    const base = world([0, 0, 0, 0, 0]);
+    const f = parseForecast(openMeteo(tripDates, [0, 40, 0, 0, 0], (h, d) => (d === 1 && h < 12 ? 10 : 0)), "Candolim", P, "u", NOW);
+    const withWalk = [
+      ...events,
+      { id: "ev_walk", ts: NOW, actor: "p_aarav", type: "ITINERARY_ITEM_ADDED", item: { id: "it_walk", title: "Fontainhas heritage walk", category: "Activity", date: day(1), time: "09:00", estimatedPaise: 2_400_00, participantIds: ["p_aarav", "p_siya", "p_kavya"], status: "planned", expenseIds: [] } },
+    ] as typeof events;
+    const st = reduceEvents(withWalk)!;
+    const w = { ...base, forecasts: [{ ...base.forecasts[0], forecast: f }], places: { ...base.places, it_walk: base.places.it_villa }, itemForecast: { ...base.itemForecast, it_walk: "k" }, candidates: [] };
+    const t = buildTwin(st, withWalk, w, { ...EMPTY_SCENARIO, date: day(1), skippingParticipantIds: ["p_kavya"] }, { now: NOW });
+    const rec = t.recommendations.find((r) => r.forItemId === "it_walk" && r.kind === "reschedule");
+    expect(rec).toBeDefined();
+    expect(t.finance?.ok).toBe(true);
+    expect(t.finance!.lines.some((l) => /Kavya skips Fontainhas/.test(l))).toBe(true);
+    expect(t.finance!.lines.filter((l) => /Fontainhas/.test(l))).toHaveLength(1);
+  });
+  it("items fall back to the destination forecast when their own location's forecast failed", () => {
+    const base = world([0, 120, 0, 0, 0]);
+    const w: TwinWorld = { ...base, forecasts: [...base.forecasts, { key: "far", point: { lat: 15.3, lon: 74.3 }, label: "far", forecast: null, error: "HTTP 500" }], itemForecast: { ...base.itemForecast, it_scuba: "far" } };
+    const t = buildTwin(state, events, w, null, { now: NOW });
+    expect(t.items.find((i) => i.id === "it_scuba")!.conditions.source).toBe("live-forecast");
+  });
+  it("recorded captures are never described as live", () => {
+    const t = buildTwin(state, events, { ...world([0, 0, 0, 0, 0]), mode: "replay" }, null, { now: NOW });
+    expect(t.headline.detail).toMatch(/recorded/);
+    expect(String(factsFor(t).mode)).toMatch(/RECORDED/);
+  });
+  it("external links are restricted to http(s)", () => {
+    expect(safeUrl("javascript:alert(1)")).toBeUndefined();
+    expect(safeUrl("https://example.com/a")).toBe("https://example.com/a");
+    expect(parseGdelt({ articles: [{ url: "javascript:alert(1)", title: "Goa rain", seendate: "20260924T074500Z" }] }, { city: "Goa", point: P, names: ["Goa"] }, NOW)).toEqual([]);
   });
 });
 
