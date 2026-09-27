@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cx, Icon, initials, useFeedback } from "@/components/app/kit";
+import { DestinationPicker } from "@/components/app/DestinationPicker";
 import { proxyHealth } from "@/lib/ai/agent";
 import { api, ApiError } from "@/lib/client/api";
 import { portrait, tripCover } from "@/lib/covers";
@@ -83,7 +84,8 @@ function NewTrip() {
       .catch(() => setMe({ name: "" }));
   }, []);
 
-  const errors = validateTrip(details);
+  // A trip needs a real place from the search list (exact coordinates for weather, maps and planning).
+  const errors = { ...validateTrip(details), ...(details.destination.trim() && !details.place ? { destination: "Pick your destination from the list" } : {}) };
   const state = useMemo(() => (created ? reduceEvents(created.events) : null), [created]);
 
   /** Append events built against the latest state; on a conflict, reload and rebuild once. */
@@ -204,7 +206,7 @@ function NewTrip() {
                 <input className={fieldCls} value={details.name} onChange={(e) => setDetails({ ...details, name: e.target.value })} placeholder="e.g. Goa with the gang" maxLength={60} autoFocus />
               </Labelled>
               <Labelled label="Destination" icon="location_on" error={touched ? errors.destination : undefined}>
-                <input className={fieldCls} value={details.destination} onChange={(e) => setDetails({ ...details, destination: e.target.value })} placeholder="e.g. Candolim, North Goa" />
+                <DestinationPicker className={fieldCls} value={details.destination} place={details.place} autoSearch={!!listing} onChange={(destination, place) => setDetails({ ...details, destination, place })} />
               </Labelled>
               <div className="grid grid-cols-2 gap-space-sm">
                 <Labelled label="Starts" icon="flight_takeoff" error={touched ? errors.startDate : undefined}>

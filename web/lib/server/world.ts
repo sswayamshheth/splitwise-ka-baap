@@ -230,7 +230,11 @@ export function prefetchWorld(tripId: string, state: TripState) {
 }
 
 async function assemble(tripId: string, state: TripState, cacheKey: string): Promise<TwinWorld> {
-  const geo = await budget(geocodeDestination(state.trip.destination), 12_000, null);
+  // A destination picked from the search list carries exact coordinates; older trips are geocoded by name.
+  const picked = state.trip.place;
+  const geo: GeoPlace | null = picked
+    ? { lat: picked.lat, lon: picked.lon, name: picked.name, admin: picked.admin, country: picked.country, source: "open-meteo-geocoding", query: state.trip.destination }
+    : await budget(geocodeDestination(state.trip.destination), 12_000, null);
   if (!geo) throw new Error(`Could not locate "${state.trip.destination}" (Open-Meteo geocoding and Nominatim found nothing)`);
   const region = [geo.admin, geo.country].filter(Boolean).join(", ") || state.trip.destination;
   const destination: PlacePin = { lat: geo.lat, lon: geo.lon, label: state.trip.destination, precision: "destination", source: geo.source };

@@ -160,6 +160,35 @@ export function parseGeocode(json: unknown, query: string): GeoPlace | null {
   return { lat, lon, name: String(r.name ?? query), admin: typeof r.admin1 === "string" ? r.admin1 : undefined, country: typeof r.country === "string" ? r.country : undefined, source: "open-meteo-geocoding", query };
 }
 
+export type PlaceSuggestion = { name: string; admin?: string; district?: string; country?: string; lat: number; lon: number; population?: number; kind?: string };
+
+/** All hits of an Open-Meteo geocoding search, for the destination picker. */
+export function parseGeocodeList(json: unknown): PlaceSuggestion[] {
+  const rows = (json as { results?: Record<string, unknown>[] } | null)?.results ?? [];
+  const out: PlaceSuggestion[] = [];
+  const seen = new Set<string>();
+  for (const r of rows) {
+    const lat = num(r.latitude);
+    const lon = num(r.longitude);
+    if (lat === null || lon === null || typeof r.name !== "string") continue;
+    // Same name in the same district and state is the same choice for a trip: show it once.
+    const key = [r.name, r.admin2, r.admin1, r.country].join("|").toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      name: r.name,
+      district: typeof r.admin2 === "string" ? r.admin2 : undefined,
+      admin: typeof r.admin1 === "string" ? r.admin1 : undefined,
+      country: typeof r.country === "string" ? r.country : undefined,
+      lat,
+      lon,
+      population: typeof r.population === "number" ? r.population : undefined,
+      kind: typeof r.feature_code === "string" ? r.feature_code : undefined,
+    });
+  }
+  return out;
+}
+
 /** Parses a Nominatim /search jsonv2 response (first hit). */
 export function parseNominatim(json: unknown, query: string): GeoPlace | null {
   const r = Array.isArray(json) ? (json[0] as Record<string, unknown> | undefined) : undefined;

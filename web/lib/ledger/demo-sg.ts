@@ -21,6 +21,7 @@ export function buildSingaporeEvents(now = Date.now()): LedgerEvent[] {
     id: "trip_demo_sg",
     name: "Singapore squad",
     destination: "Singapore",
+    place: { lat: 1.28967, lon: 103.85007, name: "Singapore", country: "Singapore", source: "open-meteo-geocoding" },
     startDate: iso(SG_START_OFFSET),
     endDate: iso(SG_START_OFFSET + 5),
     currency: "INR",

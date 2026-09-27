@@ -237,10 +237,15 @@ export type ContributionData = {
 
 export type TripStatus = "active" | "closed";
 
+/** Where the trip is, as picked from the destination search (Open-Meteo geocoding): exact coordinates for weather and planning. */
+export type TripPlace = { lat: number; lon: number; name: string; admin?: string; country?: string; source: "open-meteo-geocoding" };
+
 export type TripMeta = {
   id: string;
   name: string;
   destination: string;
+  /** Set when the destination was picked from the search list (always, for trips created in the app). */
+  place?: TripPlace;
   startDate: string;
   endDate: string;
   currency: "INR";
