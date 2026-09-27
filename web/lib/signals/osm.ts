@@ -72,6 +72,8 @@ export function overpassQuery(p: LatLon, radiusKm: number): string {
   return `[out:json][timeout:25];(${parts.join("")});out center 200;`;
 }
 
+const safeHttp = (u?: string) => (u && /^https?:\/\//i.test(u) ? u : undefined);
+
 const INDOOR_TRUE = /^(yes|room|area|corridor)$/;
 
 /** Parses an Overpass JSON response into candidates (deduplicated by name). */
@@ -94,7 +96,8 @@ export function parseOverpass(json: unknown): Candidate[] {
     seen.add(key);
     const indoor = tags.indoor ? INDOOR_TRUE.test(tags.indoor) : tags.building ? true : kind.indoor;
     const free = tags.fee === "no";
-    const type = String(el.type ?? "node");
+    const type = el.type === "way" || el.type === "relation" ? el.type : "node";
+    if (!Number.isSafeInteger(el.id)) continue;
     out.push({
       id: `osm:${type}/${String(el.id)}`,
       name,
@@ -107,7 +110,7 @@ export function parseOverpass(json: unknown): Candidate[] {
       estPerPersonPaise: free ? 0 : kind.estRupees * 100,
       estimateBasis: free ? "OSM: fee=no" : `planning estimate for a ${kind.value.replace(/_/g, " ")} (not a quoted price)`,
       openingHours: tags.opening_hours,
-      website: tags.website || tags["contact:website"],
+      website: safeHttp(tags.website || tags["contact:website"]),
       wikipedia: tags.wikipedia,
       source: "openstreetmap",
       url: `https://www.openstreetmap.org/${type}/${String(el.id)}`,
@@ -210,6 +213,7 @@ export function parsePhoton(json: unknown, near: LatLon, maxKm: number): Candida
     const kind = KINDS.find((k) => k.key === p.osm_key && k.value === p.osm_value);
     if (!kind) continue;
     const type = p.osm_type === "W" ? "way" : p.osm_type === "R" ? "relation" : "node";
+    if (!Number.isSafeInteger(p.osm_id)) continue;
     out.push({
       id: `osm:${type}/${String(p.osm_id)}`,
       name,

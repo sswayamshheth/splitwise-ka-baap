@@ -63,7 +63,7 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
         if (date && from && from.date !== date) continue;
         const c = r.alternative.candidate;
         L.circleMarker([c.lat, c.lon], { radius: 8, color: "#fff", weight: 2, fillColor: "#6750a4", fillOpacity: 0.95 })
-          .bindPopup(`<b>Alternative: ${esc(c.name)}</b><br/>for ${esc(r.forTitle)} · score ${r.score}/100<br/><a href="${c.url}" target="_blank" rel="noreferrer">OpenStreetMap</a>`)
+          .bindPopup(`<b>Alternative: ${esc(c.name)}</b><br/>for ${esc(r.forTitle)} · score ${r.score}/100<br/><a href="${esc(c.url)}" target="_blank" rel="noreferrer">OpenStreetMap</a>`)
           .addTo(g);
         if (from) L.polyline([[from.place.lat, from.place.lon], [c.lat, c.lon]], { color: "#6750a4", weight: 2, dashArray: "2 6" }).addTo(g);
         pts.push([c.lat, c.lon]);

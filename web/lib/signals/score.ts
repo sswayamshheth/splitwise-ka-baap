@@ -77,3 +77,14 @@ export function ratingScore(rating?: number, reviewCount?: number): number | nul
   const adjusted = (rating * v + prior * m) / (v + m);
   return Math.max(0, Math.min(1, (adjusted - 3) / 2));
 }
+
+/** Only plain http(s) links from external sources are kept (no javascript:, data:, etc.). */
+export function safeUrl(u: unknown): string | undefined {
+  if (typeof u !== "string") return undefined;
+  try {
+    const url = new URL(u);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}

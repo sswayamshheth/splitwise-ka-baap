@@ -212,7 +212,8 @@ const inflight = new Map<string, Promise<TwinWorld>>();
 export function buildWorld(tripId: string, state: TripState, opts: { force?: boolean } = {}): Promise<TwinWorld> {
   const cacheKey = `${tripId}:${state.trip.destination}:${state.itinerary.map((i) => `${i.id}${i.title}${i.location ?? ""}`).join("|")}`;
   const hit = worldCache.get(cacheKey);
-  if (!opts.force && hit && Date.now() - hit.at < TTL) return Promise.resolve(hit.world);
+  // A forced refresh is honoured at most once a minute per trip, so nobody can hammer the public APIs.
+  if (hit && Date.now() - hit.at < (opts.force ? 60_000 : TTL)) return Promise.resolve(hit.world);
   const running = inflight.get(cacheKey);
   if (running) return running;
   const p = assemble(tripId, state, cacheKey).finally(() => inflight.delete(cacheKey));
@@ -222,6 +223,8 @@ export function buildWorld(tripId: string, state: TripState, opts: { force?: boo
 
 /** Starts a build in the background (e.g. when a trip is opened) so the Plan tab finds it ready. */
 export function prefetchWorld(tripId: string, state: TripState) {
+  // Serverless functions are frozen after the response; a background build there is wasted work.
+  if (process.env.VERCEL) return;
   buildWorld(tripId, state).catch(() => undefined);
 }
 

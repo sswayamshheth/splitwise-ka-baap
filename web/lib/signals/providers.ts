@@ -1,6 +1,6 @@
 import type { LatLon } from "@/lib/weather/openmeteo";
 import type { Candidate } from "./osm";
-import { relevanceOf, sentimentOf, stripHtml, weatherTermsIn } from "./score";
+import { relevanceOf, safeUrl, sentimentOf, stripHtml, weatherTermsIn } from "./score";
 import type { PlaceRatings, ProviderStatus, PublicSignal, SignalSource } from "./types";
 
 /**
@@ -54,7 +54,7 @@ export function parseGdelt(json: unknown, ctx: PlaceContext, now = Date.now()): 
   const seen = new Set<string>();
   return arts.flatMap((a, i): PublicSignal[] => {
     const title = typeof a.title === "string" ? a.title.trim() : "";
-    const url = typeof a.url === "string" ? a.url : undefined;
+    const url = safeUrl(a.url);
     if (!title || !url || seen.has(title)) return [];
     seen.add(title);
     const ts = parseGdeltDate(a.seendate);
@@ -109,7 +109,7 @@ export function parseMastodon(json: unknown, ctx: PlaceContext, instance: string
         id: `mastodon:${String(p.id)}`,
         source: "mastodon",
         kind: "social-post",
-        url: typeof p.url === "string" ? p.url : undefined,
+        url: safeUrl(p.url),
         timestamp: ts,
         location: { name: ctx.city },
         summary: text.slice(0, 280),
@@ -148,7 +148,7 @@ export function parseWikivoyage(json: unknown, ctx: PlaceContext): PublicSignal[
       id: `wikivoyage:${page.title}`,
       source: "wikivoyage",
       kind: "travel-guide",
-      url: page.fullurl ?? `https://en.wikivoyage.org/wiki/${encodeURIComponent(page.title ?? ctx.city)}`,
+      url: safeUrl(page.fullurl) ?? `https://en.wikivoyage.org/wiki/${encodeURIComponent(page.title ?? ctx.city)}`,
       timestamp: page.touched ? Date.parse(page.touched) : null,
       location: { name: page.title ?? ctx.city, lat: ctx.point.lat, lon: ctx.point.lon },
       title: `Wikivoyage: ${page.title}`,
@@ -244,7 +244,7 @@ export function parseGooglePlace(json: unknown, candidate: Candidate, now = Date
     id: ratingId,
     source: "google-places",
     kind: "rating",
-    url: place.googleMapsUri,
+    url: safeUrl(place.googleMapsUri),
     timestamp: now,
     location: { name: place.displayName?.text ?? candidate.name, lat: candidate.lat, lon: candidate.lon },
     placeRef: candidate.id,
@@ -267,7 +267,7 @@ export function parseGooglePlace(json: unknown, candidate: Candidate, now = Date
       id: `${ratingId}:review:${i}`,
       source: "google-places",
       kind: "review",
-      url: place.googleMapsUri,
+      url: safeUrl(place.googleMapsUri),
       timestamp: ts,
       location: { name: place.displayName?.text ?? candidate.name, lat: candidate.lat, lon: candidate.lon },
       placeRef: candidate.id,
