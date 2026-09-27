@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 
+import { useChainEnabled } from "@/components/app/trip/ChainBadge";
 import { api } from "@/lib/client/api";
 import { formatDateRange } from "@/lib/dates";
 import { TripProvider, useTrip } from "@/lib/client/trip";
@@ -87,6 +88,7 @@ function TripChrome({ children }: { children: ReactNode }) {
   useProfileSync();
   const pathname = usePathname();
   const base = `/trips/${trip.tripId}`;
+  const chainEnabled = useChainEnabled();
   const rest = pathname.slice(base.length).replace(/^\//, "");
   const tabbed = TABS.some((t) => t.seg === rest);
   const t = trip.state.trip;
@@ -100,12 +102,12 @@ function TripChrome({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-space-sm">
             {t.status === "closed" ? (
               <span className="rounded-full bg-surface-container px-space-sm py-0.5 font-label-sm text-label-sm text-on-surface-variant">Closed</span>
-            ) : (
+            ) : chainEnabled ? (
               <Link href={`${base}/chain`} aria-label="Blockchain proof" title="Blockchain proof" className="flex h-10 items-center gap-1 rounded-full bg-primary-container px-3 font-label-md text-label-md text-on-primary hover:opacity-90">
                 <Icon name="deployed_code" className="text-[18px]" />
                 <span className="hidden sm:inline">Blockchain</span>
               </Link>
-            )}
+            ) : null}
             {t.status === "closed" ? null : (
               <Link href={`${base}/ask`} aria-label="Ask the ledger" className="flex h-10 w-10 items-center justify-center rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant hover:opacity-90">
                 <Icon name="auto_awesome" className="text-[20px]" />

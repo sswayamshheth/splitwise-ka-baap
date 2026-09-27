@@ -6,12 +6,14 @@ import { useEffect, useState } from "react";
 import { Icon, inputCls } from "@/components/app/kit";
 import { upiIntentUrl } from "@/lib/ledger/commands";
 import { formatMoney } from "@/lib/money";
+import { useRealUpiAllowed } from "./paymentConfig";
 
 /**
  * A real UPI payment request: the upi://pay link as a QR (scan it with any UPI
  * app) and as a button (opens the UPI app on a phone). The money moves in the
  * payer's own UPI app — GroupTrip never touches it. Afterwards the payer
  * confirms here (optionally with the UTR) and the payment is recorded.
+ * Because it moves real money it renders nothing while payments run in demo mode.
  */
 export function UpiPayPanel({
   vpa,
@@ -30,6 +32,7 @@ export function UpiPayPanel({
   confirmLabel: string;
   onConfirm: (utr: string | undefined) => void;
 }) {
+  const allowed = useRealUpiAllowed();
   const url = upiIntentUrl({ vpa, name, amountPaise, note });
   const [img, setImg] = useState<string | null>(null);
   const [utr, setUtr] = useState("");
@@ -44,9 +47,13 @@ export function UpiPayPanel({
     };
   }, [url]);
   const utrOk = !utr || /^\d{12}$/.test(utr.trim());
+  if (!allowed) return null;
 
   return (
     <div className="flex flex-col items-center gap-space-md">
+      <p className="flex w-full items-start gap-1.5 rounded-xl bg-secondary-fixed/60 px-space-md py-space-sm font-label-md text-label-md text-on-secondary-fixed">
+        <Icon name="info" className="mt-0.5 text-[16px]" /> Real payment: the money leaves your bank through your own UPI app.
+      </p>
       <div className="rounded-2xl bg-surface-container-lowest p-3 shadow-sm ring-1 ring-outline-variant/40">
         {img ? <img src={img} alt={`UPI QR to pay ${name}`} className="h-56 w-56" /> : <div className="flex h-56 w-56 items-center justify-center text-on-surface-variant">Generating QR…</div>}
       </div>
@@ -57,7 +64,7 @@ export function UpiPayPanel({
         </p>
       </div>
       <a href={url} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-secondary-container font-title-md text-title-md text-on-secondary-container">
-        <Icon name="open_in_new" /> Open UPI app
+        <Icon name="open_in_new" /> Open UPI app · real payment
       </a>
       <p className="-mt-2 text-center font-label-sm text-label-sm text-on-surface-variant">Scan with GPay / PhonePe / Paytm, or tap “Open UPI app” on your phone. The money moves in your UPI app — not through GroupTrip.</p>
 

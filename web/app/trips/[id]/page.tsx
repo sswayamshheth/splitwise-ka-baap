@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Button, cx, Field, Icon, inputCls, Notice, Sheet, useFeedback } from "@/components/app/kit";
 import { BudgetCard } from "@/components/app/trip/BudgetCard";
-import { ChainBadge } from "@/components/app/trip/ChainBadge";
+import { ChainBadge, useChainEnabled } from "@/components/app/trip/ChainBadge";
 import { EventRow, HeroBadge, PhotoHero, Portrait, ProgressBar } from "@/components/app/trip/common";
 import { HarmonyCard } from "@/components/app/trip/HarmonyCard";
 import { errorText, useTrip } from "@/lib/client/trip";
@@ -28,6 +28,7 @@ export default function TripPage() {
   const trip = useTrip();
   const { state, ledger, meId, tripId } = trip;
   const base = `/trips/${tripId}`;
+  const chainEnabled = useChainEnabled();
   const anomalies = useMemo(() => findAnomalies(state, ledger), [state, ledger]);
   const health = useMemo(() => tripHealth(state, ledger, anomalies), [state, ledger, anomalies]);
   const pool = useMemo(() => poolSummary(state), [state]);
@@ -89,11 +90,13 @@ export default function TripPage() {
           <Icon name="location_on" className="text-[18px]" />
           {t.destination} · {formatDateRange(t.startDate, t.endDate)}
         </p>
+        {chainEnabled ? (
         <Link href={`${base}/chain`} className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-container-lowest/95 py-0.5 pl-2 pr-0.5 font-label-sm text-label-sm text-on-surface shadow-sm">
           <Icon name="deployed_code" className="text-[16px] text-primary" />
           Blockchain
           <ChainBadge />
         </Link>
+        ) : null}
       </PhotoHero>
 
       <div className="flex flex-col gap-space-lg px-margin pt-space-md">
@@ -221,6 +224,7 @@ export default function TripPage() {
           </Link>
         </section>
 
+        {chainEnabled ? (
         <Link href={`${base}/chain`} className="flex items-center gap-space-sm rounded-xl bg-surface-container-lowest p-space-md shadow-sm transition-shadow hover:shadow-md">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant">
             <Icon name="deployed_code" />
@@ -234,6 +238,7 @@ export default function TripPage() {
           </span>
           <Icon name="chevron_right" className="text-on-surface-variant" />
         </Link>
+        ) : null}
 
         <Members members={members} />
 

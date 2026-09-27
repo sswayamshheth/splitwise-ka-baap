@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { cx, Icon, useFeedback } from "@/components/app/kit";
 import { useCheckout } from "@/components/app/payments/checkout";
 import { RequestSheet } from "@/components/app/payments/PaymentRequest";
+import { usePaymentConfig } from "@/components/app/payments/paymentConfig";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatRelative } from "@/lib/dates";
 import { cancelSettlement, confirmSettlement, initiateSettlement, upiIntentUrl } from "@/lib/ledger/commands";
@@ -25,6 +26,11 @@ export function SettleSection() {
   const [busy, setBusy] = useState<string | null>(null);
   const [asking, setAsking] = useState<{ from: string; amountPaise: number } | null>(null);
   const checkout = useCheckout();
+  // Razorpay settle-ups and payment requests need real Razorpay keys; hidden in demo mode.
+  const payConfig = usePaymentConfig();
+  const razorpayLive = !!payConfig?.enabled && payConfig.mode !== "demo";
+  // "Open UPI app" is a real payment from the payer's own UPI app, so it's hidden in demo mode too.
+  const upiAllowed = !!payConfig && payConfig.mode !== "demo";
   const { ledger, state } = trip;
   const transfers = ledger.transfers;
   const pending = ledger.pendingSettlements;
@@ -198,7 +204,7 @@ export function SettleSection() {
                         <Icon name="arrow_forward" className="text-[16px]" /> Due
                       </span>
                       <span className="flex flex-wrap items-center justify-end gap-space-sm">
-                        {trip.isMe(t.from) ? (
+                        {razorpayLive && trip.isMe(t.from) ? (
                           <button
                             disabled={checkout.busy}
                             onClick={() => void checkout.pay({ purpose: "settle", toId: t.to, amountPaise: t.amountPaise, payee: trip.fullName(t.to), description: `${trip.state.trip.name} · settle up with ${trip.fullName(t.to)}` })}
@@ -207,7 +213,7 @@ export function SettleSection() {
                             <Icon name="bolt" className="text-[16px]" /> Pay with Razorpay
                           </button>
                         ) : null}
-                        {trip.isMe(t.to) ? (
+                        {razorpayLive && trip.isMe(t.to) ? (
                           <button
                             onClick={() => setAsking({ from: t.from, amountPaise: t.amountPaise })}
                             className="flex items-center gap-1 rounded-full bg-primary px-space-md py-1 font-label-md text-label-md text-on-primary"
@@ -215,9 +221,9 @@ export function SettleSection() {
                             <Icon name="bolt" className="text-[16px]" /> Request via Razorpay
                           </button>
                         ) : null}
-                        {upi && trip.isMe(t.from) ? (
+                        {upiAllowed && upi && trip.isMe(t.from) ? (
                           <a href={upi} className="flex items-center gap-1 font-label-md text-label-md text-primary hover:underline">
-                            <Icon name="qr_code_2" className="text-[16px]" /> Open UPI app
+                            <Icon name="qr_code_2" className="text-[16px]" /> Open UPI app · real payment
                           </a>
                         ) : null}
                         <button

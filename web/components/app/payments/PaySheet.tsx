@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Chip, cx, Icon, inputCls, Sheet, useFeedback } from "@/components/app/kit";
 import { Face } from "@/components/app/money/parts";
-import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate, todayIso } from "@/lib/dates";
 import { isValidUpiId, parseUpiIntent, updateItineraryItem } from "@/lib/ledger/commands";
@@ -14,7 +13,7 @@ import { payVendorFromPool, poolPayers, poolSummary } from "@/lib/ledger/pool";
 import { EXPENSE_CATEGORIES, type ExpenseCategory, type ItineraryItem, type PaymentMethod } from "@/lib/ledger/types";
 import { formatMoney, parseAmount } from "@/lib/money";
 import { useCheckout } from "./checkout";
-import type { Config } from "./RazorpayPool";
+import { useRealUpiAllowed } from "./paymentConfig";
 import { QrScanner } from "./QrScanner";
 import { UpiPayPanel } from "./UpiQr";
 
@@ -55,22 +54,8 @@ export function PaySheet({ open, onClose, onContribute }: { open: boolean; onClo
   );
 }
 
-/** The UPI flows open a real UPI payment, so they are hidden while payments run in demo mode. */
-function useUpiAllowed() {
-  const [allowed, setAllowed] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    api<Config>("/api/payments/config")
-      .then((c) => !cancelled && setAllowed(c.mode !== "demo"))
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  return allowed;
-}
-
 function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () => void }) {
+  const upiAllowed = useRealUpiAllowed();
   const Option = ({ icon, title, sub, onClick, tone }: { icon: string; title: string; sub: string; onClick: () => void; tone: string }) => (
     <button onClick={onClick} className="flex w-full items-center gap-space-md rounded-2xl bg-surface-container-lowest p-space-md text-left shadow-sm ring-1 ring-outline-variant/40 transition-shadow hover:shadow-md">
       <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full", tone)}>
@@ -86,8 +71,10 @@ function Chooser({ onVendor, onSomeone }: { onVendor: () => void; onSomeone: () 
   return (
     <div className="flex flex-col gap-space-sm">
       <Option icon="storefront" tone="bg-primary-fixed/60 text-primary" title="Pay a vendor from the itinerary" sub="Villa, cab, activity… with the best card in the group" onClick={onVendor} />
-      {/* Always offered: the money moves in the payer's own UPI app, so it doesn't depend on Razorpay's mode. */}
-      <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay anyone" sub="Scan a QR, UPI ID or phone number — recorded in the trip pool" onClick={onSomeone} />
+      {/* A real payment from the payer's own UPI app, so it's hidden while payments run in demo mode. */}
+      {upiAllowed ? (
+        <Option icon="qr_code_2" tone="bg-secondary-fixed text-on-secondary-fixed-variant" title="Pay anyone · real UPI payment" sub="Scan a QR, UPI ID or phone number — the money leaves your bank; recorded in the trip pool" onClick={onSomeone} />
+      ) : null}
     </div>
   );
 }
@@ -153,7 +140,7 @@ function VendorPay({ itemId, onPaid, onContribute }: { itemId: string; onPaid: (
   const due = useDue();
   const checkout = useCheckout();
   const [mode, setMode] = useState<"card" | "upi">("card");
-  const upiAllowed = useUpiAllowed();
+  const upiAllowed = useRealUpiAllowed();
   const item = trip.state.itinerary.find((i) => i.id === itemId);
   const [text, setText] = useState(item ? String(due(item) / 100) : "");
   const parsed = parseAmount(text);
@@ -196,7 +183,7 @@ function VendorPay({ itemId, onPaid, onContribute }: { itemId: string; onPaid: (
         {(
           [
             ["card", "credit_card", "Card checkout"],
-            ["upi", "qr_code_2", "UPI app (vendor's QR)"],
+            ["upi", "qr_code_2", "UPI app · real payment"],
           ] as const
         ).map(([id, icon, label]) => (
           <button
@@ -555,7 +542,7 @@ function PaySomeone({ onContribute, onPaid }: { onContribute: () => void; onPaid
           <UpiPayPanel vpa={vpa} name={payee} amountPaise={amount} note={note.trim() || "GroupTrip"} busy={busy} confirmLabel="Record payment from trip pool" onConfirm={(utr) => void pay(utr)} />
         ) : (
           <div className="flex flex-col gap-2 rounded-xl bg-surface-container-low p-space-md">
-            <p className="font-body-md text-body-md text-on-surface">Open your UPI app and pay {formatMoney(amount)} to <span className="font-semibold">{handle}</span> (pay to phone number).</p>
+            <p className="font-body-md text-body-md text-on-surface">Real payment: open your UPI app and pay {formatMoney(amount)} to <span className="font-semibold">{handle}</span> (pay to phone number).</p>
             <button disabled={busy} onClick={() => void pay()} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary-container font-title-md text-title-md text-on-primary disabled:opacity-40">
               <Icon name="task_alt" /> I&apos;ve paid — record it
             </button>

@@ -30,6 +30,9 @@ function cfg() {
   };
 }
 
+/** Error details from ethers can include the RPC URL (which may carry an API key), so only the code is logged or shown. */
+const errorCode = (e: unknown) => String((e as { code?: unknown })?.code ?? "unknown");
+
 export const chainConfigured = () => {
   const c = cfg();
   return /^0x[0-9a-fA-F]{64}$/.test(c.key) && /^0x[0-9a-fA-F]{40}$/.test(c.contract);
@@ -77,7 +80,8 @@ export async function chainStatus() {
     base.balanceEth = formatEther(bal);
     base.latestBlock = Number(head);
   } catch (e) {
-    base.error = `Couldn't reach Sepolia: ${(e as Error).message.slice(0, 120)}`;
+    console.error("[chain] status check failed:", errorCode(e));
+    base.error = "Couldn't reach Ethereum right now";
   }
   return base;
 }
@@ -134,7 +138,7 @@ export function pendingAnchor(tripId: string) {
 
 /** Sends one transaction that commits the trip's current chain to Sepolia. Returns as soon as it's broadcast. */
 export async function anchorTrip(tripId: string, events: LedgerEvent[]) {
-  if (!chainConfigured()) throw new HttpError(503, "Blockchain anchoring isn't set up on this server yet (see docs/BLOCKCHAIN.md)");
+  if (!chainConfigured()) throw new HttpError(503, "Blockchain sealing isn't available");
   const c = commitment(events);
   if (c.blocks === 0) throw new HttpError(400, "This trip has no blocks yet");
   const p = pendingAnchor(tripId);
@@ -157,6 +161,7 @@ export async function anchorTrip(tripId: string, events: LedgerEvent[]) {
   } catch (e) {
     const msg = (e as { shortMessage?: string; message: string }).shortMessage ?? (e as Error).message;
     if (/insufficient funds/i.test(msg)) throw new HttpError(402, "The app's Sepolia wallet is out of test ETH — top it up from a faucet");
-    throw new HttpError(502, `Sepolia rejected the transaction: ${msg.slice(0, 160)}`);
+    console.error("[chain] anchor failed:", errorCode(e));
+    throw new HttpError(502, "Couldn't send the seal to Ethereum right now — try again later");
   }
 }

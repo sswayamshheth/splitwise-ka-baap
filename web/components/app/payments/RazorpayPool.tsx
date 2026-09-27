@@ -165,8 +165,10 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
   const organiserId = useOrganiserId();
   const organiser = organiserId ? trip.participant(organiserId) : undefined;
   const iHoldThePool = organiserId === trip.meId;
-  const upiPossible = !!organiser?.upiId && !iHoldThePool;
-  const [via, setVia] = useState<"upi" | "razorpay">(upiPossible ? "upi" : "razorpay");
+  // Paying the organiser by UPI moves real money, so it's only offered when payments aren't in demo mode;
+  // the checkout is the default either way.
+  const upiAllowed = !!config && config.mode !== "demo";
+  const [via, setVia] = useState<"upi" | "razorpay">("razorpay");
   const [recording, setRecording] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
@@ -208,11 +210,12 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
         <input className="h-16 w-full bg-transparent font-headline-lg text-headline-lg text-on-surface outline-none" inputMode="decimal" value={text} onChange={(e) => setText(e.target.value)} placeholder="5000" autoFocus />
       </div>
       {parsed.error && text ? <p className="mt-1 font-label-sm text-label-sm text-error">{parsed.error}</p> : null}
+      {upiAllowed ? (
       <div className="mt-space-sm flex gap-2">
         {(
           [
-            ["upi", "qr_code_2", "UPI to the pool"],
             ["razorpay", "credit_card", "Card / netbanking"],
+            ["upi", "qr_code_2", "UPI app · real payment"],
           ] as const
         ).map(([id, icon, label]) => (
           <button
@@ -224,6 +227,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
           </button>
         ))}
       </div>
+      ) : null}
       <div className="mt-space-sm flex flex-wrap gap-2">
         {quick.map((q, i) => (
           <button key={`${q}-${i}`} onClick={() => setText(String(q / 100))} className="rounded-full bg-surface-container px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant">
@@ -231,7 +235,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
           </button>
         ))}
       </div>
-      {via === "upi" ? (
+      {via === "upi" && upiAllowed ? (
         <div className="mt-space-md">
           {iHoldThePool ? (
             <p className="rounded-xl bg-surface-container-low p-space-md font-body-md text-body-md text-on-surface-variant">
@@ -264,7 +268,7 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
           )}
         </div>
       ) : null}
-      {via === "razorpay" ? (
+      {via === "razorpay" || !upiAllowed ? (
       <button
         disabled={checkout.busy || (config ? !config.enabled : false) || parsed.paise === undefined || !parsed.paise}
         onClick={() => void pay()}
