@@ -17,10 +17,19 @@ import { ExplainBox, ItemImpact, levelTone, NugenProof, RecommendationCard, Sour
  * Live forecast + public signals → impact on the REAL plan → recommended
  * alternatives. Nothing changes until the user accepts a card.
  */
-export function WeatherIntel() {
+export type ItemPins = Record<string, { lat: number; lon: number; label: string }>;
+
+export function WeatherIntel({ onPins }: { onPins?: (pins: ItemPins) => void } = {}) {
   const trip = useTrip();
   const router = useRouter();
   const { data, error, loading, reload } = useRealTwin(trip.tripId, "live");
+  // Plan items this card located exactly (OpenStreetMap) — shared so the Plan map can place them too.
+  const places = data?.world.places;
+  useEffect(() => {
+    if (!places || !onPins) return;
+    onPins(Object.fromEntries(Object.entries(places).filter(([, p]) => p.precision === "item").map(([id, p]) => [id, { lat: p.lat, lon: p.lon, label: p.label }])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places]);
   const accept = useAccept();
   const [sheet, setSheet] = useState<"impact" | "map" | "signals" | null>(null);
   const [why, setWhy] = useState<string | null>(null);

@@ -108,28 +108,41 @@ export function parseForecast(json: unknown): DailyForecast[] {
   }));
 }
 
-/** The next 16 days of daily weather at a point, in the place's own time zone. Null when unavailable. */
-export function forecastAt(lat: number, lon: number): Promise<DailyForecast[] | null> {
-  const key = `gtl.wx.v1:${lat.toFixed(2)},${lon.toFixed(2)}`;
-  const cached = readCache<DailyForecast[]>(key, FORECAST_TTL_MS);
-  if (cached) return Promise.resolve(cached);
+export type ForecastResult = { days: DailyForecast[]; source: string };
+
+/**
+ * Daily weather at a point, in the place's own time zone: Open-Meteo straight from the browser (16 days).
+ * Our server is asked instead when that fails (offline, blocked, or this network used up Open-Meteo's free
+ * daily quota — it then answers from MET Norway + Open-Meteo's GFS ensemble) or when the trip runs past
+ * those 16 days (`until`). Only successes are cached. Null when nothing is available.
+ */
+export function forecastAt(lat: number, lon: number, until?: string): Promise<ForecastResult | null> {
+  const key = `gtl.wx.v2:${lat.toFixed(2)},${lon.toFixed(2)},${until ?? ""}`;
+  const cached = readCache<ForecastResult>(key, FORECAST_TTL_MS);
+  if (cached?.days?.length) return Promise.resolve(cached);
   return once(key, async () => {
+    let direct: DailyForecast[] = [];
     try {
       const url = `${FORECAST_URL}?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=16`;
-      const days = parseForecast(await getJson(url));
-      if (!days.length) throw new Error("empty");
-      writeCache(key, days);
-      return days;
+      direct = parseForecast(await getJson(url));
     } catch {
-      // Direct call failed (offline, blocked, or this network hit Open-Meteo's free daily quota): try via our server.
-      try {
-        const via = (await getJson(`/api/forecast?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`)) as { days?: DailyForecast[] | null };
-        if (!via.days?.length) return null;
-        writeCache(key, via.days);
-        return via.days;
-      } catch {
-        return null;
-      }
+      direct = [];
     }
+    if (direct.length && (!until || (direct.at(-1)?.date ?? "") >= until)) {
+      const result = { days: direct, source: "Open-Meteo" };
+      writeCache(key, result);
+      return result;
+    }
+    try {
+      const via = (await getJson(`/api/forecast?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}${until ? `&until=${until}` : ""}`)) as { days?: DailyForecast[] | null; source?: string };
+      if (via.days?.length && via.days.length >= direct.length) {
+        const result = { days: via.days, source: via.source ?? "Open-Meteo" };
+        writeCache(key, result);
+        return result;
+      }
+    } catch {
+      // Fall through to whatever the browser got directly.
+    }
+    return direct.length ? { days: direct, source: "Open-Meteo" } : null;
   });
 }

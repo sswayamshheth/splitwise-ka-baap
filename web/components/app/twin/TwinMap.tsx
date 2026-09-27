@@ -27,7 +27,7 @@ export default function TwinMap({ world, twin, date, focusItemId, height = 320 }
       if (cancelled || !el.current) return;
       if (!map.current) {
         map.current = L.map(el.current, { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · weather: Open-Meteo' }).addTo(map.current);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · weather: Open-Meteo / MET Norway' }).addTo(map.current);
         layer.current = L.layerGroup().addTo(map.current);
       }
       const g = layer.current!;

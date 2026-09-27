@@ -39,8 +39,10 @@ export type Forecast = {
   grid: LatLon;
   timezone: string;
   fetchedAt: number;
-  /** Open-Meteo normally; MET Norway when Open-Meteo refuses (quota / outage). */
-  source: "open-meteo" | "met-norway";
+  /** Open-Meteo normally; MET Norway / Open-Meteo's ensemble when Open-Meteo refuses (quota / outage). */
+  source: "open-meteo" | "met-norway" | "open-meteo-ensemble";
+  /** Plain-words credit when the days come from more than one source (e.g. "MET Norway to 29 Sep + GFS ensemble to 31 Oct"). */
+  sourceNote?: string;
   sourceUrl: string;
   current: WeatherCurrent | null;
   daily: WeatherDay[];

@@ -226,6 +226,10 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
     return distanceKm(centre, pin) <= scenario!.area.radiusKm;
   };
 
+  // Who the real forecast came from (Open-Meteo, or a backup when it refused this network) — named in the evidence.
+  const wxSource = world.forecasts.find((f) => f.forecast)?.forecast?.source;
+  const wxName = wxSource === "met-norway" ? "MET Norway" : wxSource === "open-meteo-ensemble" ? "Open-Meteo GFS ensemble" : "Open-Meteo";
+
   const conditionsFor = (item: ItineraryItem, date: string, pin: PlacePin): { c: Conditions; key: string } => {
     const key = world.itemForecast[item.id] ?? destKey ?? "";
     // If this location's forecast failed, fall back to the destination's rather than showing "no data".
@@ -377,7 +381,7 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
           { label: "Planned slot", value: t.assessment.suitability, detail: `${t.assessment.window[0]}:00–${t.assessment.window[1]}:00 suitability` },
           { label: "Better slot", value: t.bestSlot.suitability, detail: `${t.bestSlot.start}:00–${t.bestSlot.end}:00, ${t.bestSlot.mm} mm expected` },
         ],
-        evidence: [{ icon: "schedule", label: "Hourly forecast", text: `${t.assessment.window[0]}:00 → ${t.assessment.drivers[0]}; ${t.bestSlot.start}:00 → ${t.bestSlot.mm} mm in the slot`, source: t.conditions.source === "simulated" ? "Simulated" : "Open-Meteo hourly" }],
+        evidence: [{ icon: "schedule", label: "Hourly forecast", text: `${t.assessment.window[0]}:00 → ${t.assessment.drivers[0]}; ${t.bestSlot.start}:00 → ${t.bestSlot.mm} mm in the slot`, source: t.conditions.source === "simulated" ? "Simulated" : `${wxName} hourly` }],
         rationale: `Rain is concentrated earlier in the day; moving ${t.title} to ${hh} raises suitability from ${t.assessment.suitability} to ${t.bestSlot.suitability}.${t.paid ? " It is paid, so the vendor must confirm the new slot — the ledger does not change." : ""}`,
         chosenBy: "deterministic",
         changes: t.paid ? [] : [{ kind: "update-item", itemId: t.id, input: { ...inputOf(item), time: hh }, why: `${t.title} moves to ${hh}` }],
@@ -420,8 +424,8 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
           ],
           evidence: [
             unconfirmed
-              ? { icon: "event", label: "Other trip days", text: `${best.d}: no forecast yet (beyond Open-Meteo's 16-day window) — re-check closer to the date`, source: "Open-Meteo forecast" }
-              : { icon: "event", label: "Other trip days", text: `${best.d}: ${best.c.day ? `${best.c.day.precipitationMm.toFixed(0)} mm, ${Math.round(best.c.day.tempMaxC)}°C` : "fine"} — ${t.title} stays ${best.a.suitability}/100 suitable`, source: best.c.source === "simulated" ? "Simulated" : "Open-Meteo forecast" },
+              ? { icon: "event", label: "Other trip days", text: `${best.d}: no forecast yet (beyond the forecast window) — re-check closer to the date`, source: "Forecast" }
+              : { icon: "event", label: "Other trip days", text: `${best.d}: ${best.c.day ? `${best.c.day.precipitationMm.toFixed(0)} mm, ${Math.round(best.c.day.tempMaxC)}°C` : "fine"} — ${t.title} stays ${best.a.suitability}/100 suitable`, source: best.c.source === "simulated" ? "Simulated" : `${wxName} forecast` },
             ...(travelDays.size ? [{ icon: "flight", label: "Travel days skipped", text: [...travelDays].sort().join(", "), source: "Trip itinerary" }] : []),
             { icon: "calendar_month", label: "That day's plan", text: busy.length ? `Already on ${best.d}: ${busy.join(", ")}` : `${best.d} is free`, source: "Trip itinerary" },
           ],
@@ -608,7 +612,7 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
           ? "Forecasts only look ahead, so past days are not assessed."
           : covered.length
             ? `${covered.length} of ${items.length} plan items are inside the ${src} forecast window; none is at risk.`
-            : `${world.forecasts.find((f) => f.forecast)?.forecast?.source === "met-norway" ? "MET Norway (backup source) forecasts about 9 days ahead" : "Open-Meteo forecasts 16 days ahead"} — your trip starts ${state.trip.startDate}. Current conditions are shown; use What-If to stress-test the plan.`,
+            : `The forecast reaches ${world.forecasts.find((f) => f.forecast)?.forecast?.daily.at(-1)?.date ?? "about 16 days ahead"} — your trip starts ${state.trip.startDate}. Current conditions are shown; use What-If to stress-test the plan.`,
       level: "Low",
       normal: true,
     };
@@ -714,7 +718,7 @@ function scoreCandidate(
     { label: "Itinerary fit", value: Math.round(itineraryFit * 100), detail: similar ? `shares ${c.tags.filter((x) => ownTags.includes(x)).join("/")} with the plan it replaces` : "adds variety on the same day" },
   ];
   const evidence: Evidence[] = [
-    { icon: "rainy", label: "Weather", text: profile === "indoor" ? `Indoor venue; ${t.title} faces ${t.assessment.drivers[0]}` : a.drivers[0], source: cond.source === "simulated" ? "Simulated" : "Open-Meteo" },
+    { icon: "rainy", label: "Weather", text: profile === "indoor" ? `Indoor venue; ${t.title} faces ${t.assessment.drivers[0]}` : a.drivers[0], source: cond.source === "simulated" ? "Simulated" : "Forecast" },
   ];
   if (r?.rating !== undefined) evidence.push({ icon: "star", label: "Rating", text: `${r.rating.toFixed(1)}★ from ${r.reviewCount?.toLocaleString("en-IN")} reviews`, source: "Google Places" });
   if (r?.recentSentiment !== undefined) evidence.push({ icon: "reviews", label: "Recent reviews", text: `sentiment ${r.recentSentiment >= 0 ? "+" : ""}${r.recentSentiment}${r.latestReviewAt ? ` · newest ${new Date(r.latestReviewAt).toISOString().slice(0, 10)}` : ""}`, source: "Google Places" });

@@ -74,7 +74,7 @@ export type DayWeather = {
 };
 
 export type TripWeather =
-  | { status: "too-far"; message: string; forecastFrom: string }
+  | { status: "too-far"; message: string; forecastFrom: string; horizonDays: number }
   | { status: "past"; message: string }
   | { status: "ok"; days: DayWeather[]; packing: string[]; alertDays: number; itemRisk: Record<string, ItemRisk>; lastForecastDate: string };
 
@@ -152,10 +152,13 @@ function indoorAlternatives(destination: string, items: PlanItemInput[], date: s
  */
 export function planWeather(input: { destination: string; startDate: string; endDate: string; today: string; items: PlanItemInput[]; forecast: DailyForecast[] }): TripWeather {
   const { startDate, endDate, today } = input;
-  const lastForecastDate = addDaysIso(today, FORECAST_DAYS - 1);
+  // Open-Meteo's 16 days, or further when a long-range source (the GFS ensemble) answered for later dates.
+  const lastGiven = input.forecast.reduce((max, d) => (d.date > max ? d.date : max), "");
+  const lastForecastDate = lastGiven > addDaysIso(today, FORECAST_DAYS - 1) ? lastGiven : addDaysIso(today, FORECAST_DAYS - 1);
+  const horizonDays = Math.round((Date.parse(lastForecastDate) - Date.parse(today)) / 86_400_000) + 1;
   if (endDate < today) return { status: "past", message: "This trip has already happened." };
   if (startDate > lastForecastDate) {
-    return { status: "too-far", message: "Forecast available closer to your dates", forecastFrom: addDaysIso(startDate, -(FORECAST_DAYS - 1)) };
+    return { status: "too-far", message: "Forecast available closer to your dates", forecastFrom: addDaysIso(startDate, -(horizonDays - 1)), horizonDays };
   }
 
   const byDate = new Map(input.forecast.map((d) => [d.date, d]));

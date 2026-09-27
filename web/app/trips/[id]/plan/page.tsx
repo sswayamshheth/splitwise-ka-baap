@@ -9,7 +9,7 @@ import { PlanAssistantCard, PlanAssistantSheet } from "@/components/app/trip/Pla
 import { DayAlternatives, DayWeatherStrip, ItemWeatherBadge, PlanWeather } from "@/components/app/trip/weather/PlanWeather";
 import { useTripWeather } from "@/components/app/trip/weather/useTripWeather";
 import { useWeatherNotes } from "@/components/app/trip/weather/useWeatherNotes";
-import { WeatherIntel } from "@/components/app/twin/WeatherIntel";
+import { WeatherIntel, type ItemPins } from "@/components/app/twin/WeatherIntel";
 import { categoryPhoto } from "@/lib/covers";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatDate, isValidIso, todayIso } from "@/lib/dates";
@@ -70,6 +70,7 @@ export default function PlanPage() {
   const [sheet, setSheet] = useState<{ mode: "add" } | { mode: "edit"; item: ItineraryItem } | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
   const [assistant, setAssistant] = useState(false);
+  const [pins, setPins] = useState<ItemPins>({});
   const closed = state.trip.status === "closed";
 
   // Map & weather: code-decided alerts per day; suggestions only, applied by the user.
@@ -231,7 +232,7 @@ export default function PlanPage() {
             <Icon name="science" />
           </Link>
         </div>
-        {!closed ? <WeatherIntel /> : null}
+        {!closed ? <WeatherIntel onPins={setPins} /> : null}
         {!closed ? <PlanAssistantCard onOpen={() => setAssistant(true)} /> : null}
         {!closed ? (
           <button onClick={() => setSheet({ mode: "add" })} className="mt-space-sm flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-primary/40 font-title-md text-[15px] text-primary hover:bg-surface-container-low">
@@ -240,7 +241,7 @@ export default function PlanPage() {
         ) : null}
       </div>
 
-      <PlanWeather w={w} itemTitle={(id) => state.itinerary.find((i) => i.id === id)?.title ?? "Plan item"} />
+      <PlanWeather w={w} pins={pins} itemTitle={(id) => state.itinerary.find((i) => i.id === id)?.title ?? "Plan item"} />
 
       {days.length === 0 ? (
         <div className="px-margin pt-space-lg">

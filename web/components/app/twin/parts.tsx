@@ -7,7 +7,7 @@ import { Button, cx, Icon, Pill, useFeedback } from "@/components/app/kit";
 import { buildAll } from "@/components/app/money/build";
 import { api } from "@/lib/client/api";
 import { errorText, useTrip } from "@/lib/client/trip";
-import { formatDate } from "@/lib/dates";
+import { formatDate, todayIso } from "@/lib/dates";
 import { CommandError } from "@/lib/ledger/commands";
 import type { Change } from "@/lib/ledger/simulate";
 import type { TripState } from "@/lib/ledger/types";
@@ -87,7 +87,7 @@ export function WeatherStrip({ twin, world }: { twin: Twin; world: TwinWorld }) 
                 {sim ? <span className="font-label-sm text-[9px] font-bold text-tertiary">SIMULATED · {day.precipitationMm.toFixed(0)} mm</span> : null}
               </>
             ) : (
-              <span className="py-1 font-label-sm text-[10px] text-on-surface-variant">no forecast yet</span>
+              <span className="py-1 font-label-sm text-[10px] text-on-surface-variant">{d < todayIso() ? "past day" : "no forecast yet"}</span>
             )}
           </div>
         );

@@ -40,16 +40,17 @@ type Entry = {
   };
 };
 
-export function parseMetno(json: unknown, label: string, requested: LatLon, sourceUrl: string, fetchedAt = Date.now()): Forecast {
+/** `offsetMinutes`: the destination's real UTC offset when known (e.g. from Open-Meteo's answer); else estimated. */
+export function parseMetno(json: unknown, label: string, requested: LatLon, sourceUrl: string, fetchedAt = Date.now(), offsetMinutes = utcOffsetMinutes(requested)): Forecast {
   const ts = (json as { properties?: { timeseries?: Entry[] } } | null)?.properties?.timeseries;
   if (!Array.isArray(ts) || !ts.length) throw new Error("MET Norway: empty forecast");
-  const offset = utcOffsetMinutes(requested) * 60_000;
-  const days = new Map<string, { temps: number[]; winds: number[]; mm: number; wetHours: number; codes: number[]; hours: WeatherHour[] }>();
+  const offset = offsetMinutes * 60_000;
+  const days = new Map<string, { temps: number[]; winds: number[]; mm: number; wetHours: number; covered: number; codes: number[]; hours: WeatherHour[] }>();
   for (const e of ts) {
     const local = new Date(Date.parse(e.time) + offset);
     const date = local.toISOString().slice(0, 10);
     const hour = local.getUTCHours();
-    const d = days.get(date) ?? { temps: [], winds: [], mm: 0, wetHours: 0, codes: [], hours: [] };
+    const d = days.get(date) ?? { temps: [], winds: [], mm: 0, wetHours: 0, covered: 0, codes: [], hours: [] };
     const temp = e.data.instant?.details?.air_temperature;
     const windKmh = (e.data.instant?.details?.wind_speed ?? 0) * 3.6;
     if (typeof temp === "number") d.temps.push(temp);
@@ -60,13 +61,15 @@ export function parseMetno(json: unknown, label: string, requested: LatLon, sour
     const mm = h1 ? (h1.details?.precipitation_amount ?? 0) : (h6?.details?.precipitation_amount ?? 0);
     const code = symbolToWmo((h1 ?? h6)?.summary?.symbol_code);
     d.mm += mm;
+    d.covered += h1 ? 1 : h6 ? 6 : 0;
     if (mm > 0) d.wetHours += h1 ? 1 : 6;
     d.codes.push(code);
     if (h1 && typeof temp === "number") d.hours.push({ hour, precipitationMm: mm, precipitationProbability: null, windKmh, tempC: temp, weatherCode: code });
     days.set(date, d);
   }
   const daily: WeatherDay[] = [...days.entries()]
-    .filter(([, d]) => d.temps.length)
+    // A day seen through a single reading (the last step has no period after it) would show min = max: left out.
+    .filter(([, d]) => d.temps.length >= 2 && d.covered >= 6)
     .map(([date, d]) => ({
       date,
       hours: d.hours.length >= 12 ? d.hours : undefined,

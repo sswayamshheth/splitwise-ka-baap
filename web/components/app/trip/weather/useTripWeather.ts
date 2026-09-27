@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/client/api";
 import { todayIso } from "@/lib/dates";
 import { forecastAt, geocode } from "@/lib/forecast/openMeteo";
-import { nearestWithin, pickDestination, placeCandidates, placeLabel, uniqueByLabel, type Place } from "@/lib/forecast/places";
+import { nearestWithin, pickDestination, placeCandidates, placeLabel, titlePlaceNames, uniqueByLabel, type Place } from "@/lib/forecast/places";
 import { planWeather, type DailyForecast, type PlanItemInput, type TripWeather } from "@/lib/forecast/rules";
 
 export type Stop = { id: string; title: string; date: string; place: Place };
@@ -19,6 +19,8 @@ export type TripWeatherState = {
   /** Code-decided weather for the trip; null while loading or when the service is unavailable. */
   weather: TripWeather | null;
   unavailable: boolean;
+  /** Who the forecast came from (Open-Meteo, or the backups when it refused this network). */
+  source: string | null;
   stops: Stop[];
   unlocated: { id: string; title: string; date: string }[];
 };
@@ -92,6 +94,7 @@ export function useTripWeather(trip: {
   const [autoPick, setAutoPick] = useState<Place | null>(null);
   const [choice, setChoice] = useState<string | null>(null);
   const [forecast, setForecast] = useState<DailyForecast[] | null>(null);
+  const [source, setSource] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
   const [located, setLocated] = useState<{ stops: Stop[]; unlocated: TripWeatherState["unlocated"] }>({ stops: [], unlocated: [] });
@@ -120,7 +123,7 @@ export function useTripWeather(trip: {
       // Several places share the name: let the itinerary's own place names decide (the user can still change it).
       let pick = places[0];
       if (places.length > 1) {
-        const names = [...new Set(trip.items.flatMap((i) => placeCandidates(i)))].slice(0, 20);
+        const names = [...new Set(trip.items.flatMap((i) => [...placeCandidates(i), ...titlePlaceNames(i.title)]))].slice(0, 20);
         const matches: Place[][] = [];
         for (const n of names) matches.push(await geocode(n));
         pick = pickDestination(places, matches) ?? places[0];
@@ -139,16 +142,17 @@ export function useTripWeather(trip: {
     if (!destination) return;
     let alive = true;
     setLoading(true);
-    void forecastAt(destination.lat, destination.lon).then((days) => {
+    void forecastAt(destination.lat, destination.lon, trip.endDate).then((r) => {
       if (!alive) return;
-      setForecast(days);
-      setUnavailable(!days);
+      setForecast(r?.days ?? null);
+      setSource(r?.source ?? null);
+      setUnavailable(!r);
       setLoading(false);
     });
     return () => {
       alive = false;
     };
-  }, [destination]);
+  }, [destination, trip.endDate]);
 
   // Re-locate only when something that affects places changes (not on every ledger event).
   const itemsKey = trip.items.map((i) => `${i.id}|${i.title}|${i.location ?? ""}|${i.vendor ?? ""}|${i.date}`).join("\n");
@@ -176,5 +180,5 @@ export function useTripWeather(trip: {
     }
   };
 
-  return { loading, destinations, destination, chooseDestination, weather, unavailable, stops: located.stops, unlocated: located.unlocated };
+  return { loading, destinations, destination, chooseDestination, weather, unavailable, source, stops: located.stops, unlocated: located.unlocated };
 }

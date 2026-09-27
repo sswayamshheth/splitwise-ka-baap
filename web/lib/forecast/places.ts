@@ -94,3 +94,20 @@ export function pickDestination(candidates: Place[], itemPlaceMatches: Place[][]
   return best;
 }
 
+
+// Capitalised words that start a title or name a kind of thing, never a place worth looking up.
+const NOT_PLACES = new Set(["day", "dinner", "lunch", "breakfast", "homestay", "hotel", "stay", "return", "flights", "flight", "local", "board-game", "river", "mall", "arrival", "departure", "check-in", "shopping", "food", "cab", "taxi", "trek", "visit", "night", "morning", "evening", "and", "or"]);
+
+/**
+ * Every capitalised name in a title ("Hadimba temple & Vashisht springs" → "Hadimba", "Vashisht"),
+ * for telling same-named destinations apart. Broader than `placeCandidates`, so only used to vote.
+ */
+export function titlePlaceNames(title: string): string[] {
+  const out: string[] = [];
+  for (const m of title.matchAll(/\b[A-Z][\p{L}'’-]+(?:\s+[A-Z][\p{L}'’-]+){0,2}/gu)) {
+    const words = clean(m[0].replace(GENERIC, " ")).split(" ").filter((w) => w.length >= 4 && !NOT_PLACES.has(w.toLowerCase()));
+    const name = words.join(" ");
+    if (name && !out.some((o) => o.toLowerCase() === name.toLowerCase())) out.push(name);
+  }
+  return out;
+}

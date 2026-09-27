@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 import { Icon, Notice } from "@/components/app/kit";
 import { formatDate } from "@/lib/dates";
-import { placeLabel } from "@/lib/forecast/places";
+import { distanceKm, placeLabel } from "@/lib/forecast/places";
 import type { DayWeather, ItemRisk } from "@/lib/forecast/rules";
 
 import type { MapStop } from "./TripMap";
@@ -27,14 +27,17 @@ function weatherIcon(code?: number) {
   return "rainy";
 }
 
-const SOURCE = "Weather: Open-Meteo · Map © OpenStreetMap contributors";
 
 /** The trip-level card: where the weather is for, the map, and what to pack. */
-export function PlanWeather({ w, itemTitle }: { w: TripWeatherState; itemTitle: (id: string) => string }) {
+export function PlanWeather({ w, itemTitle, pins = {} }: { w: TripWeatherState; itemTitle: (id: string) => string; pins?: Record<string, { lat: number; lon: number }> }) {
   const weather = w.weather;
   const riskIds = weather?.status === "ok" ? weather.itemRisk : {};
+  // Items the town geocoder can't find (a restaurant, a waterfall) but the Weather intelligence card located on OpenStreetMap.
+  const near = (id: string) => !!pins[id] && !!w.destination && distanceKm(pins[id], w.destination) <= 150;
+  const pinned = w.unlocated.filter((u) => near(u.id)).map((u) => ({ id: u.id, title: u.title, date: u.date, place: { name: u.title, lat: pins[u.id].lat, lon: pins[u.id].lon } }));
+  const unlocated = w.unlocated.filter((u) => !near(u.id));
   // Joined in day order (a stable sort keeps the plan's order within a day).
-  const stops: MapStop[] = [...w.stops].sort((a, b) => a.date.localeCompare(b.date)).map((s) => ({ id: s.id, label: `${itemTitle(s.id)} · ${formatDate(s.date)}`, lat: s.place.lat, lon: s.place.lon, atRisk: !!riskIds[s.id] }));
+  const stops: MapStop[] = [...w.stops, ...pinned].sort((a, b) => a.date.localeCompare(b.date)).map((s) => ({ id: s.id, label: `${itemTitle(s.id)} · ${formatDate(s.date)}`, lat: s.place.lat, lon: s.place.lon, atRisk: !!riskIds[s.id] }));
 
   return (
     <section className="px-margin pt-space-md" aria-label="Map and weather">
@@ -75,11 +78,11 @@ export function PlanWeather({ w, itemTitle }: { w: TripWeatherState; itemTitle: 
 
         {w.destination ? <TripMap destination={{ label: placeLabel(w.destination), lat: w.destination.lat, lon: w.destination.lon }} stops={stops} /> : null}
 
-        {w.unlocated.length ? (
+        {unlocated.length ? (
           <div className="flex flex-col gap-0.5">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Not on the map</span>
             <ul className="flex flex-col gap-0.5 font-body-md text-body-md text-on-surface-variant">
-              {w.unlocated.map((u) => (
+              {unlocated.map((u) => (
                 <li key={u.id} className="truncate">
                   {formatDate(u.date)} · {u.title}
                 </li>
@@ -93,7 +96,7 @@ export function PlanWeather({ w, itemTitle }: { w: TripWeatherState; itemTitle: 
         {!w.loading && w.unavailable && !weather ? <span className="font-body-md text-body-md text-on-surface-variant">Weather isn&apos;t available right now. Try again later.</span> : null}
         {weather?.status === "too-far" ? (
           <span className="font-body-md text-body-md text-on-surface-variant">
-            {weather.message} — forecasts reach about 16 days ahead (from {formatDate(weather.forecastFrom)}).
+            {weather.message} — forecasts reach about {weather.horizonDays} days ahead (from {formatDate(weather.forecastFrom)}).
           </span>
         ) : null}
         {weather?.status === "past" ? <span className="font-body-md text-body-md text-on-surface-variant">{weather.message}</span> : null}
@@ -107,7 +110,7 @@ export function PlanWeather({ w, itemTitle }: { w: TripWeatherState; itemTitle: 
             ))}
           </div>
         ) : null}
-        <span className="font-label-sm text-label-sm text-on-surface-variant">{SOURCE}</span>
+        <span className="font-label-sm text-label-sm text-on-surface-variant">Weather: {w.source ?? "Open-Meteo"} · Map © OpenStreetMap contributors</span>
       </div>
     </section>
   );

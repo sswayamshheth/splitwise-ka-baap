@@ -179,7 +179,7 @@ export function assess(item: Pick<ItineraryItem, "title" | "category" | "vendor"
       impactScore: 0,
       level: "Low",
       confidence: 0,
-      drivers: ["No live forecast covers this date yet (Open-Meteo reaches 16 days ahead). Not guessed."],
+      drivers: ["No live forecast covers this date yet (it is past every source's horizon). Not guessed."],
       components: [],
       window,
     };

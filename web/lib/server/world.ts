@@ -8,8 +8,9 @@ import type { ItineraryItem, TripState } from "@/lib/ledger/types";
 import { overpassQuery, parseOverpass, parsePhoton, photonSearches, photonUrl, type Candidate } from "@/lib/signals/osm";
 import { gdeltProvider, googlePlacesProvider, mastodonProvider, mergeRatings, pageviewsProvider, wikivoyageProvider, type PlaceContext } from "@/lib/signals/providers";
 import type { ProviderStatus, PublicSignal } from "@/lib/signals/types";
+import { pickDestination, placeCandidates, titlePlaceNames } from "@/lib/forecast/places";
 import type { PlacePin, TwinWorld, WorldForecast } from "@/lib/twin/twin";
-import { metnoUrl, METNO_UA, parseMetno } from "@/lib/weather/metno";
+import { backupForecast, extendForecast, type JsonGetter } from "@/lib/weather/backup";
 import { distanceKm, forecastUrl, parseForecast, parseGeocode, parseGeocodeList, parseNominatim, type GeoPlace, type LatLon } from "@/lib/weather/openmeteo";
 
 /**
@@ -87,7 +88,16 @@ async function photon(query: string, near: LatLon): Promise<GeoPlace | null> {
   }
 }
 
-async function geocodeDestination(destination: string): Promise<GeoPlace | null> {
+/** Places matching a name (Open-Meteo geocoding), cached; used to tell same-named destinations apart. */
+async function townsNamed(name: string): Promise<{ lat: number; lon: number; name: string }[]> {
+  try {
+    return parseGeocodeList(await getJson(`https://geocoding-api.open-meteo.com/v1/search?${new URLSearchParams({ name, count: "5", language: "en", format: "json" })}`, {}, 5000));
+  } catch {
+    return [];
+  }
+}
+
+async function geocodeDestination(destination: string, hints: string[] = []): Promise<GeoPlace | null> {
   const key = `g:${destination.toLowerCase()}`;
   if (geoCache.has(key)) return geoCache.get(key)!;
   const parts = destination.split(",").map((p) => p.trim()).filter(Boolean);
@@ -96,7 +106,13 @@ async function geocodeDestination(destination: string): Promise<GeoPlace | null>
       // Names are ambiguous ("Goa" → Genoa, Italy first): take an exact-name match, preferring India; else fall through to OSM.
       const list = parseGeocodeList(await getJson(`https://geocoding-api.open-meteo.com/v1/search?${new URLSearchParams({ name: q, count: "10", language: "en", format: "json" })}`, {}, 6000));
       const exact = list.filter((p) => p.name.toLowerCase() === q.toLowerCase());
-      let best = exact.find((p) => p.country === "India");
+      const indian = exact.filter((p) => p.country === "India");
+      let best = indian[0];
+      if (indian.length > 1 && hints.length) {
+        // Several Indian towns share the name ("Manali" is also a Chennai suburb): the itinerary's own place names vote.
+        const votes = await mapLimit(hints.slice(0, 12), 4, townsNamed);
+        best = pickDestination(indian, votes) ?? best;
+      }
       if (!best && exact.length) {
         // No Indian town of that name: a state/region may still be meant ("Goa") — ask OpenStreetMap first.
         const n = await nominatim(q, { lat: 20, lon: 78 });
@@ -248,7 +264,7 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
   const picked = state.trip.place;
   const geo: GeoPlace | null = picked
     ? { lat: picked.lat, lon: picked.lon, name: picked.name, admin: picked.admin, country: picked.country, source: "open-meteo-geocoding", query: state.trip.destination }
-    : await budget(geocodeDestination(state.trip.destination), 12_000, null);
+    : await budget(geocodeDestination(state.trip.destination, [...new Set(state.itinerary.flatMap((i) => [...placeCandidates(i), ...titlePlaceNames(i.title)]))]), 15_000, null);
   if (!geo) throw new Error(`Could not locate "${state.trip.destination}" (Open-Meteo geocoding and Nominatim found nothing)`);
   const region = [geo.admin, geo.country].filter(Boolean).join(", ") || state.trip.destination;
   const destination: PlacePin = { lat: geo.lat, lon: geo.lon, label: state.trip.destination, precision: "destination", source: geo.source };
@@ -293,16 +309,15 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
     Promise.all(
       [...clusters.entries()].slice(0, 6).map(async ([key, c]): Promise<WorldForecast> => {
         const url = forecastUrl(c.point);
+        const get: JsonGetter = (u, headers) => getJson(u, { headers }, 12_000);
         try {
-          return { key, point: c.point, label: c.label, forecast: parseForecast(await getJson(url, {}, 10_000), c.label, c.point, url) };
+          const main = parseForecast(await getJson(url, {}, 10_000), c.label, c.point, url);
+          // Trip days past Open-Meteo's 16-day horizon get the GFS ensemble's long-range days.
+          return { key, point: c.point, label: c.label, forecast: await extendForecast(main, c.point, c.label, state.trip.endDate, get) };
         } catch (e) {
-          // Open-Meteo refused (e.g. its free daily quota is used up on this network): use MET Norway instead.
-          const backup = metnoUrl(c.point);
-          try {
-            return { key, point: c.point, label: c.label, forecast: parseMetno(await getJson(backup, { headers: { "user-agent": METNO_UA } }, 10_000), c.label, c.point, backup) };
-          } catch {
-            return { key, point: c.point, label: c.label, forecast: null, error: `${(e as Error).message}; MET Norway backup also failed` };
-          }
+          // Open-Meteo refused (e.g. its free daily quota is used up on this network): MET Norway + Open-Meteo's GFS ensemble instead.
+          const backup = await backupForecast(c.point, c.label, get).catch(() => null);
+          return backup ? { key, point: c.point, label: c.label, forecast: backup } : { key, point: c.point, label: c.label, forecast: null, error: `${(e as Error).message}; MET Norway and GFS ensemble backups also failed` };
         }
       }),
     ),
@@ -353,9 +368,7 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
     candidates,
     ratings: mergeRatings(views.ratings, google.ratings),
     weatherNote: okWeather.length
-      ? okWeather[0].forecast!.source === "met-norway"
-        ? `MET Norway forecast (backup — Open-Meteo refused this network) for ${okWeather.length} location${okWeather.length === 1 ? "" : "s"}, to ${okWeather[0].forecast!.daily.at(-1)?.date ?? "?"}`
-        : `Open-Meteo forecast for ${okWeather.length} location${okWeather.length === 1 ? "" : "s"}, 16-day horizon to ${okWeather[0].forecast!.daily.at(-1)?.date ?? "?"}`
+      ? `${okWeather[0].forecast!.source === "open-meteo" ? "" : "Backup forecast (Open-Meteo refused this network): "}${okWeather[0].forecast!.sourceNote ?? `Open-Meteo to ${okWeather[0].forecast!.daily.at(-1)?.date ?? "?"}`} · ${okWeather.length} location${okWeather.length === 1 ? "" : "s"}`
       : `Weather unavailable: ${forecasts[0]?.error ?? "unknown error"}`,
   };
   worldCache.set(cacheKey, { at: Date.now(), world });
