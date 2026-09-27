@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import QRCode from "qrcode";
+import { useEffect, useState, type ReactNode } from "react";
 
-import { cx, Icon, useFeedback } from "@/components/app/kit";
+import { cx, Icon, Sheet, useFeedback } from "@/components/app/kit";
+import { UpiPayPanel } from "@/components/app/payments/UpiQr";
 import { useCheckout } from "@/components/app/payments/checkout";
 import { RequestSheet } from "@/components/app/payments/PaymentRequest";
 import { usePaymentConfig } from "@/components/app/payments/paymentConfig";
@@ -25,6 +27,8 @@ export function SettleSection() {
   const { toast, confirm } = useFeedback();
   const [busy, setBusy] = useState<string | null>(null);
   const [asking, setAsking] = useState<{ from: string; amountPaise: number } | null>(null);
+  // Real UPI between members: my QR for someone who owes me, or their QR when I owe them.
+  const [upiSheet, setUpiSheet] = useState<{ from: string; to: string; amountPaise: number } | null>(null);
   const checkout = useCheckout();
   // Razorpay settle-ups and payment requests need real Razorpay keys; hidden in demo mode.
   const payConfig = usePaymentConfig();
@@ -69,8 +73,21 @@ export function SettleSection() {
     }
   };
 
-  const markPaid = (from: string, to: string, amountPaise: number) =>
-    act(`${from}>${to}`, () => trip.run((s, ctx) => initiateSettlement(s, { from, to, amountPaise, method: "upi" }, ctx)), `Marked as sent — waiting for ${trip.short(to)} to confirm`);
+  const markPaid = (from: string, to: string, amountPaise: number, reference?: string) =>
+    act(`${from}>${to}`, () => trip.run((s, ctx) => initiateSettlement(s, { from, to, amountPaise, method: "upi", reference }, ctx)), `Marked as sent — waiting for ${trip.short(to)} to confirm`);
+  /** I'm the one being paid and the money is in my bank: record and confirm in one step. */
+  const receivedIt = (from: string, to: string, amountPaise: number) =>
+    act(
+      `${from}>${to}`,
+      () =>
+        trip.run((s, ctx) => {
+          const sent = initiateSettlement(s, { from, to, amountPaise, method: "upi", reference: "UPI · confirmed by the receiver" }, ctx);
+          if (sent.type !== "SETTLEMENT_INITIATED") return [sent];
+          const after = { ...s, settlements: [...s.settlements, sent.settlement] };
+          return [sent, confirmSettlement(after, sent.settlement.id, { ...ctx, now: (ctx.now ?? Date.now()) + 1 })];
+        }),
+      `${formatMoney(amountPaise)} from ${trip.short(from)} received · settled`,
+    );
   const confirmIt = (s: SettlementData) => act(s.id, () => trip.run((st, ctx) => confirmSettlement(st, s.id, ctx)), `${formatMoney(s.amountPaise)} from ${trip.short(s.from)} confirmed`);
   const cancelIt = async (s: SettlementData) => {
     const ok = await confirm({ title: "Cancel this payment?", message: `${trip.fullName(s.from)} → ${trip.fullName(s.to)} · ${formatMoney(s.amountPaise)}. The balance goes back to unpaid.`, confirm: "Cancel payment", danger: true });
@@ -222,9 +239,20 @@ export function SettleSection() {
                           </button>
                         ) : null}
                         {upiAllowed && upi && trip.isMe(t.from) ? (
-                          <a href={upi} className="flex items-center gap-1 font-label-md text-label-md text-primary hover:underline">
-                            <Icon name="qr_code_2" className="text-[16px]" /> Open UPI app · real payment
-                          </a>
+                          <button
+                            onClick={() => setUpiSheet({ from: t.from, to: t.to, amountPaise: t.amountPaise })}
+                            className="flex items-center gap-1 rounded-full bg-secondary-fixed px-space-md py-1 font-label-md text-label-md text-on-secondary-fixed"
+                          >
+                            <Icon name="qr_code_2" className="text-[16px]" /> Pay via UPI QR · real
+                          </button>
+                        ) : null}
+                        {upiAllowed && trip.isMe(t.to) ? (
+                          <button
+                            onClick={() => setUpiSheet({ from: t.from, to: t.to, amountPaise: t.amountPaise })}
+                            className="flex items-center gap-1 rounded-full bg-secondary-fixed px-space-md py-1 font-label-md text-label-md text-on-secondary-fixed"
+                          >
+                            <Icon name="qr_code_2" className="text-[16px]" /> Show my UPI QR · real
+                          </button>
                         ) : null}
                         <button
                           disabled={busy === key}
@@ -273,6 +301,37 @@ export function SettleSection() {
           </div>
         </div>
       ) : null}
+      {upiSheet ? (
+        <Sheet open onClose={() => setUpiSheet(null)} title={trip.isMe(upiSheet.to) ? "Get paid by UPI" : "Pay by UPI"}>
+          {trip.isMe(upiSheet.to) ? (
+            <ReceiveQr
+              vpa={trip.participant(upiSheet.to)?.upiId}
+              name={trip.fullName(upiSheet.to)}
+              payer={trip.fullName(upiSheet.from)}
+              amountPaise={upiSheet.amountPaise}
+              note={`${trip.state.trip.name} settle-up`}
+              busy={busy === `${upiSheet.from}>${upiSheet.to}`}
+              onReceived={async () => {
+                await receivedIt(upiSheet.from, upiSheet.to, upiSheet.amountPaise);
+                setUpiSheet(null);
+              }}
+            />
+          ) : (
+            <UpiPayPanel
+              vpa={trip.participant(upiSheet.to)!.upiId!}
+              name={trip.fullName(upiSheet.to)}
+              amountPaise={upiSheet.amountPaise}
+              note={`${trip.state.trip.name} settle-up`.slice(0, 50)}
+              busy={busy === `${upiSheet.from}>${upiSheet.to}`}
+              confirmLabel="I've paid — mark as sent"
+              onConfirm={async (utr) => {
+                await markPaid(upiSheet.from, upiSheet.to, upiSheet.amountPaise, utr ? `UPI UTR ${utr}` : "UPI");
+                setUpiSheet(null);
+              }}
+            />
+          )}
+        </Sheet>
+      ) : null}
       {asking ? <RequestSheet open onClose={() => setAsking(null)} purpose="settle" fromId={asking.from} amountPaise={asking.amountPaise} /> : null}
       {checkout.element}
     </section>
@@ -296,6 +355,45 @@ function TransferRow({ from, to, amount, sub, footer, muted }: { from: string; t
         <span className={cx("shrink-0 font-currency-md text-currency-md", muted ? "text-outline line-through" : "text-on-surface")}>{formatMoney(amount)}</span>
       </div>
       <div className="mt-space-sm flex flex-wrap items-center justify-between gap-space-sm">{footer}</div>
+    </div>
+  );
+}
+
+/** My own UPI QR for the exact amount someone owes me — they scan it with any UPI app; real money, bank to bank. */
+function ReceiveQr({ vpa, name, payer, amountPaise, note, busy, onReceived }: { vpa?: string; name: string; payer: string; amountPaise: number; note: string; busy: boolean; onReceived: () => void }) {
+  const [img, setImg] = useState<string | null>(null);
+  const url = vpa ? upiIntentUrl({ vpa, name, amountPaise, note }) : null;
+  useEffect(() => {
+    if (!url) return;
+    let alive = true;
+    QRCode.toDataURL(url, { width: 360, margin: 1, errorCorrectionLevel: "M", color: { dark: "#0e1e1b", light: "#ffffff" } })
+      .then((d) => alive && setImg(d))
+      .catch(() => alive && setImg(null));
+    return () => {
+      alive = false;
+    };
+  }, [url]);
+  if (!vpa) {
+    return <p className="font-body-md text-body-md text-on-surface-variant">Add your UPI ID in Profile first — this QR pays straight into it.</p>;
+  }
+  return (
+    <div className="flex flex-col items-center gap-space-md">
+      <p className="flex w-full items-start gap-1.5 rounded-xl bg-secondary-fixed/60 px-space-md py-space-sm font-label-md text-label-md text-on-secondary-fixed">
+        <Icon name="info" className="mt-0.5 text-[16px]" /> Real payment: {payer} pays from their own UPI app straight into your bank. GroupTrip never touches the money.
+      </p>
+      <div className="rounded-2xl bg-surface-container-lowest p-3 shadow-sm ring-1 ring-outline-variant/40">
+        {img ? <img src={img} alt={`UPI QR to pay ${name}`} className="h-56 w-56" /> : <div className="flex h-56 w-56 items-center justify-center text-on-surface-variant">Generating QR…</div>}
+      </div>
+      <div className="text-center">
+        <p className="font-headline-md text-headline-md text-on-surface">{formatMoney(amountPaise)}</p>
+        <p className="font-label-md text-label-md text-on-surface-variant">
+          {payer} → you · {vpa}
+        </p>
+      </div>
+      <p className="text-center font-label-sm text-label-sm text-on-surface-variant">Ask {payer.split(" ")[0]} to scan this with GPay / PhonePe / Paytm. When the money shows up in your bank, tap below — that settles it for everyone.</p>
+      <button disabled={busy} onClick={onReceived} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary-container font-title-md text-title-md text-on-primary disabled:opacity-40">
+        <Icon name="task_alt" /> {busy ? "Recording…" : `Received ${formatMoney(amountPaise)} — settle it`}
+      </button>
     </div>
   );
 }
