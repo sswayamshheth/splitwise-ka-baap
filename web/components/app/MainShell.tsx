@@ -63,10 +63,9 @@ export function MainShell({ children }: { children: ReactNode }) {
         <header className="fixed top-0 z-50 w-full bg-surface/85 shadow-[0_1px_8px_rgba(16,32,28,0.03)] backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-[520px] items-center justify-between px-margin">
             <Link href="/home" className="flex items-center gap-space-sm">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 text-primary">
-                <Icon name="explore" className="text-[22px]" />
-              </span>
-              <span className="font-headline-sm text-headline-sm tracking-tight text-on-surface">GroupTrip</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/settlr-icon.png" alt="" width={36} height={36} className="h-9 w-9 rounded-lg" />
+              <span className="font-headline-sm text-headline-sm font-bold tracking-tight text-[#0b4148]">Settlr</span>
             </Link>
             <div className="flex items-center gap-space-sm">
               {current ? <span className="font-title-md text-title-md text-primary">{current.label}</span> : null}

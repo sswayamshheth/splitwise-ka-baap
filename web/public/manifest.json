@@ -1,14 +1,24 @@
 {
-  "name": "GroupTrip Ledger",
-  "short_name": "GroupTrip",
+  "name": "Settlr — group trip ledger",
+  "short_name": "Settlr",
   "description": "Group travel app where the itinerary is the ledger",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1e6f64",
+  "theme_color": "#0b4148",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ]
 }

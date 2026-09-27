@@ -28,6 +28,8 @@ export function AuthHero({ eyebrow, title, subtitle, children, footer }: { eyebr
 
       <main className="relative z-10 mx-auto mt-auto flex w-full max-w-[520px] flex-col gap-6 px-margin pb-8 pt-24">
         <div className="flex flex-col gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/settlr-logo.png" alt="Settlr" className="mb-2 h-14 w-fit rounded-2xl bg-[#f7f7f7] px-3 py-2 shadow-lg" />
           <span className="font-label-md text-label-md uppercase tracking-[0.2em] text-surface-bright/80">{eyebrow}</span>
           <h1 className="font-display-lg text-display-lg text-surface-bright">{title}</h1>
           <p className="font-body-lg text-body-lg text-surface-bright/90">{subtitle}</p>

@@ -6,7 +6,7 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
   return (
     <AuthHero
       eyebrow="Shared journeys · one ledger"
-      title="GroupTrip"
+      title="Settlr"
       subtitle="Plan it together. Split it fairly."
       footer="Prototype: payments are simulated — no money moves through this app."
     >

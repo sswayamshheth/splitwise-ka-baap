@@ -95,7 +95,7 @@ function TripChrome({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-surface">
       <TopBar
-        eyebrow={`GroupTrip · ${t.destination.split(",")[0]} · ${formatDateRange(t.startDate, t.endDate)}`}
+        eyebrow={`Settlr · ${t.destination.split(",")[0]} · ${formatDateRange(t.startDate, t.endDate)}`}
         title={t.name}
         back={tabbed ? "/home" : base}
         right={

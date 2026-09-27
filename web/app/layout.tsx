@@ -4,11 +4,11 @@ import { FeedbackProvider } from "@/components/app/kit";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GroupTrip Ledger",
+  title: "Settlr — group trip ledger",
   description: "Group travel app where the itinerary is the ledger",
   manifest: "/manifest.json",
-  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
-  appleWebApp: { capable: true, title: "GroupTrip" },
+  icons: { icon: [{ url: "/brand/favicon-64.png", type: "image/png" }, { url: "/favicon.ico" }], apple: "/brand/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Settlr" },
 };
 
 export const viewport: Viewport = {
