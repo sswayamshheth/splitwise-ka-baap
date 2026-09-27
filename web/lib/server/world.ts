@@ -23,7 +23,7 @@ import { distanceKm, forecastUrl, parseForecast, parseGeocode, parseNominatim, t
 dns.setDefaultResultOrder("ipv4first");
 
 const UA = "GroupTripLedger/1.0 (+https://github.com/sswayamshheth/trip-pool)";
-const TTL = 10 * 60_000;
+const TTL = 20 * 60_000;
 const worldCache = new Map<string, { at: number; world: TwinWorld }>();
 const geoCache = new Map<string, GeoPlace | null>();
 
