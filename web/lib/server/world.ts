@@ -10,7 +10,7 @@ import { gdeltProvider, googlePlacesProvider, mastodonProvider, mergeRatings, pa
 import type { ProviderStatus, PublicSignal } from "@/lib/signals/types";
 import type { PlacePin, TwinWorld, WorldForecast } from "@/lib/twin/twin";
 import { metnoUrl, METNO_UA, parseMetno } from "@/lib/weather/metno";
-import { distanceKm, forecastUrl, parseForecast, parseGeocode, parseNominatim, type GeoPlace, type LatLon } from "@/lib/weather/openmeteo";
+import { distanceKm, forecastUrl, parseForecast, parseGeocode, parseGeocodeList, parseNominatim, type GeoPlace, type LatLon } from "@/lib/weather/openmeteo";
 
 /**
  * Assembles the Digital Twin's real-world inputs for a trip: geocoded places,
@@ -93,8 +93,21 @@ async function geocodeDestination(destination: string): Promise<GeoPlace | null>
   const parts = destination.split(",").map((p) => p.trim()).filter(Boolean);
   for (const q of [parts[0], destination]) {
     try {
-      const hit = parseGeocode(await getJson(`https://geocoding-api.open-meteo.com/v1/search?${new URLSearchParams({ name: q, count: "1", language: "en", format: "json" })}`, {}, 6000), q);
-      if (hit) {
+      // Names are ambiguous ("Goa" → Genoa, Italy first): take an exact-name match, preferring India; else fall through to OSM.
+      const list = parseGeocodeList(await getJson(`https://geocoding-api.open-meteo.com/v1/search?${new URLSearchParams({ name: q, count: "10", language: "en", format: "json" })}`, {}, 6000));
+      const exact = list.filter((p) => p.name.toLowerCase() === q.toLowerCase());
+      let best = exact.find((p) => p.country === "India");
+      if (!best && exact.length) {
+        // No Indian town of that name: a state/region may still be meant ("Goa") — ask OpenStreetMap first.
+        const n = await nominatim(q, { lat: 20, lon: 78 });
+        if (n && distanceKm(n, { lat: 22, lon: 80 }) < 2200) {
+          geoCache.set(key, n);
+          return n;
+        }
+        best = exact[0];
+      }
+      if (best) {
+        const hit: GeoPlace = { lat: best.lat, lon: best.lon, name: best.name, admin: best.admin, country: best.country, source: "open-meteo-geocoding", query: q };
         geoCache.set(key, hit);
         return hit;
       }

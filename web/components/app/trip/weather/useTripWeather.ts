@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { api } from "@/lib/client/api";
 import { todayIso } from "@/lib/dates";
 import { forecastAt, geocode } from "@/lib/forecast/openMeteo";
 import { nearestWithin, pickDestination, placeCandidates, placeLabel, uniqueByLabel, type Place } from "@/lib/forecast/places";
@@ -55,9 +56,22 @@ async function locate(items: PlanItemInput[], destination: Place): Promise<{ sto
  */
 async function findDestination(text: string): Promise<Place[]> {
   const parts = text.split(",").map((s) => s.trim()).filter(Boolean);
-  let places = uniqueByLabel(await geocode(text));
+  // The app's own search (Open-Meteo towns + OpenStreetMap states/regions, exact name and India first); the browser geocoder is the fallback.
+  const viaApp = async (q: string): Promise<Place[]> => {
+    try {
+      const r = await api<{ results: { name: string; admin?: string; country?: string; lat: number; lon: number }[] }>(`/api/places?q=${encodeURIComponent(q)}`);
+      return r.results.map((x) => ({ name: x.name, admin1: x.admin, country: x.country, lat: x.lat, lon: x.lon }));
+    } catch {
+      return [];
+    }
+  };
+  let places = uniqueByLabel(await viaApp(parts[0] ?? text));
+  if (!places.length) places = uniqueByLabel(await geocode(text));
   if (!places.length && parts.length > 1) places = uniqueByLabel(await geocode(parts[0]));
   const hints = parts.slice(1).flatMap((p) => p.toLowerCase().split(/\s+/)).filter((w) => w.length >= 3 && !["north", "south", "east", "west", "the"].includes(w));
+  // Exact-name matches first ("Goa" must not become Genoa), and places in India before the rest.
+  const want = (parts[0] ?? text).toLowerCase();
+  places = places.map((p, i) => ({ p, i })).sort((a, b) => (a.p.name.toLowerCase() === want ? 0 : 2) + (a.p.country === "India" ? 0 : 1) - ((b.p.name.toLowerCase() === want ? 0 : 2) + (b.p.country === "India" ? 0 : 1)) || a.i - b.i).map((x) => x.p);
   if (hints.length && places.length > 1) {
     const hinted = places.filter((p) => hints.some((h) => `${p.admin1 ?? ""} ${p.country ?? ""}`.toLowerCase().includes(h)));
     if (hinted.length) places = [...hinted, ...places.filter((p) => !hinted.includes(p))];

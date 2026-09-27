@@ -53,7 +53,11 @@ export function describeEvent(e: LedgerEvent, name: NameOf, ctx: DescribeContext
         tone: "grey",
         title: "Trip details updated",
         detail: `by ${by}`,
-        changes: Object.keys(e.after).map((k) => ({ label: k, before: String((e.before as Record<string, unknown>)[k] ?? "—"), after: String((e.after as Record<string, unknown>)[k]) })),
+        changes: Object.keys(e.after).map((k) => {
+          // A pinned place reads as its coordinates, not "[object Object]".
+          const show = (v: unknown) => (v && typeof v === "object" && "lat" in v && "lon" in v ? `${(v as { lat: number }).lat.toFixed(3)}°, ${(v as { lon: number }).lon.toFixed(3)}°` : String(v ?? "—"));
+          return { label: k === "place" ? "exact location" : k, before: show((e.before as Record<string, unknown>)[k]), after: show((e.after as Record<string, unknown>)[k]) };
+        }),
       };
     case "PARTICIPANT_ADDED":
       return { kind: "member", icon: "person-add-alt-1", tone: "mint", title: `${name(e.participant.id)} joined the trip`, detail: e.participant.upiId ? `UPI ${e.participant.upiId}` : "No UPI ID yet", participantId: e.participant.id };

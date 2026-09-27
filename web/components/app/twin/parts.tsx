@@ -82,14 +82,12 @@ export function WeatherStrip({ twin, world }: { twin: Twin; world: TwinWorld }) 
             <span className="font-label-sm text-[10px] uppercase text-on-surface-variant">{formatDate(d)}</span>
             {day ? (
               <>
-                <span className="font-title-md text-title-md">{day.precipitationMm.toFixed(0)} mm</span>
-                <span className="font-label-sm text-[10px] text-on-surface-variant">
-                  {Math.round(day.tempMaxC)}° · {day.precipitationProbability ?? "–"}%
-                </span>
-                {sim ? <span className="font-label-sm text-[9px] font-bold text-tertiary">SIMULATED</span> : null}
+                <span className="font-title-md text-title-md">{Math.round(day.tempMaxC)}°</span>
+                <span className="font-label-sm text-[10px] text-on-surface-variant">low {Math.round(day.tempMinC)}°</span>
+                {sim ? <span className="font-label-sm text-[9px] font-bold text-tertiary">SIMULATED · {day.precipitationMm.toFixed(0)} mm</span> : null}
               </>
             ) : (
-              <span className="py-1 font-label-sm text-[10px] text-on-surface-variant">beyond 16-day forecast</span>
+              <span className="py-1 font-label-sm text-[10px] text-on-surface-variant">no forecast yet</span>
             )}
           </div>
         );

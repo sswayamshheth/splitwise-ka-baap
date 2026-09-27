@@ -5,14 +5,26 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/client/api";
 import type { Config } from "./RazorpayPool";
 
+// One request per page load, shared by every sheet (retried if it failed), so options don't flicker in and out.
+let cached: Config | null = null;
+let pending: Promise<Config | null> | null = null;
+function loadConfig(): Promise<Config | null> {
+  if (cached) return Promise.resolve(cached);
+  pending ??= api<Config>("/api/payments/config")
+    .then((c) => (cached = c))
+    .catch(() => {
+      pending = null; // try again next time
+      return null;
+    });
+  return pending;
+}
+
 /** The server's payment mode (/api/payments/config); null while loading. */
 export function usePaymentConfig() {
-  const [config, setConfig] = useState<Config | null>(null);
+  const [config, setConfig] = useState<Config | null>(cached);
   useEffect(() => {
     let alive = true;
-    api<Config>("/api/payments/config")
-      .then((c) => alive && setConfig(c))
-      .catch(() => undefined);
+    void loadConfig().then((c) => alive && c && setConfig(c));
     return () => {
       alive = false;
     };
@@ -26,5 +38,6 @@ export function usePaymentConfig() {
  */
 export function useRealUpiAllowed() {
   const config = usePaymentConfig();
-  return !!config && config.mode !== "demo";
+  // Hidden only when the server has said payments run in demo mode — not while loading or after a network blip.
+  return !config || config.mode !== "demo";
 }

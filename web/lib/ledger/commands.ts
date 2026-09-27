@@ -91,6 +91,14 @@ export function createTrip(input: TripInput, ctx: Ctx): { tripId: string; events
   return { tripId: trip.id, events: [{ ...base(ctx), type: "TRIP_CREATED", trip }] };
 }
 
+/** Pins a trip to an exact place picked from the destination search (older trips only had a typed name). */
+export function setTripPlace(state: TripState, place: TripPlace, ctx: Ctx): LedgerEvent {
+  const clean = cleanPlace(place);
+  if (!clean) throw new CommandError("Pick the destination from the list", "destination");
+  const destination = placeLabel(clean);
+  return { ...base(ctx), type: "TRIP_UPDATED", before: { destination: state.trip.destination, place: state.trip.place }, after: { destination, place: clean } };
+}
+
 export function updateTrip(state: TripState, input: TripInput, ctx: Ctx): LedgerEvent {
   const errors = validateTrip(input);
   const first = Object.entries(errors)[0];

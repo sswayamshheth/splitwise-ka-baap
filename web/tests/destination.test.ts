@@ -46,3 +46,17 @@ describe("destination picker", () => {
     expect(s.trip.place).toMatchObject({ lat: 32.2574, lon: 77.17481 });
   });
 });
+
+describe("pinning an older trip to an exact place", () => {
+  it("records the picked place and a clear label through the ledger", async () => {
+    const { setTripPlace } = await import("@/lib/ledger/commands");
+    const { events } = createTrip({ name: "Goa", destination: "Goa", startDate: "2026-11-01", endDate: "2026-11-04" }, { actor: "system" });
+    const s = reduceEvents(events)!;
+    expect(s.trip.place).toBeUndefined();
+    const e = setTripPlace(s, { name: "Candolim", admin: "Goa", country: "India", lat: 15.518, lon: 73.763, source: "open-meteo-geocoding" }, { actor: "system" });
+    const after = reduceEvents([...events, e])!;
+    expect(after.trip.place).toMatchObject({ lat: 15.518, lon: 73.763 });
+    expect(after.trip.destination).toBe("Candolim, Goa, India");
+    expect(() => setTripPlace(s, { name: "x", lat: 999, lon: 0, source: "open-meteo-geocoding" }, { actor: "system" })).toThrow();
+  });
+});

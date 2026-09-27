@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, cx, Icon, Pill, Sheet } from "@/components/app/kit";
-import { useTrip } from "@/lib/client/trip";
+import { DestinationPicker } from "@/components/app/DestinationPicker";
+import { Button, cx, Icon, Pill, Sheet, useFeedback } from "@/components/app/kit";
+import { errorText, useTrip } from "@/lib/client/trip";
+import { setTripPlace } from "@/lib/ledger/commands";
+import type { TripPlace } from "@/lib/ledger/types";
 import { formatDate } from "@/lib/dates";
 import { primaryPerItem } from "@/lib/twin/twin";
 import { ExplainBox, ItemImpact, levelTone, NugenProof, RecommendationCard, SourceBadge, TwinMap, useAccept, useRealTwin, WeatherStrip } from "./parts";
@@ -81,14 +84,18 @@ export function WeatherIntel() {
         </span>
       </div>
 
-      <div className={cx("flex items-start gap-space-sm rounded-lg p-space-sm", h.normal ? "bg-primary-fixed/40" : h.level === "High" ? "bg-error-container/60" : "bg-secondary-fixed/60")}>
-        <Icon name={h.normal ? "partly_cloudy_day" : "rainy_heavy"} className="mt-0.5" />
-        <div className="flex min-w-0 flex-col">
-          <span className="font-title-md text-title-md text-on-surface">{h.title}</span>
-          <span className="font-label-md text-label-md text-on-surface-variant">{h.detail}</span>
-          {focus ? <span className="font-label-sm text-label-sm text-on-surface-variant">Confidence {Math.round(focus.assessment.confidence * 100)}% · {focus.assessment.drivers.join(" · ")}</span> : null}
+      {/* Only a real weather alert gets a box; normal conditions speak through the forecast strip. */}
+      {!h.normal ? (
+        <div className={cx("flex items-start gap-space-sm rounded-lg p-space-sm", h.level === "High" ? "bg-error-container/60" : "bg-secondary-fixed/60")}>
+          <Icon name="rainy_heavy" className="mt-0.5" />
+          <div className="flex min-w-0 flex-col">
+            <span className="font-title-md text-title-md text-on-surface">{h.title}</span>
+            <span className="font-label-md text-label-md text-on-surface-variant">{h.detail}</span>
+            {focus ? <span className="font-label-sm text-label-sm text-on-surface-variant">Confidence {Math.round(focus.assessment.confidence * 100)}% · {focus.assessment.drivers.join(" · ")}</span> : null}
+          </div>
         </div>
-      </div>
+      ) : null}
+      {!trip.state.trip.place ? <ExactDestination /> : null}
 
       <WeatherStrip twin={twin} world={world} />
       <span className="font-label-sm text-[11px] text-on-surface-variant">
@@ -200,5 +207,64 @@ export function WeatherIntel() {
         <ExplainBox scenario={null} itemId={why ?? undefined} mode="live" />
       </Sheet>
     </section>
+  );
+}
+
+/**
+ * Trips made before the destination picker only have a typed name, and names are ambiguous
+ * ("Goa" alone finds Genoa in Italy first; "Manali" finds Tamil Nadu). Picking the place once
+ * pins exact coordinates for the weather, the maps and the AI.
+ */
+function ExactDestination() {
+  const trip = useTrip();
+  const { toast } = useFeedback();
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(trip.state.trip.destination);
+  const [picked, setPicked] = useState<TripPlace | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  async function save() {
+    if (!picked) return;
+    setBusy(true);
+    try {
+      await trip.run((s, ctx) => setTripPlace(s, picked, ctx));
+      toast("Destination pinned — weather and maps now use the exact place");
+      setOpen(false);
+    } catch (e) {
+      toast(errorText(e), "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} className="flex items-center gap-space-xs rounded-lg bg-secondary-fixed/60 p-space-sm text-left font-label-md text-label-md text-on-secondary-fixed">
+        <Icon name="where_to_vote" className="text-[18px]" />
+        <span className="flex-1">“{trip.state.trip.destination}” could be several places — set the exact destination for accurate weather and maps</span>
+        <Icon name="chevron_right" className="text-[18px]" />
+      </button>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-space-xs rounded-lg bg-surface-container-lowest p-space-sm">
+      <span className="font-label-md text-label-md text-on-surface">Where exactly is this trip?</span>
+      <DestinationPicker
+        className="h-11 w-full rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 font-body-md text-body-md outline-none focus:border-primary"
+        value={value}
+        place={picked}
+        autoSearch
+        onChange={(v, p) => {
+          setValue(v);
+          setPicked(p);
+        }}
+      />
+      <div className="flex gap-space-xs">
+        <Button small icon="check" onClick={() => void save()} disabled={!picked || busy}>
+          {busy ? "Saving…" : "Use this place"}
+        </Button>
+        <Button small variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
+    </div>
   );
 }
