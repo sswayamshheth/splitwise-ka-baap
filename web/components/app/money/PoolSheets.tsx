@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { cx, Icon, inputCls, Sheet, useFeedback } from "@/components/app/kit";
+import { useRealUpiAllowed } from "@/components/app/payments/paymentConfig";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { upiIntentUrl } from "@/lib/ledger/commands";
 import { depositToPool, poolSummary, withdrawFromPool } from "@/lib/ledger/pool";
@@ -54,8 +55,10 @@ function PoolSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
   const put = member ? member.depositedPaise - member.withdrawnPaise : 0;
   const available = member?.availablePaise ?? 0;
   const organiser = organiserId ? trip.participant(organiserId) : undefined;
+  // The "pay in your UPI app" link is a real payment, so it's hidden in demo mode.
+  const upiAllowed = useRealUpiAllowed();
   const upi =
-    mode === "add" && method === "upi" && paise && organiser?.upiId && organiserId !== who
+    upiAllowed && mode === "add" && method === "upi" && paise && organiser?.upiId && organiserId !== who
       ? upiIntentUrl({ vpa: organiser.upiId, name: organiser.name, amountPaise: paise, note: `${trip.state.trip.name} pool` })
       : null;
   const choices = mode === "take" ? withMoney : active;
@@ -218,7 +221,7 @@ function PoolSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
                 {upi ? (
                   <a href={upi} className="flex items-center gap-space-sm rounded-xl bg-surface-container p-space-md font-body-md text-primary">
                     <Icon name="open_in_new" />
-                    Pay {formatMoney(paise!)} to {organiser!.name} ({organiser!.upiId}) in your UPI app
+                    Pay {formatMoney(paise!)} to {organiser!.name} ({organiser!.upiId}) in your UPI app · real payment
                   </a>
                 ) : null}
                 <input className={inputCls} value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Reference (optional) — UPI transaction ID or a note" />

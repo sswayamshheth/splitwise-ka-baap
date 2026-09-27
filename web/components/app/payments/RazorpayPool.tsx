@@ -49,21 +49,6 @@ export type PoolState = {
 
 export type Config = { enabled: boolean; keyId: string | null; mode: "test" | "live" | "demo" | null; webhooks: boolean; missing?: string[] };
 
-/** The server's payment mode (/api/payments/config); null while loading. */
-export function usePaymentConfig() {
-  const [config, setConfig] = useState<Config | null>(null);
-  useEffect(() => {
-    let alive = true;
-    api<Config>("/api/payments/config")
-      .then((c) => alive && setConfig(c))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return config;
-}
-
 export function usePool() {
   const trip = useTrip();
   const [pool, setPool] = useState<PoolState | null>(null);
@@ -252,9 +237,6 @@ export function ContributeSheet({ open, onClose, pool, config, onDone }: { open:
       </div>
       {via === "upi" && upiAllowed ? (
         <div className="mt-space-md">
-          <p className="mb-space-sm flex items-start gap-1.5 rounded-xl bg-secondary-fixed/60 px-space-md py-space-sm font-label-md text-label-md text-on-secondary-fixed">
-            <Icon name="info" className="mt-0.5 text-[16px]" /> Real payment: the money leaves your bank through your own UPI app.
-          </p>
           {iHoldThePool ? (
             <p className="rounded-xl bg-surface-container-low p-space-md font-body-md text-body-md text-on-surface-variant">
               You hold the pool{organiser?.upiId ? ` (${organiser.upiId})` : ""}, so there&apos;s nothing to send. Everyone else pays their share to your UPI here; record your own cash with &quot;Record it manually&quot;.

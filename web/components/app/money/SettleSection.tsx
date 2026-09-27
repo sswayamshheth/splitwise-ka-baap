@@ -5,7 +5,7 @@ import { useState, type ReactNode } from "react";
 import { cx, Icon, useFeedback } from "@/components/app/kit";
 import { useCheckout } from "@/components/app/payments/checkout";
 import { RequestSheet } from "@/components/app/payments/PaymentRequest";
-import { usePaymentConfig } from "@/components/app/payments/RazorpayPool";
+import { usePaymentConfig } from "@/components/app/payments/paymentConfig";
 import { errorText, useTrip } from "@/lib/client/trip";
 import { formatRelative } from "@/lib/dates";
 import { cancelSettlement, confirmSettlement, initiateSettlement, upiIntentUrl } from "@/lib/ledger/commands";
