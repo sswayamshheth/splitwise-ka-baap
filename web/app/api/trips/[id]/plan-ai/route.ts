@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 import { planOffline, validateOps, type PlanOp } from "@/lib/itinerary/planner";
+import { nugenConfig, providerLabel } from "@/lib/nugen/client";
+import { planWithNugen } from "@/lib/nugen/intelligence";
 import { reduceEvents } from "@/lib/ledger/reduce";
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "@/lib/ledger/types";
 import { HttpError, loadTripForUser, requireUserId, route } from "@/lib/server/trips";
@@ -103,6 +105,12 @@ export const POST = route(async (req: Request, { params }: { params: { id: strin
     } catch (e) {
       console.error("[plan-ai] Claude failed, using the built-in planner", e);
     }
+  }
+  // GroupTrip Intelligence (Nugen, or the Gemini stand-in while Nugen access is pending) — validated the same way.
+  const gti = nugenConfig();
+  if (gti) {
+    const r = await planWithNugen(state, instruction, gti);
+    if (r.proposal && r.proposal.ops.length) return NextResponse.json({ ...r.proposal, source: "ai", model: providerLabel(gti) });
   }
   return NextResponse.json({ ...planOffline(state, instruction), source: "builtin" });
 });

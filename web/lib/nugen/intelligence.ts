@@ -22,7 +22,10 @@ export type Task = "itinerary" | "weather-adaptation" | "scenario" | "explanatio
 
 export type InferenceMeta = {
   task: Task;
+  /** "nugen" = a model answered (see `provider`); "deterministic" = the rule engine answered. */
   engine: "nugen" | "deterministic";
+  /** Which model service answered: the real Nugen API, or the Gemini stand-in. */
+  provider?: "nugen" | "gemini";
   model?: string;
   aligned?: boolean;
   confidenceScore?: number | null;
@@ -56,7 +59,7 @@ async function run<T>(task: Task, cfg: NugenConfig | null, user: string, validat
     }
     const v = validate(raw);
     if (!v.ok) return { value: null, meta: { task, engine: "deterministic", model: res.model, aligned: cfg.aligned, fallbackReason: `Model output rejected: ${v.error}` } };
-    return { value: v.value, meta: { task, engine: "nugen", model: res.model, aligned: cfg.aligned, confidenceScore: res.confidenceScore, latencyMs: res.latencyMs, repaired: v.repaired } };
+    return { value: v.value, meta: { task, engine: "nugen", provider: cfg.provider ?? "nugen", model: res.model, aligned: cfg.aligned, confidenceScore: res.confidenceScore, latencyMs: res.latencyMs, repaired: v.repaired } };
   } catch (e) {
     return { value: null, meta: { task, engine: "deterministic", model: cfg.model, aligned: cfg.aligned, fallbackReason: (e as Error).message.slice(0, 200) } };
   }

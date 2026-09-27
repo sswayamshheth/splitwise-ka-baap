@@ -18,7 +18,7 @@ import { formatMoney } from "@/lib/money";
  * never touched (they're cancelled from Activity, where the refund is handled).
  */
 
-type Proposal = { ops: PlanOp[]; summary: string; understood: boolean; source: "ai" | "builtin" };
+type Proposal = { ops: PlanOp[]; summary: string; understood: boolean; source: "ai" | "builtin"; model?: string };
 
 const SUGGESTIONS = ["Add water sports", "Add a food trail", "Add something relaxing on day 2", "Add 2 nightlife options", "Make it cheaper", "Make a new plan for our group"];
 
@@ -169,7 +169,7 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
           <div className="flex items-center justify-between">
             <span className="font-title-md text-title-md text-on-surface">{proposal.ops.length ? "Proposed changes" : "No changes"}</span>
             <span className={cx("rounded-full px-2 py-0.5 font-label-sm text-label-sm", proposal.source === "ai" ? "bg-tertiary-fixed text-on-tertiary-fixed-variant" : "bg-surface-container text-on-surface-variant")}>
-              {proposal.source === "ai" ? "Claude" : "Built-in planner"}
+              {proposal.source === "ai" ? (proposal.model ?? "Claude") : "Built-in planner"}
             </span>
           </div>
           {proposal.summary ? <p className="font-body-md text-body-md text-on-surface-variant">{proposal.summary}</p> : null}

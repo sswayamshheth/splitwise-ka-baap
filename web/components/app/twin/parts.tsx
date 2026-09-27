@@ -238,7 +238,7 @@ export function RecommendationCard({ rec, onAccept, onDismiss, onSimulate, onWhy
           <span className="font-currency-md text-currency-md text-primary">{rec.score}</span>
           <span className="font-label-sm text-[10px] text-on-surface-variant">match score</span>
           <Pill tone={rec.chosenBy === "nugen" ? "lavender" : "grey"} icon={rec.chosenBy === "nugen" ? "auto_awesome" : "calculate"}>
-            {rec.chosenBy === "nugen" ? "Nugen pick" : "Engine pick"}
+            {rec.chosenBy === "nugen" ? "AI pick" : "Engine pick"}
           </Pill>
         </div>
       </div>
@@ -299,7 +299,7 @@ export function RecommendationCard({ rec, onAccept, onDismiss, onSimulate, onWhy
 
 /** Judge-facing: what the Nugen pipeline actually is right now, and what the last inference was. */
 export function NugenProof({ meta, task }: { meta: InferenceMeta | null; task: string }) {
-  const [status, setStatus] = useState<{ configured: boolean; baseModel: string; alignedModelId: string | null; alignmentId: string | null; stage: string; alignment: Record<string, unknown> | null } | null>(null);
+  const [status, setStatus] = useState<{ configured: boolean; provider: "nugen" | "gemini" | null; standIn: { model: string; note: string } | null; baseModel: string; alignedModelId: string | null; alignmentId: string | null; stage: string; alignment: Record<string, unknown> | null } | null>(null);
   useEffect(() => {
     api<typeof status>("/api/nugen/status").then(setStatus, () => setStatus(null));
   }, []);
@@ -316,11 +316,14 @@ export function NugenProof({ meta, task }: { meta: InferenceMeta | null; task: s
     <div className="flex flex-col gap-space-xs rounded-xl bg-inverse-surface p-space-md text-inverse-on-surface">
       <span className="font-label-sm text-label-sm uppercase tracking-widest opacity-80">Nugen proof panel</span>
       {step("Base model", status?.baseModel ?? "…", !!status)}
-      {step("Nugen alignment", status?.alignmentId ? `project ${status.alignmentId}${status.alignment ? ` · ${String(status.alignment.status ?? JSON.stringify(status.alignment)).slice(0, 60)}` : ""}` : "not run yet — needs NUGEN_API_KEY (scripts/nugen/align.ts)", !!status?.alignmentId)}
+      {step("Nugen alignment", status?.alignmentId ? `project ${status.alignmentId}${status.alignment ? ` · ${String(status.alignment.status ?? JSON.stringify(status.alignment)).slice(0, 60)}` : ""}` : status?.standIn ? "waitlisted — access requested, pipeline ready (scripts/nugen/align.ts)" : "not run yet — needs NUGEN_API_KEY (scripts/nugen/align.ts)", !!status?.alignmentId)}
+      {status?.standIn ? step("Stand-in model now", `Gemini ${status.standIn.model} — ${status.standIn.note}`, true) : null}
       {step("GroupTrip Intelligence", status?.alignedModelId ? `aligned model ${status.alignedModelId}` : stage === "base-model-only" ? "base model only (no aligned id yet)" : "not deployed", !!status?.alignedModelId)}
       {step(
         "Current inference",
-        meta ? `${task} · ${meta.engine === "nugen" ? `Nugen ${meta.model}${meta.aligned ? " (aligned)" : " (base)"}${meta.confidenceScore != null ? ` · confidence ${meta.confidenceScore}` : ""}` : `deterministic engine (${meta.fallbackReason ?? "fallback"})`}` : `${task} · no AI step needed`,
+        meta
+          ? `${task} · ${meta.engine === "nugen" ? `${meta.provider === "gemini" ? `Gemini ${meta.model} (stand-in)` : `Nugen ${meta.model}${meta.aligned ? " (aligned)" : " (base)"}`}${meta.confidenceScore != null ? ` · confidence ${meta.confidenceScore}` : ""}` : `deterministic engine (${meta.fallbackReason ?? "fallback"})`}`
+          : `${task} · no AI step needed`,
         meta?.engine === "nugen",
       )}
       {meta ? <span className="font-label-sm text-[11px] opacity-80">Inputs: {meta.inputs.join(" + ")}{meta.repaired?.length ? ` · repaired: ${meta.repaired.join("; ")}` : ""}</span> : null}
@@ -372,7 +375,7 @@ export function ExplainBox({ scenario, itemId, mode, presets }: { scenario: Scen
         <div className="flex flex-col gap-1 rounded-lg bg-tertiary-fixed/50 p-space-sm">
           <span className="font-body-md text-body-md text-on-surface">{res.answer}</span>
           <span className="font-label-sm text-[11px] text-on-surface-variant">
-            {res.meta.engine === "nugen" ? `GroupTrip Intelligence · ${res.meta.model}` : `Grounded deterministic explanation (${res.meta.fallbackReason ?? "fallback"})`} · every number comes from the twin / ledger
+            {res.meta.engine === "nugen" ? `GroupTrip Intelligence · ${res.meta.provider === "gemini" ? `Gemini ${res.meta.model} (stand-in)` : res.meta.model}` : `Grounded deterministic explanation (${res.meta.fallbackReason ?? "fallback"})`} · every number comes from the twin / ledger
           </span>
         </div>
       ) : null}

@@ -146,7 +146,7 @@ function TwinInner() {
         </form>
         {nlMeta ? (
           <span className="font-label-sm text-label-sm text-on-surface-variant">
-            {nlMeta.meta.engine === "nugen" ? `GroupTrip Intelligence (${nlMeta.meta.model}) → structured scenario` : `Deterministic parser (${nlMeta.meta.fallbackReason}) understood: ${nlMeta.understood.join(", ") || "nothing"}`}
+            {nlMeta.meta.engine === "nugen" ? `GroupTrip Intelligence (${nlMeta.meta.provider === "gemini" ? `Gemini ${nlMeta.meta.model}, stand-in` : nlMeta.meta.model}) → structured scenario` : `Deterministic parser (${nlMeta.meta.fallbackReason}) understood: ${nlMeta.understood.join(", ") || "nothing"}`}
           </span>
         ) : null}
         <div className="flex flex-wrap gap-space-xs">

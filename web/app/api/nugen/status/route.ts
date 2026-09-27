@@ -22,14 +22,17 @@ export const GET = route(async () => {
       alignment = { error: (e as Error).message };
     }
   }
+  const nugenOn = cfg?.provider !== "gemini" && !!cfg;
   return NextResponse.json({
-    configured: !!cfg,
+    configured: nugenOn,
+    provider: cfg?.provider ?? null,
+    standIn: cfg?.provider === "gemini" ? { model: cfg.model, note: "Gemini runs in the GroupTrip Intelligence slot while Nugen access is waitlisted" } : null,
     api: NUGEN_API,
-    baseModel: cfg?.baseModel ?? process.env.NUGEN_BASE_MODEL ?? "qwen-v2p5-0p5b-instruct",
-    alignedModelId: cfg?.aligned ? cfg.model : null,
-    alignmentId: cfg?.alignmentId ?? null,
+    baseModel: nugenOn ? cfg!.baseModel : (process.env.NUGEN_BASE_MODEL ?? "qwen-v2p5-0p5b-instruct"),
+    alignedModelId: nugenOn && cfg!.aligned ? cfg!.model : null,
+    alignmentId: nugenOn ? (cfg!.alignmentId ?? null) : null,
     alignment,
     inferenceModel: cfg ? cfg.model : null,
-    stage: !cfg ? "not-configured" : cfg.aligned ? "aligned-model-in-use" : "base-model-only",
+    stage: !cfg ? "not-configured" : cfg.provider === "gemini" ? "stand-in" : cfg.aligned ? "aligned-model-in-use" : "base-model-only",
   });
 });
