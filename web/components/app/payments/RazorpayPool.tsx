@@ -352,7 +352,7 @@ export function PoolPayments({ pool, config, onChanged }: { pool: PoolState | nu
                   <span className="truncate font-title-md text-title-md text-on-surface">{trip.isMe(c.memberId) ? "You" : c.memberName}</span>
                   <span className="truncate font-label-sm text-label-sm text-on-surface-variant">
                     {new Date(c.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
-                    {c.paymentId ? ` · ${c.paymentId}` : ""}
+                    {c.paymentId ? ` · ${c.paymentId.startsWith("pay_demo_") ? "Demo payment" : c.paymentId}` : ""}
                     {c.failureReason ? ` · ${c.failureReason}` : ""}
                   </span>
                 </div>

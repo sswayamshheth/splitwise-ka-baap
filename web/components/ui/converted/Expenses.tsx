@@ -59,7 +59,7 @@ export default function Expenses() {
 <div className="flex flex-col gap-space-sm">
 {/*  Entry 1: Regular Expense  */}
 <div className="flex items-start justify-between bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-<div className="flex items-start gap-space-sm">
+<div className="flex min-w-0 items-start gap-space-sm">
 <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container shrink-0">
 <span className="material-symbols-outlined text-[20px]">restaurant</span>
 </div>
@@ -79,7 +79,7 @@ export default function Expenses() {
 </div>
 {/*  Entry 2: FROZEN / DISPUTED ITEM  */}
 <div className="relative overflow-hidden bg-tertiary-fixed rounded-xl p-space-md shadow-sm">
-<div className="flex items-start gap-space-sm">
+<div className="flex min-w-0 items-start gap-space-sm">
 <div className="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary flex items-center justify-center shrink-0">
 <span className="material-symbols-outlined text-[20px]">pause</span>
 </div>
@@ -107,7 +107,7 @@ export default function Expenses() {
 </div>
 {/*  Entry 3: Regular Expense  */}
 <div className="flex items-start justify-between bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-<div className="flex items-start gap-space-sm">
+<div className="flex min-w-0 items-start gap-space-sm">
 <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container shrink-0">
 <span className="material-symbols-outlined text-[20px]">kayaking</span>
 </div>
@@ -140,7 +140,7 @@ export default function Expenses() {
 <div className="flex flex-col gap-space-sm">
 {/*  Entry 4: FASTag Tolls  */}
 <div className="flex items-start justify-between bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-<div className="flex items-start gap-space-sm">
+<div className="flex min-w-0 items-start gap-space-sm">
 <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container shrink-0">
 <span className="material-symbols-outlined text-[20px]">local_gas_station</span>
 </div>
@@ -160,7 +160,7 @@ export default function Expenses() {
 </div>
 {/*  Entry 5: Chalets Advance  */}
 <div className="flex items-start justify-between bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-<div className="flex items-start gap-space-sm">
+<div className="flex min-w-0 items-start gap-space-sm">
 <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container shrink-0">
 <span className="material-symbols-outlined text-[20px]">cottage</span>
 </div>
