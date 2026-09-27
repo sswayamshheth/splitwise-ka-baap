@@ -150,7 +150,7 @@ export function describeEvent(e: LedgerEvent, name: NameOf, ctx: DescribeContext
         icon: "savings",
         tone: "mint",
         title: e.contribution.direction === "out" ? `${name(e.contribution.participantId)} withdrew unspent money from the pool` : `${name(e.contribution.participantId)} added money to the trip pool`,
-        detail: `${e.contribution.method === "razorpay" ? "Razorpay (test mode) · verified by the server" : e.contribution.method === "upi" ? "UPI" : "Cash"}${e.contribution.reference ? ` · ${e.contribution.reference}` : ""}`,
+        detail: describeContributionMethod(e.contribution.method, e.contribution.reference),
         amountPaise: e.contribution.amountPaise,
         participantId: e.contribution.participantId,
       };
@@ -268,4 +268,11 @@ export function describeEvent(e: LedgerEvent, name: NameOf, ctx: DescribeContext
       };
     }
   }
+}
+
+/** How a pool contribution was paid. Demo-checkout payments are labelled as simulated and their internal ids aren't shown. */
+export function describeContributionMethod(method: string, reference?: string): string {
+  const demo = !!reference?.startsWith("pay_demo_");
+  const how = method === "razorpay" ? (demo ? "Demo checkout (simulated) · verified by the server" : "Razorpay (test mode) · verified by the server") : method === "upi" ? "UPI" : "Cash";
+  return reference && !demo ? `${how} · ${reference}` : how;
 }

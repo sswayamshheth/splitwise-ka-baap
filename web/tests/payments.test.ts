@@ -397,3 +397,15 @@ describe("demo checkout (no Razorpay keys)", () => {
     expect((await verifyPayment(users.C, { contributionId: order.contributionId, ...signed })).status).toBe("VERIFIED");
   });
 });
+
+describe("contribution wording", () => {
+  it("labels demo-checkout payments as simulated and hides their internal ids", async () => {
+    const { describeContributionMethod } = await import("@/lib/ledger/describe");
+    const demo = describeContributionMethod("razorpay", "pay_demo_abc_def_100000_ok");
+    expect(demo).toBe("Demo checkout (simulated) · verified by the server");
+    expect(demo).not.toMatch(/pay_demo|Razorpay/);
+    expect(describeContributionMethod("razorpay", "pay_R2x9")).toBe("Razorpay (test mode) · verified by the server · pay_R2x9");
+    expect(describeContributionMethod("upi", "UPI UTR 123")).toBe("UPI · UPI UTR 123");
+    expect(describeContributionMethod("cash")).toBe("Cash");
+  });
+});
