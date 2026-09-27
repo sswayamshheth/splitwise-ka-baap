@@ -1,7 +1,7 @@
 {
  "tripId": "trip_demo_goa_QtDkil0Rpk3Z_muizwygj",
  "mode": "replay",
- "fetchedAt": 1790469044243,
+ "fetchedAt": 1790472749992,
  "destination": {
   "lat": 15.51807,
   "lon": 73.76259,
@@ -25,18 +25,18 @@
    "source": "openstreetmap (photon)"
   },
   "it_villa": {
-   "lat": 15.51807,
-   "lon": 73.76259,
-   "label": "Candolim, North Goa",
-   "precision": "destination",
-   "source": "open-meteo-geocoding"
+   "lat": 15.5201532,
+   "lon": 73.7659422,
+   "label": "Candolim",
+   "precision": "item",
+   "source": "openstreetmap (photon)"
   },
   "it_scuba": {
-   "lat": 15.51807,
-   "lon": 73.76259,
-   "label": "Candolim, North Goa",
-   "precision": "destination",
-   "source": "open-meteo-geocoding"
+   "lat": 15.4677915,
+   "lon": 73.8806181,
+   "label": "Goa Island",
+   "precision": "item",
+   "source": "openstreetmap (photon)"
   },
   "it_dinner": {
    "lat": 15.6162147,
@@ -84,15 +84,15 @@
      "lon": 73.84399
     },
     "timezone": "Asia/Kolkata",
-    "fetchedAt": 1790468979887,
+    "fetchedAt": 1790472749989,
     "source": "open-meteo",
     "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=15.5181&longitude=73.7626&current=temperature_2m%2Cprecipitation%2Cweather_code%2Cwind_speed_10m&daily=precipitation_sum%2Cprecipitation_probability_max%2Cprecipitation_hours%2Cweather_code%2Ctemperature_2m_max%2Ctemperature_2m_min%2Cwind_speed_10m_max%2Cwind_gusts_10m_max&hourly=precipitation%2Cprecipitation_probability%2Cweather_code%2Cwind_speed_10m%2Ctemperature_2m&forecast_days=16&timezone=auto",
     "current": {
-     "time": "2026-09-27T05:45",
-     "temperatureC": 24.9,
+     "time": "2026-09-27T07:00",
+     "temperatureC": 25.4,
      "precipitationMm": 0,
-     "windKmh": 4.1,
-     "weatherCode": 1
+     "windKmh": 4.7,
+     "weatherCode": 0
     },
     "daily": [
      {
@@ -110,7 +110,7 @@
         "hour": 0,
         "precipitationMm": 0.2,
         "precipitationProbability": 1,
-        "windKmh": 1.3,
+        "windKmh": 0,
         "tempC": 27,
         "weatherCode": 51
        },
@@ -126,7 +126,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 4.6,
+        "windKmh": 4.7,
         "tempC": 25.6,
         "weatherCode": 2
        },
@@ -134,7 +134,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 5.9,
+        "windKmh": 6,
         "tempC": 25.1,
         "weatherCode": 0
        },
@@ -158,7 +158,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.9,
+        "windKmh": 3.8,
         "tempC": 24.9,
         "weatherCode": 0
        },
@@ -174,7 +174,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.9,
+        "windKmh": 4.3,
         "tempC": 27.7,
         "weatherCode": 0
        },
@@ -182,7 +182,7 @@
         "hour": 9,
         "precipitationMm": 0.1,
         "precipitationProbability": 13,
-        "windKmh": 3.5,
+        "windKmh": 3.6,
         "tempC": 28.7,
         "weatherCode": 51
        },
@@ -190,7 +190,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 32,
-        "windKmh": 7,
+        "windKmh": 6.6,
         "tempC": 29.3,
         "weatherCode": 0
        },
@@ -198,7 +198,7 @@
         "hour": 11,
         "precipitationMm": 0.1,
         "precipitationProbability": 45,
-        "windKmh": 10.7,
+        "windKmh": 10.5,
         "tempC": 29.6,
         "weatherCode": 51
        },
@@ -206,7 +206,7 @@
         "hour": 12,
         "precipitationMm": 0,
         "precipitationProbability": 49,
-        "windKmh": 12.7,
+        "windKmh": 12.6,
         "tempC": 29.4,
         "weatherCode": 0
        },
@@ -214,7 +214,7 @@
         "hour": 13,
         "precipitationMm": 0,
         "precipitationProbability": 48,
-        "windKmh": 14,
+        "windKmh": 13.4,
         "tempC": 29.4,
         "weatherCode": 0
        },
@@ -238,7 +238,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 20,
-        "windKmh": 12,
+        "windKmh": 12.1,
         "tempC": 29.1,
         "weatherCode": 0
        },
@@ -246,7 +246,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 10.7,
+        "windKmh": 10.6,
         "tempC": 28.5,
         "weatherCode": 0
        },
@@ -254,7 +254,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 7.8,
+        "windKmh": 7.6,
         "tempC": 27.8,
         "weatherCode": 0
        },
@@ -262,7 +262,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 3.8,
+        "windKmh": 3.6,
         "tempC": 27.5,
         "weatherCode": 0
        },
@@ -270,7 +270,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 0.7,
+        "windKmh": 1.3,
         "tempC": 27.2,
         "weatherCode": 0
        },
@@ -278,7 +278,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 1,
-        "windKmh": 0.7,
+        "windKmh": 1.1,
         "tempC": 26.8,
         "weatherCode": 0
        },
@@ -294,7 +294,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 6,
+        "windKmh": 5.8,
         "tempC": 25.8,
         "weatherCode": 0
        }
@@ -307,7 +307,7 @@
       "precipitationHours": 1,
       "tempMaxC": 29.5,
       "tempMinC": 24.5,
-      "windMaxKmh": 13.9,
+      "windMaxKmh": 13.4,
       "gustMaxKmh": 31.7,
       "weatherCode": 51,
       "hours": [
@@ -323,7 +323,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 6,
+        "windKmh": 6.2,
         "tempC": 25.3,
         "weatherCode": 0
        },
@@ -331,7 +331,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.6,
+        "windKmh": 5.5,
         "tempC": 25.2,
         "weatherCode": 0
        },
@@ -339,7 +339,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.9,
+        "windKmh": 5.8,
         "tempC": 25,
         "weatherCode": 0
        },
@@ -347,7 +347,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 6.1,
+        "windKmh": 5.9,
         "tempC": 24.8,
         "weatherCode": 0
        },
@@ -355,7 +355,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.5,
+        "windKmh": 5.4,
         "tempC": 24.7,
         "weatherCode": 0
        },
@@ -363,7 +363,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 4.9,
+        "windKmh": 5,
         "tempC": 24.5,
         "weatherCode": 0
        },
@@ -379,7 +379,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 5.2,
+        "windKmh": 4.8,
         "tempC": 27.1,
         "weatherCode": 1
        },
@@ -387,7 +387,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 9,
-        "windKmh": 4,
+        "windKmh": 3.1,
         "tempC": 28.6,
         "weatherCode": 1
        },
@@ -395,7 +395,7 @@
         "hour": 10,
         "precipitationMm": 0.1,
         "precipitationProbability": 23,
-        "windKmh": 6.1,
+        "windKmh": 5.9,
         "tempC": 29.3,
         "weatherCode": 51
        },
@@ -403,7 +403,7 @@
         "hour": 11,
         "precipitationMm": 0,
         "precipitationProbability": 37,
-        "windKmh": 10,
+        "windKmh": 8.4,
         "tempC": 29.5,
         "weatherCode": 2
        },
@@ -411,7 +411,7 @@
         "hour": 12,
         "precipitationMm": 0,
         "precipitationProbability": 54,
-        "windKmh": 13,
+        "windKmh": 11.5,
         "tempC": 29.5,
         "weatherCode": 0
        },
@@ -419,7 +419,7 @@
         "hour": 13,
         "precipitationMm": 0,
         "precipitationProbability": 72,
-        "windKmh": 13.9,
+        "windKmh": 13.4,
         "tempC": 29.1,
         "weatherCode": 0
        },
@@ -427,7 +427,7 @@
         "hour": 14,
         "precipitationMm": 0,
         "precipitationProbability": 80,
-        "windKmh": 13.7,
+        "windKmh": 13.3,
         "tempC": 29.2,
         "weatherCode": 0
        },
@@ -435,7 +435,7 @@
         "hour": 15,
         "precipitationMm": 0,
         "precipitationProbability": 73,
-        "windKmh": 12.3,
+        "windKmh": 13,
         "tempC": 29.1,
         "weatherCode": 0
        },
@@ -443,7 +443,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 57,
-        "windKmh": 11.6,
+        "windKmh": 11.9,
         "tempC": 28.9,
         "weatherCode": 0
        },
@@ -451,7 +451,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 41,
-        "windKmh": 10.3,
+        "windKmh": 10.4,
         "tempC": 28.4,
         "weatherCode": 0
        },
@@ -459,7 +459,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 28,
-        "windKmh": 6.2,
+        "windKmh": 6.4,
         "tempC": 28,
         "weatherCode": 2
        },
@@ -467,7 +467,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 15,
-        "windKmh": 2.3,
+        "windKmh": 5,
         "tempC": 27.8,
         "weatherCode": 2
        },
@@ -475,7 +475,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 2.2,
+        "windKmh": 5.2,
         "tempC": 27.3,
         "weatherCode": 1
        },
@@ -483,7 +483,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.9,
+        "windKmh": 7.1,
         "tempC": 26.7,
         "weatherCode": 1
        },
@@ -491,7 +491,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 7.2,
+        "windKmh": 7.5,
         "tempC": 26.3,
         "weatherCode": 0
        },
@@ -520,7 +520,7 @@
         "hour": 0,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.4,
+        "windKmh": 5.6,
         "tempC": 26,
         "weatherCode": 0
        },
@@ -528,7 +528,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 6,
+        "windKmh": 6.2,
         "tempC": 25.7,
         "weatherCode": 0
        },
@@ -536,7 +536,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 6.3,
+        "windKmh": 6.2,
         "tempC": 25.6,
         "weatherCode": 0
        },
@@ -544,7 +544,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 6.4,
+        "windKmh": 5.9,
         "tempC": 25.5,
         "weatherCode": 0
        },
@@ -552,7 +552,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.8,
+        "windKmh": 5.6,
         "tempC": 25.3,
         "weatherCode": 0
        },
@@ -568,7 +568,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.8,
+        "windKmh": 5.7,
         "tempC": 25,
         "weatherCode": 0
        },
@@ -576,7 +576,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 4.5,
+        "windKmh": 4.3,
         "tempC": 26,
         "weatherCode": 0
        },
@@ -592,7 +592,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 4,
-        "windKmh": 2.3,
+        "windKmh": 2.1,
         "tempC": 28.9,
         "weatherCode": 0
        },
@@ -600,7 +600,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 5.8,
+        "windKmh": 5.9,
         "tempC": 29.5,
         "weatherCode": 0
        },
@@ -608,7 +608,7 @@
         "hour": 11,
         "precipitationMm": 0.1,
         "precipitationProbability": 12,
-        "windKmh": 11.7,
+        "windKmh": 11.2,
         "tempC": 29.4,
         "weatherCode": 51
        },
@@ -616,7 +616,7 @@
         "hour": 12,
         "precipitationMm": 0,
         "precipitationProbability": 33,
-        "windKmh": 13.2,
+        "windKmh": 13.1,
         "tempC": 29,
         "weatherCode": 0
        },
@@ -632,7 +632,7 @@
         "hour": 14,
         "precipitationMm": 0,
         "precipitationProbability": 80,
-        "windKmh": 13.3,
+        "windKmh": 12.8,
         "tempC": 29,
         "weatherCode": 0
        },
@@ -648,7 +648,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 75,
-        "windKmh": 12.2,
+        "windKmh": 12.8,
         "tempC": 28.8,
         "weatherCode": 1
        },
@@ -656,7 +656,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 63,
-        "windKmh": 9.7,
+        "windKmh": 10.5,
         "tempC": 28.2,
         "weatherCode": 0
        },
@@ -664,7 +664,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 46,
-        "windKmh": 8.5,
+        "windKmh": 9.2,
         "tempC": 27.5,
         "weatherCode": 0
        },
@@ -672,7 +672,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 24,
-        "windKmh": 8.2,
+        "windKmh": 8.8,
         "tempC": 27.1,
         "weatherCode": 0
        },
@@ -680,7 +680,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 7.2,
+        "windKmh": 6.2,
         "tempC": 27,
         "weatherCode": 0
        },
@@ -688,7 +688,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.8,
+        "windKmh": 6.2,
         "tempC": 26.7,
         "weatherCode": 1
        },
@@ -696,7 +696,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 3.6,
+        "windKmh": 4.1,
         "tempC": 26.3,
         "weatherCode": 0
        },
@@ -704,7 +704,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 2.7,
+        "windKmh": 2.3,
         "tempC": 25.9,
         "weatherCode": 0
        }
@@ -717,7 +717,7 @@
       "precipitationHours": 1,
       "tempMaxC": 29.9,
       "tempMinC": 24.6,
-      "windMaxKmh": 13.9,
+      "windMaxKmh": 14,
       "gustMaxKmh": 32.4,
       "weatherCode": 51,
       "hours": [
@@ -725,7 +725,7 @@
         "hour": 0,
         "precipitationMm": 0,
         "precipitationProbability": 1,
-        "windKmh": 2.1,
+        "windKmh": 2.6,
         "tempC": 25.6,
         "weatherCode": 0
        },
@@ -733,7 +733,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2.8,
+        "windKmh": 3,
         "tempC": 25.3,
         "weatherCode": 0
        },
@@ -741,7 +741,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 4,
+        "windKmh": 3.6,
         "tempC": 25,
         "weatherCode": 1
        },
@@ -749,7 +749,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.7,
+        "windKmh": 4.2,
         "tempC": 24.9,
         "weatherCode": 2
        },
@@ -757,7 +757,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2.5,
+        "windKmh": 2.8,
         "tempC": 24.7,
         "weatherCode": 3
        },
@@ -765,7 +765,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2.6,
+        "windKmh": 3,
         "tempC": 24.8,
         "weatherCode": 3
        },
@@ -773,7 +773,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 4.7,
+        "windKmh": 5.1,
         "tempC": 24.6,
         "weatherCode": 3
        },
@@ -781,7 +781,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 5.1,
+        "windKmh": 5.4,
         "tempC": 25.2,
         "weatherCode": 1
        },
@@ -789,7 +789,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 3.1,
+        "windKmh": 3,
         "tempC": 26.9,
         "weatherCode": 0
        },
@@ -797,7 +797,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 11,
-        "windKmh": 1.7,
+        "windKmh": 0.4,
         "tempC": 28.8,
         "weatherCode": 0
        },
@@ -805,7 +805,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 24,
-        "windKmh": 5.7,
+        "windKmh": 4.9,
         "tempC": 29.9,
         "weatherCode": 1
        },
@@ -813,7 +813,7 @@
         "hour": 11,
         "precipitationMm": 0.1,
         "precipitationProbability": 37,
-        "windKmh": 11,
+        "windKmh": 10.4,
         "tempC": 29.8,
         "weatherCode": 51
        },
@@ -829,7 +829,7 @@
         "hour": 13,
         "precipitationMm": 0,
         "precipitationProbability": 66,
-        "windKmh": 12.6,
+        "windKmh": 12.8,
         "tempC": 29.8,
         "weatherCode": 2
        },
@@ -845,7 +845,7 @@
         "hour": 15,
         "precipitationMm": 0,
         "precipitationProbability": 66,
-        "windKmh": 13.9,
+        "windKmh": 14,
         "tempC": 29.4,
         "weatherCode": 1
        },
@@ -853,7 +853,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 50,
-        "windKmh": 10.9,
+        "windKmh": 11.8,
         "tempC": 29.1,
         "weatherCode": 0
        },
@@ -861,7 +861,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 35,
-        "windKmh": 10.8,
+        "windKmh": 11.1,
         "tempC": 28.6,
         "weatherCode": 0
        },
@@ -869,7 +869,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 22,
-        "windKmh": 9.9,
+        "windKmh": 10.5,
         "tempC": 28.3,
         "weatherCode": 0
        },
@@ -877,7 +877,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 11,
-        "windKmh": 8.7,
+        "windKmh": 9.4,
         "tempC": 27.9,
         "weatherCode": 0
        },
@@ -885,7 +885,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 7.3,
+        "windKmh": 8.1,
         "tempC": 27.6,
         "weatherCode": 0
        },
@@ -893,7 +893,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 5.6,
+        "windKmh": 6.2,
         "tempC": 27.3,
         "weatherCode": 0
        },
@@ -909,7 +909,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2.2,
+        "windKmh": 1.8,
         "tempC": 26.7,
         "weatherCode": 0
        }
@@ -930,7 +930,7 @@
         "hour": 0,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 1.3,
+        "windKmh": 1.5,
         "tempC": 26.4,
         "weatherCode": 0
        },
@@ -938,7 +938,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 0.5,
+        "windKmh": 1.5,
         "tempC": 26.1,
         "weatherCode": 0
        },
@@ -946,7 +946,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 0.8,
+        "windKmh": 1.3,
         "tempC": 25.9,
         "weatherCode": 0
        },
@@ -954,7 +954,7 @@
         "hour": 3,
         "precipitationMm": 0.3,
         "precipitationProbability": 9,
-        "windKmh": 2,
+        "windKmh": 1.8,
         "tempC": 25.6,
         "weatherCode": 51
        },
@@ -962,7 +962,7 @@
         "hour": 4,
         "precipitationMm": 0.3,
         "precipitationProbability": 8,
-        "windKmh": 3.1,
+        "windKmh": 3.2,
         "tempC": 25.3,
         "weatherCode": 51
        },
@@ -970,7 +970,7 @@
         "hour": 5,
         "precipitationMm": 0.3,
         "precipitationProbability": 8,
-        "windKmh": 4,
+        "windKmh": 4.4,
         "tempC": 25.3,
         "weatherCode": 51
        },
@@ -978,7 +978,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 7,
-        "windKmh": 4.2,
+        "windKmh": 4.8,
         "tempC": 25.8,
         "weatherCode": 1
        },
@@ -986,7 +986,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 4.1,
+        "windKmh": 4.6,
         "tempC": 26.5,
         "weatherCode": 0
        },
@@ -994,7 +994,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 3.1,
+        "windKmh": 3.5,
         "tempC": 27.4,
         "weatherCode": 0
        },
@@ -1002,7 +1002,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 1,
+        "windKmh": 1.7,
         "tempC": 28.6,
         "weatherCode": 0
        },
@@ -1010,7 +1010,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 4.1,
+        "windKmh": 3.7,
         "tempC": 29.9,
         "weatherCode": 0
        },
@@ -1018,7 +1018,7 @@
         "hour": 11,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 7.2,
+        "windKmh": 6.7,
         "tempC": 30.8,
         "weatherCode": 0
        },
@@ -1026,7 +1026,7 @@
         "hour": 12,
         "precipitationMm": 0,
         "precipitationProbability": 34,
-        "windKmh": 9.5,
+        "windKmh": 9.1,
         "tempC": 31,
         "weatherCode": 0
        },
@@ -1034,7 +1034,7 @@
         "hour": 13,
         "precipitationMm": 0,
         "precipitationProbability": 64,
-        "windKmh": 11.4,
+        "windKmh": 11.2,
         "tempC": 30.7,
         "weatherCode": 0
        },
@@ -1058,7 +1058,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 93,
-        "windKmh": 9.4,
+        "windKmh": 8.3,
         "tempC": 29.2,
         "weatherCode": 1
        },
@@ -1066,7 +1066,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 84,
-        "windKmh": 9.6,
+        "windKmh": 7.2,
         "tempC": 28.6,
         "weatherCode": 2
        },
@@ -1074,7 +1074,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 63,
-        "windKmh": 8.5,
+        "windKmh": 6.9,
         "tempC": 28.3,
         "weatherCode": 2
        },
@@ -1082,7 +1082,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 33,
-        "windKmh": 6.7,
+        "windKmh": 6.8,
         "tempC": 28,
         "weatherCode": 2
        },
@@ -1090,7 +1090,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 4.7,
+        "windKmh": 6.5,
         "tempC": 27.7,
         "weatherCode": 3
        },
@@ -1098,7 +1098,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 2.8,
+        "windKmh": 4.8,
         "tempC": 27.4,
         "weatherCode": 3
        },
@@ -1106,7 +1106,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 1.9,
+        "windKmh": 2.4,
         "tempC": 27.1,
         "weatherCode": 3
        },
@@ -1114,7 +1114,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 3,
+        "windKmh": 1.8,
         "tempC": 26.8,
         "weatherCode": 3
        }
@@ -1127,7 +1127,7 @@
       "precipitationHours": 6,
       "tempMaxC": 31.5,
       "tempMinC": 25.7,
-      "windMaxKmh": 13.5,
+      "windMaxKmh": 14.6,
       "gustMaxKmh": 35.3,
       "weatherCode": 51,
       "hours": [
@@ -1135,7 +1135,7 @@
         "hour": 0,
         "precipitationMm": 0,
         "precipitationProbability": 11,
-        "windKmh": 2.7,
+        "windKmh": 1.8,
         "tempC": 26.6,
         "weatherCode": 2
        },
@@ -1143,7 +1143,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 13,
-        "windKmh": 2.1,
+        "windKmh": 2,
         "tempC": 26.5,
         "weatherCode": 2
        },
@@ -1151,7 +1151,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 14,
-        "windKmh": 2,
+        "windKmh": 2.2,
         "tempC": 26.3,
         "weatherCode": 1
        },
@@ -1159,7 +1159,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 13,
-        "windKmh": 2.1,
+        "windKmh": 2.3,
         "tempC": 26,
         "weatherCode": 1
        },
@@ -1167,7 +1167,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 2.3,
+        "windKmh": 2.5,
         "tempC": 25.7,
         "weatherCode": 0
        },
@@ -1175,7 +1175,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 2.4,
+        "windKmh": 2.7,
         "tempC": 25.7,
         "weatherCode": 0
        },
@@ -1183,7 +1183,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 3.4,
+        "windKmh": 3.7,
         "tempC": 26.3,
         "weatherCode": 0
        },
@@ -1191,7 +1191,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 4.2,
+        "windKmh": 4.4,
         "tempC": 27.2,
         "weatherCode": 0
        },
@@ -1199,7 +1199,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 4,
-        "windKmh": 3.6,
+        "windKmh": 3.9,
         "tempC": 28.1,
         "weatherCode": 0
        },
@@ -1207,7 +1207,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 0,
+        "windKmh": 0.5,
         "tempC": 29.3,
         "weatherCode": 0
        },
@@ -1231,7 +1231,7 @@
         "hour": 12,
         "precipitationMm": 0.1,
         "precipitationProbability": 32,
-        "windKmh": 11.6,
+        "windKmh": 11.5,
         "tempC": 31.5,
         "weatherCode": 51
        },
@@ -1239,7 +1239,7 @@
         "hour": 13,
         "precipitationMm": 0.1,
         "precipitationProbability": 61,
-        "windKmh": 12.8,
+        "windKmh": 13.3,
         "tempC": 31.1,
         "weatherCode": 51
        },
@@ -1247,7 +1247,7 @@
         "hour": 14,
         "precipitationMm": 0.1,
         "precipitationProbability": 82,
-        "windKmh": 13.5,
+        "windKmh": 14.6,
         "tempC": 30.7,
         "weatherCode": 51
        },
@@ -1255,7 +1255,7 @@
         "hour": 15,
         "precipitationMm": 0,
         "precipitationProbability": 87,
-        "windKmh": 12.7,
+        "windKmh": 14.1,
         "tempC": 30.5,
         "weatherCode": 1
        },
@@ -1263,7 +1263,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 83,
-        "windKmh": 11.3,
+        "windKmh": 12.4,
         "tempC": 30.2,
         "weatherCode": 1
        },
@@ -1271,7 +1271,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 76,
-        "windKmh": 9.8,
+        "windKmh": 10.8,
         "tempC": 29.9,
         "weatherCode": 1
        },
@@ -1279,7 +1279,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 68,
-        "windKmh": 8.7,
+        "windKmh": 9.7,
         "tempC": 29.5,
         "weatherCode": 0
        },
@@ -1287,7 +1287,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 56,
-        "windKmh": 7.6,
+        "windKmh": 9,
         "tempC": 29,
         "weatherCode": 0
        },
@@ -1295,7 +1295,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 44,
-        "windKmh": 6,
+        "windKmh": 7.8,
         "tempC": 28.6,
         "weatherCode": 0
        },
@@ -1303,7 +1303,7 @@
         "hour": 21,
         "precipitationMm": 0.1,
         "precipitationProbability": 30,
-        "windKmh": 3.7,
+        "windKmh": 6.2,
         "tempC": 28.3,
         "weatherCode": 51
        },
@@ -1311,7 +1311,7 @@
         "hour": 22,
         "precipitationMm": 0.1,
         "precipitationProbability": 15,
-        "windKmh": 1.7,
+        "windKmh": 5.1,
         "tempC": 27.9,
         "weatherCode": 51
        },
@@ -1319,7 +1319,7 @@
         "hour": 23,
         "precipitationMm": 0.1,
         "precipitationProbability": 4,
-        "windKmh": 2.1,
+        "windKmh": 5.1,
         "tempC": 27.7,
         "weatherCode": 51
        }
@@ -3115,7 +3115,7 @@
        {
         "hour": 17,
         "precipitationMm": 0.03,
-        "precipitationProbability": 59,
+        "precipitationProbability": 57,
         "windKmh": 8.7,
         "tempC": 29.1,
         "weatherCode": 51
@@ -3123,7 +3123,7 @@
        {
         "hour": 18,
         "precipitationMm": 0,
-        "precipitationProbability": 53,
+        "precipitationProbability": 50,
         "windKmh": 8.2,
         "tempC": 28.6,
         "weatherCode": 3
@@ -3131,7 +3131,7 @@
        {
         "hour": 19,
         "precipitationMm": 0,
-        "precipitationProbability": 44,
+        "precipitationProbability": 38,
         "windKmh": 6.6,
         "tempC": 27.7,
         "weatherCode": 2
@@ -3139,7 +3139,7 @@
        {
         "hour": 20,
         "precipitationMm": 0,
-        "precipitationProbability": 33,
+        "precipitationProbability": 27,
         "windKmh": 5.8,
         "tempC": 27.1,
         "weatherCode": 1
@@ -3147,7 +3147,7 @@
        {
         "hour": 21,
         "precipitationMm": 0,
-        "precipitationProbability": 30,
+        "precipitationProbability": 24,
         "windKmh": 5.1,
         "tempC": 26.7,
         "weatherCode": 1
@@ -3155,7 +3155,7 @@
        {
         "hour": 22,
         "precipitationMm": 0,
-        "precipitationProbability": 26,
+        "precipitationProbability": 22,
         "windKmh": 4.2,
         "tempC": 26.6,
         "weatherCode": 1
@@ -3163,7 +3163,7 @@
        {
         "hour": 23,
         "precipitationMm": 0,
-        "precipitationProbability": 23,
+        "precipitationProbability": 19,
         "windKmh": 3.9,
         "tempC": 26.4,
         "weatherCode": 1
@@ -3173,18 +3173,18 @@
      {
       "date": "2026-10-12",
       "precipitationMm": 0,
-      "precipitationProbability": 35,
+      "precipitationProbability": 29,
       "precipitationHours": 0,
       "tempMaxC": 33.9,
       "tempMinC": 24.7,
       "windMaxKmh": 16.7,
-      "gustMaxKmh": null,
+      "gustMaxKmh": 12.2,
       "weatherCode": 1,
       "hours": [
        {
         "hour": 0,
         "precipitationMm": 0,
-        "precipitationProbability": 21,
+        "precipitationProbability": 17,
         "windKmh": 4.6,
         "tempC": 26,
         "weatherCode": 0
@@ -3192,7 +3192,7 @@
        {
         "hour": 1,
         "precipitationMm": 0,
-        "precipitationProbability": 20,
+        "precipitationProbability": 15,
         "windKmh": 5.4,
         "tempC": 25.7,
         "weatherCode": 0
@@ -3200,7 +3200,7 @@
        {
         "hour": 2,
         "precipitationMm": 0,
-        "precipitationProbability": 19,
+        "precipitationProbability": 14,
         "windKmh": 5.8,
         "tempC": 25.4,
         "weatherCode": 0
@@ -3208,7 +3208,7 @@
        {
         "hour": 3,
         "precipitationMm": 0,
-        "precipitationProbability": 18,
+        "precipitationProbability": 13,
         "windKmh": 5.7,
         "tempC": 25,
         "weatherCode": 0
@@ -3216,7 +3216,7 @@
        {
         "hour": 4,
         "precipitationMm": 0,
-        "precipitationProbability": 17,
+        "precipitationProbability": 11,
         "windKmh": 5.4,
         "tempC": 24.7,
         "weatherCode": 1
@@ -3224,7 +3224,7 @@
        {
         "hour": 5,
         "precipitationMm": 0,
-        "precipitationProbability": 16,
+        "precipitationProbability": 10,
         "windKmh": 5.4,
         "tempC": 24.8,
         "weatherCode": 1
@@ -3232,7 +3232,7 @@
        {
         "hour": 6,
         "precipitationMm": 0,
-        "precipitationProbability": 14,
+        "precipitationProbability": 9,
         "windKmh": 5.9,
         "tempC": 25.6,
         "weatherCode": 0
@@ -3240,7 +3240,7 @@
        {
         "hour": 7,
         "precipitationMm": 0,
-        "precipitationProbability": 12,
+        "precipitationProbability": 8,
         "windKmh": 6.2,
         "tempC": 26.8,
         "weatherCode": 0
@@ -3248,7 +3248,7 @@
        {
         "hour": 8,
         "precipitationMm": 0,
-        "precipitationProbability": 11,
+        "precipitationProbability": 8,
         "windKmh": 6.4,
         "tempC": 28.3,
         "weatherCode": 0
@@ -3256,7 +3256,7 @@
        {
         "hour": 9,
         "precipitationMm": 0,
-        "precipitationProbability": 10,
+        "precipitationProbability": 8,
         "windKmh": 6.3,
         "tempC": 30.2,
         "weatherCode": 0
@@ -3288,7 +3288,7 @@
        {
         "hour": 13,
         "precipitationMm": 0,
-        "precipitationProbability": 17,
+        "precipitationProbability": 16,
         "windKmh": 13.5,
         "tempC": 33.4,
         "weatherCode": 0
@@ -3296,7 +3296,7 @@
        {
         "hour": 14,
         "precipitationMm": 0,
-        "precipitationProbability": 22,
+        "precipitationProbability": 20,
         "windKmh": 16.7,
         "tempC": 32.6,
         "weatherCode": 0
@@ -3304,7 +3304,7 @@
        {
         "hour": 15,
         "precipitationMm": 0,
-        "precipitationProbability": 27,
+        "precipitationProbability": 23,
         "windKmh": 15.6,
         "tempC": 31.6,
         "weatherCode": 0
@@ -3312,7 +3312,7 @@
        {
         "hour": 16,
         "precipitationMm": 0,
-        "precipitationProbability": 33,
+        "precipitationProbability": 27,
         "windKmh": 12.4,
         "tempC": 30.5,
         "weatherCode": 0
@@ -3320,7 +3320,7 @@
        {
         "hour": 17,
         "precipitationMm": 0,
-        "precipitationProbability": 35,
+        "precipitationProbability": 29,
         "windKmh": 9.2,
         "tempC": 29.4,
         "weatherCode": 0
@@ -3328,7 +3328,7 @@
        {
         "hour": 18,
         "precipitationMm": 0,
-        "precipitationProbability": 32,
+        "precipitationProbability": 29,
         "windKmh": 6.5,
         "tempC": 28.5,
         "weatherCode": 0
@@ -3336,7 +3336,7 @@
        {
         "hour": 19,
         "precipitationMm": 0,
-        "precipitationProbability": 25,
+        "precipitationProbability": 28,
         "windKmh": 4,
         "tempC": 27.6,
         "weatherCode": 0
@@ -3344,7 +3344,7 @@
        {
         "hour": 20,
         "precipitationMm": 0,
-        "precipitationProbability": 19,
+        "precipitationProbability": 27,
         "windKmh": 3.3,
         "tempC": 27,
         "weatherCode": 0
@@ -3352,7 +3352,7 @@
        {
         "hour": 21,
         "precipitationMm": 0,
-        "precipitationProbability": 15,
+        "precipitationProbability": 26,
         "windKmh": 3.3,
         "tempC": 26.5,
         "weatherCode": 0
@@ -3360,7 +3360,7 @@
        {
         "hour": 22,
         "precipitationMm": 0,
-        "precipitationProbability": 12,
+        "precipitationProbability": 25,
         "windKmh": 2.9,
         "tempC": 26.3,
         "weatherCode": 0
@@ -3368,7 +3368,7 @@
        {
         "hour": 23,
         "precipitationMm": 0,
-        "precipitationProbability": 10,
+        "precipitationProbability": 23,
         "windKmh": 3,
         "tempC": 26.1,
         "weatherCode": 0
@@ -3401,14 +3401,14 @@
      "lon": 73.883125
     },
     "timezone": "Asia/Kolkata",
-    "fetchedAt": 1790468979889,
+    "fetchedAt": 1790472742000,
     "source": "open-meteo",
     "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=15.7367&longitude=73.8690&current=temperature_2m%2Cprecipitation%2Cweather_code%2Cwind_speed_10m&daily=precipitation_sum%2Cprecipitation_probability_max%2Cprecipitation_hours%2Cweather_code%2Ctemperature_2m_max%2Ctemperature_2m_min%2Cwind_speed_10m_max%2Cwind_gusts_10m_max&hourly=precipitation%2Cprecipitation_probability%2Cweather_code%2Cwind_speed_10m%2Ctemperature_2m&forecast_days=16&timezone=auto",
     "current": {
-     "time": "2026-09-27T05:45",
-     "temperatureC": 23.4,
+     "time": "2026-09-27T07:00",
+     "temperatureC": 23.7,
      "precipitationMm": 0,
-     "windKmh": 1.5,
+     "windKmh": 2.3,
      "weatherCode": 0
     },
     "daily": [
@@ -3419,7 +3419,7 @@
       "precipitationHours": 5,
       "tempMaxC": 29.9,
       "tempMinC": 23.3,
-      "windMaxKmh": 13.7,
+      "windMaxKmh": 12.8,
       "gustMaxKmh": 28.4,
       "weatherCode": 51,
       "hours": [
@@ -3443,7 +3443,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.4,
+        "windKmh": 3.2,
         "tempC": 23.6,
         "weatherCode": 3
        },
@@ -3451,7 +3451,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 1.7,
+        "windKmh": 1.8,
         "tempC": 23.7,
         "weatherCode": 0
        },
@@ -3459,7 +3459,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 1,
+        "windKmh": 1.7,
         "tempC": 23.6,
         "weatherCode": 0
        },
@@ -3467,7 +3467,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 1.5,
+        "windKmh": 1.8,
         "tempC": 23.5,
         "weatherCode": 0
        },
@@ -3475,7 +3475,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 1.5,
+        "windKmh": 1.4,
         "tempC": 23.3,
         "weatherCode": 0
        },
@@ -3483,7 +3483,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.2,
+        "windKmh": 3.3,
         "tempC": 24.4,
         "weatherCode": 0
        },
@@ -3499,7 +3499,7 @@
         "hour": 9,
         "precipitationMm": 0.1,
         "precipitationProbability": 13,
-        "windKmh": 1.8,
+        "windKmh": 0.9,
         "tempC": 27.8,
         "weatherCode": 51
        },
@@ -3507,7 +3507,7 @@
         "hour": 10,
         "precipitationMm": 0.1,
         "precipitationProbability": 32,
-        "windKmh": 4.4,
+        "windKmh": 3.8,
         "tempC": 28.9,
         "weatherCode": 51
        },
@@ -3515,7 +3515,7 @@
         "hour": 11,
         "precipitationMm": 0.3,
         "precipitationProbability": 45,
-        "windKmh": 6.2,
+        "windKmh": 5.8,
         "tempC": 29.3,
         "weatherCode": 51
        },
@@ -3523,7 +3523,7 @@
         "hour": 12,
         "precipitationMm": 0.4,
         "precipitationProbability": 49,
-        "windKmh": 8.6,
+        "windKmh": 8.4,
         "tempC": 29.6,
         "weatherCode": 51
        },
@@ -3531,7 +3531,7 @@
         "hour": 13,
         "precipitationMm": 0.2,
         "precipitationProbability": 48,
-        "windKmh": 11.3,
+        "windKmh": 11.4,
         "tempC": 29.9,
         "weatherCode": 51
        },
@@ -3539,7 +3539,7 @@
         "hour": 14,
         "precipitationMm": 0,
         "precipitationProbability": 43,
-        "windKmh": 13.7,
+        "windKmh": 12.8,
         "tempC": 29.4,
         "weatherCode": 1
        },
@@ -3547,7 +3547,7 @@
         "hour": 15,
         "precipitationMm": 0,
         "precipitationProbability": 33,
-        "windKmh": 12.8,
+        "windKmh": 12.4,
         "tempC": 28.9,
         "weatherCode": 0
        },
@@ -3555,7 +3555,7 @@
         "hour": 16,
         "precipitationMm": 0,
         "precipitationProbability": 20,
-        "windKmh": 10.3,
+        "windKmh": 10.4,
         "tempC": 28.2,
         "weatherCode": 0
        },
@@ -3563,7 +3563,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 7.9,
+        "windKmh": 7.7,
         "tempC": 27.3,
         "weatherCode": 0
        },
@@ -3571,7 +3571,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 4.1,
+        "windKmh": 4.3,
         "tempC": 25.9,
         "weatherCode": 0
        },
@@ -3579,7 +3579,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 2.2,
+        "windKmh": 2.9,
         "tempC": 25.2,
         "weatherCode": 0
        },
@@ -3587,7 +3587,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 3.5,
+        "windKmh": 3.6,
         "tempC": 24.8,
         "weatherCode": 0
        },
@@ -3603,7 +3603,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 2.5,
+        "windKmh": 2.8,
         "tempC": 23.8,
         "weatherCode": 0
        },
@@ -3611,7 +3611,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 2.9,
+        "windKmh": 3,
         "tempC": 23.6,
         "weatherCode": 0
        }
@@ -3624,7 +3624,7 @@
       "precipitationHours": 7,
       "tempMaxC": 30.1,
       "tempMinC": 21.5,
-      "windMaxKmh": 11.4,
+      "windMaxKmh": 11.6,
       "gustMaxKmh": 25.6,
       "weatherCode": 53,
       "hours": [
@@ -3640,7 +3640,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 3.3,
+        "windKmh": 3.4,
         "tempC": 22.8,
         "weatherCode": 0
        },
@@ -3656,7 +3656,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 4.9,
+        "windKmh": 5.2,
         "tempC": 21.9,
         "weatherCode": 0
        },
@@ -3664,7 +3664,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.2,
+        "windKmh": 5.4,
         "tempC": 21.7,
         "weatherCode": 1
        },
@@ -3672,7 +3672,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 4.7,
+        "windKmh": 4.5,
         "tempC": 21.6,
         "weatherCode": 0
        },
@@ -3688,7 +3688,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 5,
+        "windKmh": 4.7,
         "tempC": 23,
         "weatherCode": 1
        },
@@ -3696,7 +3696,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 4.2,
+        "windKmh": 3.3,
         "tempC": 25.7,
         "weatherCode": 0
        },
@@ -3704,7 +3704,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 9,
-        "windKmh": 3.7,
+        "windKmh": 2.3,
         "tempC": 27.4,
         "weatherCode": 1
        },
@@ -3720,7 +3720,7 @@
         "hour": 11,
         "precipitationMm": 0.2,
         "precipitationProbability": 37,
-        "windKmh": 2,
+        "windKmh": 2.5,
         "tempC": 29,
         "weatherCode": 51
        },
@@ -3728,7 +3728,7 @@
         "hour": 12,
         "precipitationMm": 0.2,
         "precipitationProbability": 54,
-        "windKmh": 4.6,
+        "windKmh": 3.8,
         "tempC": 29.6,
         "weatherCode": 51
        },
@@ -3736,7 +3736,7 @@
         "hour": 13,
         "precipitationMm": 0.1,
         "precipitationProbability": 72,
-        "windKmh": 7.5,
+        "windKmh": 7.2,
         "tempC": 30.1,
         "weatherCode": 51
        },
@@ -3744,7 +3744,7 @@
         "hour": 14,
         "precipitationMm": 0.2,
         "precipitationProbability": 80,
-        "windKmh": 11,
+        "windKmh": 11.1,
         "tempC": 29.2,
         "weatherCode": 51
        },
@@ -3752,7 +3752,7 @@
         "hour": 15,
         "precipitationMm": 0.7,
         "precipitationProbability": 73,
-        "windKmh": 10.6,
+        "windKmh": 11,
         "tempC": 28.4,
         "weatherCode": 53
        },
@@ -3760,7 +3760,7 @@
         "hour": 16,
         "precipitationMm": 0.3,
         "precipitationProbability": 57,
-        "windKmh": 11.4,
+        "windKmh": 11.6,
         "tempC": 27.7,
         "weatherCode": 51
        },
@@ -3768,7 +3768,7 @@
         "hour": 17,
         "precipitationMm": 0,
         "precipitationProbability": 41,
-        "windKmh": 8.1,
+        "windKmh": 8.2,
         "tempC": 27,
         "weatherCode": 0
        },
@@ -3776,7 +3776,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 28,
-        "windKmh": 2.8,
+        "windKmh": 3.9,
         "tempC": 25.8,
         "weatherCode": 2
        },
@@ -3784,7 +3784,7 @@
         "hour": 19,
         "precipitationMm": 0.1,
         "precipitationProbability": 15,
-        "windKmh": 3.1,
+        "windKmh": 4.7,
         "tempC": 25.3,
         "weatherCode": 51
        },
@@ -3792,7 +3792,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 3,
+        "windKmh": 4.2,
         "tempC": 24.8,
         "weatherCode": 1
        },
@@ -3800,7 +3800,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 2.7,
+        "windKmh": 2.8,
         "tempC": 24.4,
         "weatherCode": 0
        },
@@ -3816,7 +3816,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 2.3,
+        "windKmh": 2.4,
         "tempC": 23.9,
         "weatherCode": 0
        }
@@ -3829,7 +3829,7 @@
       "precipitationHours": 5,
       "tempMaxC": 30.8,
       "tempMinC": 21.8,
-      "windMaxKmh": 11.5,
+      "windMaxKmh": 11.4,
       "gustMaxKmh": 25.6,
       "weatherCode": 95,
       "hours": [
@@ -3845,7 +3845,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.2,
+        "windKmh": 5.3,
         "tempC": 23.2,
         "weatherCode": 0
        },
@@ -3861,7 +3861,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 3.8,
+        "windKmh": 4,
         "tempC": 22.4,
         "weatherCode": 1
        },
@@ -3869,7 +3869,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 4.4,
+        "windKmh": 4.1,
         "tempC": 22.2,
         "weatherCode": 3
        },
@@ -3877,7 +3877,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 4.8,
+        "windKmh": 4,
         "tempC": 22,
         "weatherCode": 3
        },
@@ -3885,7 +3885,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 5.2,
+        "windKmh": 4.4,
         "tempC": 21.8,
         "weatherCode": 3
        },
@@ -3893,7 +3893,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 3.7,
+        "windKmh": 3.8,
         "tempC": 23.2,
         "weatherCode": 1
        },
@@ -3901,7 +3901,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 4,
-        "windKmh": 1.9,
+        "windKmh": 2.1,
         "tempC": 25.8,
         "weatherCode": 0
        },
@@ -3909,7 +3909,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 4,
-        "windKmh": 0.9,
+        "windKmh": 0.2,
         "tempC": 27.6,
         "weatherCode": 0
        },
@@ -3917,7 +3917,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 0.6,
+        "windKmh": 0.8,
         "tempC": 28.9,
         "weatherCode": 0
        },
@@ -3925,7 +3925,7 @@
         "hour": 11,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 1.5,
+        "windKmh": 2.2,
         "tempC": 30.2,
         "weatherCode": 0
        },
@@ -3933,7 +3933,7 @@
         "hour": 12,
         "precipitationMm": 0,
         "precipitationProbability": 33,
-        "windKmh": 4.7,
+        "windKmh": 4,
         "tempC": 30.8,
         "weatherCode": 1
        },
@@ -3941,7 +3941,7 @@
         "hour": 13,
         "precipitationMm": 0.5,
         "precipitationProbability": 61,
-        "windKmh": 8,
+        "windKmh": 7.8,
         "tempC": 30.3,
         "weatherCode": 53
        },
@@ -3949,7 +3949,7 @@
         "hour": 14,
         "precipitationMm": 1,
         "precipitationProbability": 80,
-        "windKmh": 11.5,
+        "windKmh": 11.4,
         "tempC": 28.7,
         "weatherCode": 55
        },
@@ -3957,7 +3957,7 @@
         "hour": 15,
         "precipitationMm": 1.2,
         "precipitationProbability": 82,
-        "windKmh": 8.2,
+        "windKmh": 8.8,
         "tempC": 27.6,
         "weatherCode": 95
        },
@@ -3965,7 +3965,7 @@
         "hour": 16,
         "precipitationMm": 0.2,
         "precipitationProbability": 75,
-        "windKmh": 7.9,
+        "windKmh": 9,
         "tempC": 27.2,
         "weatherCode": 51
        },
@@ -3973,7 +3973,7 @@
         "hour": 17,
         "precipitationMm": 0.1,
         "precipitationProbability": 63,
-        "windKmh": 4.2,
+        "windKmh": 4.8,
         "tempC": 26.5,
         "weatherCode": 51
        },
@@ -3981,7 +3981,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 46,
-        "windKmh": 2.4,
+        "windKmh": 2.8,
         "tempC": 25.4,
         "weatherCode": 1
        },
@@ -3989,7 +3989,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 24,
-        "windKmh": 4.2,
+        "windKmh": 4.1,
         "tempC": 24.9,
         "weatherCode": 0
        },
@@ -3997,7 +3997,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 3.8,
+        "windKmh": 0.7,
         "tempC": 24.8,
         "weatherCode": 0
        },
@@ -4005,7 +4005,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 1.4,
+        "windKmh": 0.6,
         "tempC": 24.6,
         "weatherCode": 0
        },
@@ -4013,7 +4013,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 1.3,
+        "windKmh": 0.4,
         "tempC": 24.1,
         "weatherCode": 1
        },
@@ -4021,7 +4021,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 2.2,
+        "windKmh": 2.3,
         "tempC": 23.6,
         "weatherCode": 0
        }
@@ -4034,7 +4034,7 @@
       "precipitationHours": 5,
       "tempMaxC": 31,
       "tempMinC": 22.3,
-      "windMaxKmh": 10.7,
+      "windMaxKmh": 12.3,
       "gustMaxKmh": 25.9,
       "weatherCode": 95,
       "hours": [
@@ -4042,7 +4042,7 @@
         "hour": 0,
         "precipitationMm": 0,
         "precipitationProbability": 1,
-        "windKmh": 5.2,
+        "windKmh": 4.7,
         "tempC": 23.4,
         "weatherCode": 3
        },
@@ -4058,7 +4058,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.6,
+        "windKmh": 4.1,
         "tempC": 22.9,
         "weatherCode": 3
        },
@@ -4066,7 +4066,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2,
+        "windKmh": 3.1,
         "tempC": 22.6,
         "weatherCode": 3
        },
@@ -4074,7 +4074,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2.3,
+        "windKmh": 2.4,
         "tempC": 22.4,
         "weatherCode": 3
        },
@@ -4082,7 +4082,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 2.7,
+        "windKmh": 3.1,
         "tempC": 22.5,
         "weatherCode": 3
        },
@@ -4090,7 +4090,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 3.8,
+        "windKmh": 4,
         "tempC": 22.3,
         "weatherCode": 3
        },
@@ -4098,7 +4098,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 1.9,
+        "windKmh": 1.8,
         "tempC": 23.1,
         "weatherCode": 1
        },
@@ -4106,7 +4106,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 0.8,
+        "windKmh": 1.3,
         "tempC": 25.1,
         "weatherCode": 0
        },
@@ -4114,7 +4114,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 11,
-        "windKmh": 1.3,
+        "windKmh": 0.7,
         "tempC": 27.2,
         "weatherCode": 0
        },
@@ -4122,7 +4122,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 24,
-        "windKmh": 1.4,
+        "windKmh": 1,
         "tempC": 28.9,
         "weatherCode": 0
        },
@@ -4130,7 +4130,7 @@
         "hour": 11,
         "precipitationMm": 0,
         "precipitationProbability": 37,
-        "windKmh": 3,
+        "windKmh": 2.9,
         "tempC": 30.2,
         "weatherCode": 1
        },
@@ -4138,7 +4138,7 @@
         "hour": 12,
         "precipitationMm": 0,
         "precipitationProbability": 52,
-        "windKmh": 6,
+        "windKmh": 6.3,
         "tempC": 31,
         "weatherCode": 1
        },
@@ -4146,7 +4146,7 @@
         "hour": 13,
         "precipitationMm": 0.3,
         "precipitationProbability": 66,
-        "windKmh": 6.1,
+        "windKmh": 6.3,
         "tempC": 30.1,
         "weatherCode": 95
        },
@@ -4154,7 +4154,7 @@
         "hour": 14,
         "precipitationMm": 0.3,
         "precipitationProbability": 73,
-        "windKmh": 9.2,
+        "windKmh": 9.5,
         "tempC": 29.8,
         "weatherCode": 51
        },
@@ -4162,7 +4162,7 @@
         "hour": 15,
         "precipitationMm": 0.2,
         "precipitationProbability": 66,
-        "windKmh": 10.7,
+        "windKmh": 12.3,
         "tempC": 28.9,
         "weatherCode": 51
        },
@@ -4170,7 +4170,7 @@
         "hour": 16,
         "precipitationMm": 0.4,
         "precipitationProbability": 50,
-        "windKmh": 7.3,
+        "windKmh": 8.3,
         "tempC": 27.7,
         "weatherCode": 51
        },
@@ -4178,7 +4178,7 @@
         "hour": 17,
         "precipitationMm": 0.1,
         "precipitationProbability": 35,
-        "windKmh": 8.1,
+        "windKmh": 7.2,
         "tempC": 27.3,
         "weatherCode": 51
        },
@@ -4194,7 +4194,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 11,
-        "windKmh": 3.5,
+        "windKmh": 4.6,
         "tempC": 25.6,
         "weatherCode": 0
        },
@@ -4202,7 +4202,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 2,
-        "windKmh": 1.9,
+        "windKmh": 3,
         "tempC": 25,
         "weatherCode": 0
        },
@@ -4218,7 +4218,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 0.7,
+        "windKmh": 0.3,
         "tempC": 24.4,
         "weatherCode": 0
        },
@@ -4226,7 +4226,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 0,
-        "windKmh": 1,
+        "windKmh": 1.3,
         "tempC": 24.3,
         "weatherCode": 0
        }
@@ -4239,7 +4239,7 @@
       "precipitationHours": 6,
       "tempMaxC": 30.5,
       "tempMinC": 22.9,
-      "windMaxKmh": 7,
+      "windMaxKmh": 8.1,
       "gustMaxKmh": 22,
       "weatherCode": 95,
       "hours": [
@@ -4255,7 +4255,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 1.8,
+        "windKmh": 2,
         "tempC": 23.8,
         "weatherCode": 0
        },
@@ -4263,7 +4263,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 2.2,
+        "windKmh": 2.7,
         "tempC": 23.6,
         "weatherCode": 0
        },
@@ -4271,7 +4271,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 9,
-        "windKmh": 2.7,
+        "windKmh": 3,
         "tempC": 23.2,
         "weatherCode": 1
        },
@@ -4279,7 +4279,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 3.2,
+        "windKmh": 3.3,
         "tempC": 22.9,
         "weatherCode": 2
        },
@@ -4295,7 +4295,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 7,
-        "windKmh": 3.2,
+        "windKmh": 3.3,
         "tempC": 23.7,
         "weatherCode": 2
        },
@@ -4311,7 +4311,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 2.2,
+        "windKmh": 2.3,
         "tempC": 26.1,
         "weatherCode": 0
        },
@@ -4327,7 +4327,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 1.5,
+        "windKmh": 1.3,
         "tempC": 29.4,
         "weatherCode": 0
        },
@@ -4335,7 +4335,7 @@
         "hour": 11,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 1.1,
+        "windKmh": 0.3,
         "tempC": 30.5,
         "weatherCode": 0
        },
@@ -4343,7 +4343,7 @@
         "hour": 12,
         "precipitationMm": 0.4,
         "precipitationProbability": 34,
-        "windKmh": 2.4,
+        "windKmh": 2.5,
         "tempC": 30.5,
         "weatherCode": 51
        },
@@ -4351,7 +4351,7 @@
         "hour": 13,
         "precipitationMm": 0.4,
         "precipitationProbability": 64,
-        "windKmh": 5.3,
+        "windKmh": 6.1,
         "tempC": 29.9,
         "weatherCode": 51
        },
@@ -4359,7 +4359,7 @@
         "hour": 14,
         "precipitationMm": 0.4,
         "precipitationProbability": 86,
-        "windKmh": 7,
+        "windKmh": 8.1,
         "tempC": 29,
         "weatherCode": 51
        },
@@ -4367,7 +4367,7 @@
         "hour": 15,
         "precipitationMm": 0.9,
         "precipitationProbability": 94,
-        "windKmh": 6.7,
+        "windKmh": 7.2,
         "tempC": 28.1,
         "weatherCode": 53
        },
@@ -4375,7 +4375,7 @@
         "hour": 16,
         "precipitationMm": 0.9,
         "precipitationProbability": 93,
-        "windKmh": 6.2,
+        "windKmh": 5.1,
         "tempC": 26.9,
         "weatherCode": 95
        },
@@ -4383,7 +4383,7 @@
         "hour": 17,
         "precipitationMm": 0.9,
         "precipitationProbability": 84,
-        "windKmh": 5.8,
+        "windKmh": 3.2,
         "tempC": 26,
         "weatherCode": 95
        },
@@ -4391,7 +4391,7 @@
         "hour": 18,
         "precipitationMm": 0,
         "precipitationProbability": 63,
-        "windKmh": 4.4,
+        "windKmh": 2,
         "tempC": 25.6,
         "weatherCode": 2
        },
@@ -4399,7 +4399,7 @@
         "hour": 19,
         "precipitationMm": 0,
         "precipitationProbability": 33,
-        "windKmh": 2.2,
+        "windKmh": 0.9,
         "tempC": 25.3,
         "weatherCode": 2
        },
@@ -4407,7 +4407,7 @@
         "hour": 20,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 0.2,
+        "windKmh": 0.4,
         "tempC": 25.2,
         "weatherCode": 2
        },
@@ -4415,7 +4415,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 6,
-        "windKmh": 2.2,
+        "windKmh": 1,
         "tempC": 25,
         "weatherCode": 2
        },
@@ -4423,7 +4423,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 4.2,
+        "windKmh": 1.7,
         "tempC": 24.9,
         "weatherCode": 2
        },
@@ -4431,7 +4431,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 5.4,
+        "windKmh": 2,
         "tempC": 24.7,
         "weatherCode": 1
        }
@@ -4444,7 +4444,7 @@
       "precipitationHours": 9,
       "tempMaxC": 31.7,
       "tempMinC": 23.7,
-      "windMaxKmh": 8.3,
+      "windMaxKmh": 7.9,
       "gustMaxKmh": 22,
       "weatherCode": 95,
       "hours": [
@@ -4452,7 +4452,7 @@
         "hour": 0,
         "precipitationMm": 0,
         "precipitationProbability": 11,
-        "windKmh": 4.6,
+        "windKmh": 2.1,
         "tempC": 24.6,
         "weatherCode": 1
        },
@@ -4460,7 +4460,7 @@
         "hour": 1,
         "precipitationMm": 0,
         "precipitationProbability": 13,
-        "windKmh": 3.1,
+        "windKmh": 2,
         "tempC": 24.5,
         "weatherCode": 1
        },
@@ -4468,7 +4468,7 @@
         "hour": 2,
         "precipitationMm": 0,
         "precipitationProbability": 14,
-        "windKmh": 2.2,
+        "windKmh": 2.1,
         "tempC": 24.3,
         "weatherCode": 1
        },
@@ -4476,7 +4476,7 @@
         "hour": 3,
         "precipitationMm": 0,
         "precipitationProbability": 13,
-        "windKmh": 1.8,
+        "windKmh": 2.1,
         "tempC": 24,
         "weatherCode": 2
        },
@@ -4484,7 +4484,7 @@
         "hour": 4,
         "precipitationMm": 0,
         "precipitationProbability": 12,
-        "windKmh": 1.5,
+        "windKmh": 2,
         "tempC": 23.7,
         "weatherCode": 3
        },
@@ -4492,7 +4492,7 @@
         "hour": 5,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 1.1,
+        "windKmh": 1.9,
         "tempC": 23.7,
         "weatherCode": 3
        },
@@ -4500,7 +4500,7 @@
         "hour": 6,
         "precipitationMm": 0,
         "precipitationProbability": 8,
-        "windKmh": 1,
+        "windKmh": 1.8,
         "tempC": 24.1,
         "weatherCode": 2
        },
@@ -4508,7 +4508,7 @@
         "hour": 7,
         "precipitationMm": 0,
         "precipitationProbability": 5,
-        "windKmh": 1.5,
+        "windKmh": 1.7,
         "tempC": 24.9,
         "weatherCode": 1
        },
@@ -4516,7 +4516,7 @@
         "hour": 8,
         "precipitationMm": 0,
         "precipitationProbability": 4,
-        "windKmh": 2,
+        "windKmh": 1.5,
         "tempC": 26,
         "weatherCode": 0
        },
@@ -4524,7 +4524,7 @@
         "hour": 9,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 2,
+        "windKmh": 1.3,
         "tempC": 27.8,
         "weatherCode": 0
        },
@@ -4532,7 +4532,7 @@
         "hour": 10,
         "precipitationMm": 0,
         "precipitationProbability": 3,
-        "windKmh": 1.9,
+        "windKmh": 1.2,
         "tempC": 29.8,
         "weatherCode": 0
        },
@@ -4540,7 +4540,7 @@
         "hour": 11,
         "precipitationMm": 0,
         "precipitationProbability": 10,
-        "windKmh": 1.6,
+        "windKmh": 0.9,
         "tempC": 31.3,
         "weatherCode": 0
        },
@@ -4548,7 +4548,7 @@
         "hour": 12,
         "precipitationMm": 0.1,
         "precipitationProbability": 32,
-        "windKmh": 2.8,
+        "windKmh": 2.7,
         "tempC": 31.7,
         "weatherCode": 51
        },
@@ -4556,7 +4556,7 @@
         "hour": 13,
         "precipitationMm": 0.1,
         "precipitationProbability": 61,
-        "windKmh": 5.8,
+        "windKmh": 5.9,
         "tempC": 31.5,
         "weatherCode": 51
        },
@@ -4564,7 +4564,7 @@
         "hour": 14,
         "precipitationMm": 0.1,
         "precipitationProbability": 82,
-        "windKmh": 7.8,
+        "windKmh": 7.9,
         "tempC": 31,
         "weatherCode": 51
        },
@@ -4572,7 +4572,7 @@
         "hour": 15,
         "precipitationMm": 0.5,
         "precipitationProbability": 87,
-        "windKmh": 8.3,
+        "windKmh": 7.9,
         "tempC": 30.2,
         "weatherCode": 95
        },
@@ -4580,7 +4580,7 @@
         "hour": 16,
         "precipitationMm": 0.5,
         "precipitationProbability": 83,
-        "windKmh": 6.9,
+        "windKmh": 6.7,
         "tempC": 29.1,
         "weatherCode": 95
        },
@@ -4588,7 +4588,7 @@
         "hour": 17,
         "precipitationMm": 0.5,
         "precipitationProbability": 76,
-        "windKmh": 5.8,
+        "windKmh": 5.7,
         "tempC": 28.2,
         "weatherCode": 53
        },
@@ -4596,7 +4596,7 @@
         "hour": 18,
         "precipitationMm": 0.1,
         "precipitationProbability": 68,
-        "windKmh": 4.6,
+        "windKmh": 4.2,
         "tempC": 27.6,
         "weatherCode": 51
        },
@@ -4604,7 +4604,7 @@
         "hour": 19,
         "precipitationMm": 0.1,
         "precipitationProbability": 56,
-        "windKmh": 3.2,
+        "windKmh": 2.6,
         "tempC": 27.2,
         "weatherCode": 51
        },
@@ -4612,7 +4612,7 @@
         "hour": 20,
         "precipitationMm": 0.1,
         "precipitationProbability": 44,
-        "windKmh": 2,
+        "windKmh": 1,
         "tempC": 26.8,
         "weatherCode": 51
        },
@@ -4620,7 +4620,7 @@
         "hour": 21,
         "precipitationMm": 0,
         "precipitationProbability": 30,
-        "windKmh": 0.9,
+        "windKmh": 0.2,
         "tempC": 26.3,
         "weatherCode": 0
        },
@@ -4628,7 +4628,7 @@
         "hour": 22,
         "precipitationMm": 0,
         "precipitationProbability": 15,
-        "windKmh": 0.9,
+        "windKmh": 1,
         "tempC": 25.9,
         "weatherCode": 0
        },
@@ -4636,7 +4636,7 @@
         "hour": 23,
         "precipitationMm": 0,
         "precipitationProbability": 4,
-        "windKmh": 1.5,
+        "windKmh": 1.7,
         "tempC": 25.7,
         "weatherCode": 0
        }
@@ -6432,7 +6432,7 @@
        {
         "hour": 17,
         "precipitationMm": 0.03,
-        "precipitationProbability": 59,
+        "precipitationProbability": 57,
         "windKmh": 6,
         "tempC": 27.8,
         "weatherCode": 51
@@ -6440,7 +6440,7 @@
        {
         "hour": 18,
         "precipitationMm": 0,
-        "precipitationProbability": 53,
+        "precipitationProbability": 50,
         "windKmh": 5.7,
         "tempC": 27.3,
         "weatherCode": 3
@@ -6448,7 +6448,7 @@
        {
         "hour": 19,
         "precipitationMm": 0,
-        "precipitationProbability": 44,
+        "precipitationProbability": 38,
         "windKmh": 4.5,
         "tempC": 26.6,
         "weatherCode": 3
@@ -6456,7 +6456,7 @@
        {
         "hour": 20,
         "precipitationMm": 0,
-        "precipitationProbability": 33,
+        "precipitationProbability": 27,
         "windKmh": 4,
         "tempC": 25.9,
         "weatherCode": 2
@@ -6464,7 +6464,7 @@
        {
         "hour": 21,
         "precipitationMm": 0,
-        "precipitationProbability": 30,
+        "precipitationProbability": 24,
         "windKmh": 3.9,
         "tempC": 25.5,
         "weatherCode": 1
@@ -6472,7 +6472,7 @@
        {
         "hour": 22,
         "precipitationMm": 0,
-        "precipitationProbability": 26,
+        "precipitationProbability": 22,
         "windKmh": 3.2,
         "tempC": 25.2,
         "weatherCode": 1
@@ -6480,7 +6480,7 @@
        {
         "hour": 23,
         "precipitationMm": 0,
-        "precipitationProbability": 23,
+        "precipitationProbability": 19,
         "windKmh": 2.8,
         "tempC": 24.9,
         "weatherCode": 0
@@ -6490,18 +6490,18 @@
      {
       "date": "2026-10-12",
       "precipitationMm": 0,
-      "precipitationProbability": 35,
+      "precipitationProbability": 29,
       "precipitationHours": 0,
       "tempMaxC": 33.9,
       "tempMinC": 23.4,
       "windMaxKmh": 16,
-      "gustMaxKmh": null,
+      "gustMaxKmh": 12.2,
       "weatherCode": 2,
       "hours": [
        {
         "hour": 0,
         "precipitationMm": 0,
-        "precipitationProbability": 21,
+        "precipitationProbability": 17,
         "windKmh": 3.1,
         "tempC": 24.6,
         "weatherCode": 0
@@ -6509,7 +6509,7 @@
        {
         "hour": 1,
         "precipitationMm": 0,
-        "precipitationProbability": 20,
+        "precipitationProbability": 15,
         "windKmh": 3.4,
         "tempC": 24.4,
         "weatherCode": 0
@@ -6517,7 +6517,7 @@
        {
         "hour": 2,
         "precipitationMm": 0,
-        "precipitationProbability": 19,
+        "precipitationProbability": 14,
         "windKmh": 3.9,
         "tempC": 24.1,
         "weatherCode": 0
@@ -6525,7 +6525,7 @@
        {
         "hour": 3,
         "precipitationMm": 0,
-        "precipitationProbability": 18,
+        "precipitationProbability": 13,
         "windKmh": 4,
         "tempC": 23.8,
         "weatherCode": 0
@@ -6533,7 +6533,7 @@
        {
         "hour": 4,
         "precipitationMm": 0,
-        "precipitationProbability": 17,
+        "precipitationProbability": 11,
         "windKmh": 4.3,
         "tempC": 23.4,
         "weatherCode": 0
@@ -6541,7 +6541,7 @@
        {
         "hour": 5,
         "precipitationMm": 0,
-        "precipitationProbability": 16,
+        "precipitationProbability": 10,
         "windKmh": 4.4,
         "tempC": 23.5,
         "weatherCode": 0
@@ -6549,7 +6549,7 @@
        {
         "hour": 6,
         "precipitationMm": 0,
-        "precipitationProbability": 14,
+        "precipitationProbability": 9,
         "windKmh": 4.6,
         "tempC": 24.3,
         "weatherCode": 0
@@ -6557,7 +6557,7 @@
        {
         "hour": 7,
         "precipitationMm": 0,
-        "precipitationProbability": 12,
+        "precipitationProbability": 8,
         "windKmh": 4.3,
         "tempC": 25.4,
         "weatherCode": 0
@@ -6565,7 +6565,7 @@
        {
         "hour": 8,
         "precipitationMm": 0,
-        "precipitationProbability": 11,
+        "precipitationProbability": 8,
         "windKmh": 4.4,
         "tempC": 26.9,
         "weatherCode": 0
@@ -6573,7 +6573,7 @@
        {
         "hour": 9,
         "precipitationMm": 0,
-        "precipitationProbability": 10,
+        "precipitationProbability": 8,
         "windKmh": 4.3,
         "tempC": 29,
         "weatherCode": 0
@@ -6605,7 +6605,7 @@
        {
         "hour": 13,
         "precipitationMm": 0,
-        "precipitationProbability": 17,
+        "precipitationProbability": 16,
         "windKmh": 12.5,
         "tempC": 33.9,
         "weatherCode": 0
@@ -6613,7 +6613,7 @@
        {
         "hour": 14,
         "precipitationMm": 0,
-        "precipitationProbability": 22,
+        "precipitationProbability": 20,
         "windKmh": 16,
         "tempC": 33.4,
         "weatherCode": 0
@@ -6621,7 +6621,7 @@
        {
         "hour": 15,
         "precipitationMm": 0,
-        "precipitationProbability": 27,
+        "precipitationProbability": 23,
         "windKmh": 14.3,
         "tempC": 32.2,
         "weatherCode": 0
@@ -6629,7 +6629,7 @@
        {
         "hour": 16,
         "precipitationMm": 0,
-        "precipitationProbability": 33,
+        "precipitationProbability": 27,
         "windKmh": 10.2,
         "tempC": 30.4,
         "weatherCode": 0
@@ -6637,7 +6637,7 @@
        {
         "hour": 17,
         "precipitationMm": 0,
-        "precipitationProbability": 35,
+        "precipitationProbability": 29,
         "windKmh": 6.3,
         "tempC": 28.7,
         "weatherCode": 0
@@ -6645,7 +6645,7 @@
        {
         "hour": 18,
         "precipitationMm": 0,
-        "precipitationProbability": 32,
+        "precipitationProbability": 29,
         "windKmh": 3.6,
         "tempC": 27.5,
         "weatherCode": 0
@@ -6653,7 +6653,7 @@
        {
         "hour": 19,
         "precipitationMm": 0,
-        "precipitationProbability": 25,
+        "precipitationProbability": 28,
         "windKmh": 2.2,
         "tempC": 26.4,
         "weatherCode": 0
@@ -6661,7 +6661,7 @@
        {
         "hour": 20,
         "precipitationMm": 0,
-        "precipitationProbability": 19,
+        "precipitationProbability": 27,
         "windKmh": 3.1,
         "tempC": 25.7,
         "weatherCode": 0
@@ -6669,7 +6669,7 @@
        {
         "hour": 21,
         "precipitationMm": 0,
-        "precipitationProbability": 15,
+        "precipitationProbability": 26,
         "windKmh": 3.3,
         "tempC": 25.5,
         "weatherCode": 1
@@ -6677,7 +6677,7 @@
        {
         "hour": 22,
         "precipitationMm": 0,
-        "precipitationProbability": 12,
+        "precipitationProbability": 25,
         "windKmh": 3.1,
         "tempC": 25.7,
         "weatherCode": 1
@@ -6685,10 +6685,3327 @@
        {
         "hour": 23,
         "precipitationMm": 0,
-        "precipitationProbability": 10,
+        "precipitationProbability": 23,
         "windKmh": 2.8,
         "tempC": 25.8,
         "weatherCode": 2
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "15.50,74.00",
+   "point": {
+    "lat": 15.4677915,
+    "lon": 73.8806181,
+    "label": "Goa Island",
+    "precision": "item",
+    "source": "openstreetmap (photon)"
+   },
+   "label": "Goa Island",
+   "forecast": {
+    "location": {
+     "lat": 15.4677915,
+     "lon": 73.8806181,
+     "label": "Goa Island",
+     "precision": "item",
+     "source": "openstreetmap (photon)"
+    },
+    "grid": {
+     "lat": 15.500878,
+     "lon": 73.928566
+    },
+    "timezone": "Asia/Kolkata",
+    "fetchedAt": 1790472743943,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=15.4678&longitude=73.8806&current=temperature_2m%2Cprecipitation%2Cweather_code%2Cwind_speed_10m&daily=precipitation_sum%2Cprecipitation_probability_max%2Cprecipitation_hours%2Cweather_code%2Ctemperature_2m_max%2Ctemperature_2m_min%2Cwind_speed_10m_max%2Cwind_gusts_10m_max&hourly=precipitation%2Cprecipitation_probability%2Cweather_code%2Cwind_speed_10m%2Ctemperature_2m&forecast_days=16&timezone=auto",
+    "current": {
+     "time": "2026-09-27T07:00",
+     "temperatureC": 24.8,
+     "precipitationMm": 0,
+     "windKmh": 5.2,
+     "weatherCode": 0
+    },
+    "daily": [
+     {
+      "date": "2026-09-27",
+      "precipitationMm": 0.4,
+      "precipitationProbability": 66,
+      "precipitationHours": 4,
+      "tempMaxC": 30,
+      "tempMinC": 24.2,
+      "windMaxKmh": 14.1,
+      "gustMaxKmh": 30.6,
+      "weatherCode": 51,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 2.6,
+        "tempC": 25.4,
+        "weatherCode": 3
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 5.3,
+        "tempC": 24.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 6.5,
+        "tempC": 24.6,
+        "weatherCode": 2
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.1,
+        "tempC": 24.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.8,
+        "tempC": 24.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5,
+        "tempC": 24.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 4.8,
+        "tempC": 24.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.3,
+        "tempC": 25.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.6,
+        "tempC": 27.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 15,
+        "windKmh": 3,
+        "tempC": 28.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 35,
+        "windKmh": 6.2,
+        "tempC": 29.5,
+        "weatherCode": 51
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 51,
+        "windKmh": 9,
+        "tempC": 30,
+        "weatherCode": 51
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 61,
+        "windKmh": 12.3,
+        "tempC": 29.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0,
+        "precipitationProbability": 66,
+        "windKmh": 14.1,
+        "tempC": 29.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0,
+        "precipitationProbability": 65,
+        "windKmh": 13.7,
+        "tempC": 29.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": 52,
+        "windKmh": 13.1,
+        "tempC": 29,
+        "weatherCode": 0
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": 32,
+        "windKmh": 11.8,
+        "tempC": 28.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 9.9,
+        "tempC": 28.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 5.1,
+        "tempC": 26.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 2.9,
+        "tempC": 26.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 0.6,
+        "tempC": 26.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 0.6,
+        "tempC": 26.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.7,
+        "tempC": 25.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5,
+        "tempC": 24.9,
+        "weatherCode": 0
+       }
+      ]
+     },
+     {
+      "date": "2026-09-28",
+      "precipitationMm": 1.3,
+      "precipitationProbability": 78,
+      "precipitationHours": 4,
+      "tempMaxC": 30.1,
+      "tempMinC": 23.5,
+      "windMaxKmh": 13.7,
+      "gustMaxKmh": 30.6,
+      "weatherCode": 53,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.9,
+        "tempC": 24.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 4.8,
+        "tempC": 24.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 4,
+        "tempC": 24.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 4.7,
+        "tempC": 23.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 5.2,
+        "tempC": 23.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 4.7,
+        "tempC": 23.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 5.4,
+        "tempC": 23.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.2,
+        "tempC": 24.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 4.3,
+        "tempC": 26.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 2.4,
+        "tempC": 28.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 7,
+        "windKmh": 3.2,
+        "tempC": 29.5,
+        "weatherCode": 51
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0.3,
+        "precipitationProbability": 16,
+        "windKmh": 5.1,
+        "tempC": 29.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 36,
+        "windKmh": 8.1,
+        "tempC": 30.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.6,
+        "precipitationProbability": 62,
+        "windKmh": 12.5,
+        "tempC": 29.4,
+        "weatherCode": 53
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0,
+        "precipitationProbability": 78,
+        "windKmh": 13.7,
+        "tempC": 29.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": 78,
+        "windKmh": 12.5,
+        "tempC": 29,
+        "weatherCode": 0
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": 70,
+        "windKmh": 11.3,
+        "tempC": 28.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": 57,
+        "windKmh": 10.3,
+        "tempC": 28,
+        "weatherCode": 0
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 39,
+        "windKmh": 4.7,
+        "tempC": 27.1,
+        "weatherCode": 2
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 18,
+        "windKmh": 3.2,
+        "tempC": 26.7,
+        "weatherCode": 2
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 3.6,
+        "tempC": 26.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.2,
+        "tempC": 25.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.7,
+        "tempC": 25.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 2.9,
+        "tempC": 25.1,
+        "weatherCode": 0
+       }
+      ]
+     },
+     {
+      "date": "2026-09-29",
+      "precipitationMm": 1.8,
+      "precipitationProbability": 90,
+      "precipitationHours": 4,
+      "tempMaxC": 30.3,
+      "tempMinC": 24.1,
+      "windMaxKmh": 12.8,
+      "gustMaxKmh": 29.9,
+      "weatherCode": 80,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 5.1,
+        "tempC": 25,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.6,
+        "tempC": 24.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.4,
+        "tempC": 24.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 4.6,
+        "tempC": 24.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 4.4,
+        "tempC": 24.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 4.7,
+        "tempC": 24.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 4.1,
+        "tempC": 24.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 3.8,
+        "tempC": 25.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 1.8,
+        "tempC": 27.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 0.3,
+        "tempC": 28.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.1,
+        "tempC": 30,
+        "weatherCode": 1
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 6,
+        "windKmh": 7.4,
+        "tempC": 30.3,
+        "weatherCode": 51
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 1.5,
+        "precipitationProbability": 29,
+        "windKmh": 12.8,
+        "tempC": 28.9,
+        "weatherCode": 80
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 60,
+        "windKmh": 10.8,
+        "tempC": 29.3,
+        "weatherCode": 51
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 82,
+        "windKmh": 12.1,
+        "tempC": 29.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": 90,
+        "windKmh": 10.5,
+        "tempC": 29,
+        "weatherCode": 0
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": 89,
+        "windKmh": 11.1,
+        "tempC": 28.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": 82,
+        "windKmh": 9.4,
+        "tempC": 28,
+        "weatherCode": 1
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 67,
+        "windKmh": 6.9,
+        "tempC": 27,
+        "weatherCode": 0
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 46,
+        "windKmh": 4.8,
+        "tempC": 26.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 29,
+        "windKmh": 2.3,
+        "tempC": 26,
+        "weatherCode": 0
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 18,
+        "windKmh": 2.6,
+        "tempC": 25.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 11,
+        "windKmh": 0.8,
+        "tempC": 25.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 1.5,
+        "tempC": 25.1,
+        "weatherCode": 0
+       }
+      ]
+     },
+     {
+      "date": "2026-09-30",
+      "precipitationMm": 0.6,
+      "precipitationProbability": 82,
+      "precipitationHours": 2,
+      "tempMaxC": 30.6,
+      "tempMinC": 23.9,
+      "windMaxKmh": 12.1,
+      "gustMaxKmh": 27,
+      "weatherCode": 51,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 1.8,
+        "tempC": 24.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 2.2,
+        "tempC": 24.6,
+        "weatherCode": 1
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.3,
+        "tempC": 24.3,
+        "weatherCode": 3
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.3,
+        "tempC": 24.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 1.8,
+        "tempC": 24.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.8,
+        "tempC": 24.1,
+        "weatherCode": 3
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.1,
+        "tempC": 23.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.7,
+        "tempC": 24.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.1,
+        "tempC": 26.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 0.6,
+        "tempC": 28.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 15,
+        "windKmh": 2.8,
+        "tempC": 30,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 27,
+        "windKmh": 6.8,
+        "tempC": 30.6,
+        "weatherCode": 1
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 46,
+        "windKmh": 11.5,
+        "tempC": 29.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 68,
+        "windKmh": 11.1,
+        "tempC": 29.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0,
+        "precipitationProbability": 82,
+        "windKmh": 11.3,
+        "tempC": 29.5,
+        "weatherCode": 2
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": 81,
+        "windKmh": 12.1,
+        "tempC": 29.5,
+        "weatherCode": 2
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": 72,
+        "windKmh": 11.8,
+        "tempC": 28.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": 59,
+        "windKmh": 9.7,
+        "tempC": 28.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 42,
+        "windKmh": 8.3,
+        "tempC": 27.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 23,
+        "windKmh": 6.4,
+        "tempC": 27.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 4.5,
+        "tempC": 26.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 2.6,
+        "tempC": 26.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 0.6,
+        "tempC": 26,
+        "weatherCode": 0
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 0.8,
+        "tempC": 25.8,
+        "weatherCode": 0
+       }
+      ]
+     },
+     {
+      "date": "2026-10-01",
+      "precipitationMm": 1.5,
+      "precipitationProbability": 100,
+      "precipitationHours": 9,
+      "tempMaxC": 31.2,
+      "tempMinC": 24.7,
+      "windMaxKmh": 11.2,
+      "gustMaxKmh": 28.1,
+      "weatherCode": 51,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 1,
+        "tempC": 25.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 0.7,
+        "tempC": 25.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 0.7,
+        "tempC": 25.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 9,
+        "windKmh": 1.5,
+        "tempC": 24.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 6,
+        "windKmh": 2.4,
+        "tempC": 24.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 4,
+        "windKmh": 3.2,
+        "tempC": 24.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 3.6,
+        "tempC": 25.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 3.9,
+        "tempC": 25.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 3.6,
+        "tempC": 26.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.1,
+        "tempC": 28.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 0.2,
+        "tempC": 30.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 2.8,
+        "tempC": 31.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 30,
+        "windKmh": 6,
+        "tempC": 31.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 66,
+        "windKmh": 9.4,
+        "tempC": 30.4,
+        "weatherCode": 51
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 92,
+        "windKmh": 11.2,
+        "tempC": 29.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 100,
+        "windKmh": 10.3,
+        "tempC": 28.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 99,
+        "windKmh": 8.4,
+        "tempC": 27.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 90,
+        "windKmh": 6.9,
+        "tempC": 27.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 69,
+        "windKmh": 5.1,
+        "tempC": 26.9,
+        "weatherCode": 2
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 40,
+        "windKmh": 3.5,
+        "tempC": 26.7,
+        "weatherCode": 3
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 18,
+        "windKmh": 3.1,
+        "tempC": 26.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 2.5,
+        "tempC": 26.4,
+        "weatherCode": 3
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 1.6,
+        "tempC": 26.2,
+        "weatherCode": 2
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 1.2,
+        "tempC": 26.1,
+        "weatherCode": 2
+       }
+      ]
+     },
+     {
+      "date": "2026-10-02",
+      "precipitationMm": 2.1,
+      "precipitationProbability": 88,
+      "precipitationHours": 9,
+      "tempMaxC": 32.2,
+      "tempMinC": 24.9,
+      "windMaxKmh": 12.9,
+      "gustMaxKmh": 29.9,
+      "weatherCode": 51,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 12,
+        "windKmh": 1.5,
+        "tempC": 25.9,
+        "weatherCode": 2
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 15,
+        "windKmh": 2.2,
+        "tempC": 25.8,
+        "weatherCode": 2
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 2.8,
+        "tempC": 25.6,
+        "weatherCode": 2
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 13,
+        "windKmh": 2.8,
+        "tempC": 25.2,
+        "weatherCode": 1
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 2.6,
+        "tempC": 24.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 2.6,
+        "tempC": 24.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 3,
+        "tempC": 25.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.5,
+        "tempC": 26.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.3,
+        "tempC": 27.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.1,
+        "tempC": 29.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 0.8,
+        "tempC": 31,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 2.7,
+        "tempC": 32.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 31,
+        "windKmh": 6.3,
+        "tempC": 32,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 62,
+        "windKmh": 10.5,
+        "tempC": 31.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 84,
+        "windKmh": 12.9,
+        "tempC": 30.5,
+        "weatherCode": 51
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 88,
+        "windKmh": 12.3,
+        "tempC": 30.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 83,
+        "windKmh": 10,
+        "tempC": 30,
+        "weatherCode": 51
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 76,
+        "windKmh": 8,
+        "tempC": 29.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 68,
+        "windKmh": 6.7,
+        "tempC": 29.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 57,
+        "windKmh": 5.2,
+        "tempC": 28.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 46,
+        "windKmh": 3.9,
+        "tempC": 27.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0.3,
+        "precipitationProbability": 33,
+        "windKmh": 2.3,
+        "tempC": 27.4,
+        "weatherCode": 51
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0.3,
+        "precipitationProbability": 18,
+        "windKmh": 2.2,
+        "tempC": 27.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0.3,
+        "precipitationProbability": 8,
+        "windKmh": 3.1,
+        "tempC": 26.8,
+        "weatherCode": 51
+       }
+      ]
+     },
+     {
+      "date": "2026-10-03",
+      "precipitationMm": 4.8,
+      "precipitationProbability": 94,
+      "precipitationHours": 12,
+      "tempMaxC": 31.3,
+      "tempMinC": 24.2,
+      "windMaxKmh": 4.5,
+      "gustMaxKmh": 29.9,
+      "weatherCode": 95,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 4,
+        "windKmh": 2.3,
+        "tempC": 25.9,
+        "weatherCode": 95
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 4,
+        "windKmh": 3,
+        "tempC": 25.3,
+        "weatherCode": 95
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 5,
+        "windKmh": 3.5,
+        "tempC": 24.8,
+        "weatherCode": 95
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 7,
+        "windKmh": 4,
+        "tempC": 24.4,
+        "weatherCode": 51
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 9,
+        "windKmh": 4.2,
+        "tempC": 24.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 10,
+        "windKmh": 4,
+        "tempC": 24.4,
+        "weatherCode": 51
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 7,
+        "windKmh": 3.3,
+        "tempC": 25.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 2.2,
+        "tempC": 26.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 1.3,
+        "tempC": 27.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 1.8,
+        "tempC": 29.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.1,
+        "tempC": 30.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.9,
+        "tempC": 31.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 14,
+        "windKmh": 4.4,
+        "tempC": 31.3,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 33,
+        "windKmh": 4.5,
+        "tempC": 30.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 52,
+        "windKmh": 4.5,
+        "tempC": 30.3,
+        "weatherCode": 51
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 70,
+        "windKmh": 4.4,
+        "tempC": 29.5,
+        "weatherCode": 51
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 86,
+        "windKmh": 4.1,
+        "tempC": 28.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 94,
+        "windKmh": 3.6,
+        "tempC": 28.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 88,
+        "windKmh": 2.8,
+        "tempC": 27.7,
+        "weatherCode": 3
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 73,
+        "windKmh": 1.9,
+        "tempC": 27.3,
+        "weatherCode": 3
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 57,
+        "windKmh": 0.6,
+        "tempC": 26.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 40,
+        "windKmh": 0.5,
+        "tempC": 26.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 22,
+        "windKmh": 1.7,
+        "tempC": 26.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 2.4,
+        "tempC": 25.9,
+        "weatherCode": 3
+       }
+      ]
+     },
+     {
+      "date": "2026-10-04",
+      "precipitationMm": 5.4,
+      "precipitationProbability": 96,
+      "precipitationHours": 6,
+      "tempMaxC": 30.1,
+      "tempMinC": 24.6,
+      "windMaxKmh": 7.6,
+      "gustMaxKmh": 25.9,
+      "weatherCode": 95,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 3.2,
+        "tempC": 25.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 4,
+        "tempC": 25.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 4.8,
+        "tempC": 24.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 5.4,
+        "tempC": 24.6,
+        "weatherCode": 3
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 5.9,
+        "tempC": 24.6,
+        "weatherCode": 3
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 5.5,
+        "tempC": 24.8,
+        "weatherCode": 3
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 4.3,
+        "tempC": 25.4,
+        "weatherCode": 3
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 11,
+        "windKmh": 2.7,
+        "tempC": 26.4,
+        "weatherCode": 3
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 13,
+        "windKmh": 2.3,
+        "tempC": 27.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 4,
+        "tempC": 28.7,
+        "weatherCode": 3
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 20,
+        "windKmh": 6,
+        "tempC": 29.6,
+        "weatherCode": 3
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 27,
+        "windKmh": 7.2,
+        "tempC": 30.1,
+        "weatherCode": 3
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 39,
+        "windKmh": 7.6,
+        "tempC": 30.1,
+        "weatherCode": 95
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 54,
+        "windKmh": 7.4,
+        "tempC": 29.7,
+        "weatherCode": 95
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 68,
+        "windKmh": 7.2,
+        "tempC": 29.2,
+        "weatherCode": 95
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 81,
+        "windKmh": 6.9,
+        "tempC": 28.5,
+        "weatherCode": 95
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 92,
+        "windKmh": 6.5,
+        "tempC": 27.9,
+        "weatherCode": 95
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 96,
+        "windKmh": 6,
+        "tempC": 27.4,
+        "weatherCode": 95
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 88,
+        "windKmh": 5,
+        "tempC": 27,
+        "weatherCode": 2
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 72,
+        "windKmh": 3.3,
+        "tempC": 26.6,
+        "weatherCode": 2
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 56,
+        "windKmh": 1.5,
+        "tempC": 26.3,
+        "weatherCode": 3
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 39,
+        "windKmh": 0.6,
+        "tempC": 26,
+        "weatherCode": 3
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 21,
+        "windKmh": 2.2,
+        "tempC": 25.7,
+        "weatherCode": 3
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 3.3,
+        "tempC": 25.5,
+        "weatherCode": 3
+       }
+      ]
+     },
+     {
+      "date": "2026-10-05",
+      "precipitationMm": 4.8,
+      "precipitationProbability": 96,
+      "precipitationHours": 12,
+      "tempMaxC": 29.9,
+      "tempMinC": 24.7,
+      "windMaxKmh": 6.9,
+      "gustMaxKmh": 21.6,
+      "weatherCode": 95,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 4,
+        "tempC": 25.3,
+        "weatherCode": 3
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 4.6,
+        "tempC": 25.1,
+        "weatherCode": 2
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 5,
+        "tempC": 24.9,
+        "weatherCode": 2
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 5,
+        "tempC": 24.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 4.9,
+        "tempC": 24.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 4.4,
+        "tempC": 25,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 11,
+        "windKmh": 3.1,
+        "tempC": 25.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 12,
+        "windKmh": 1,
+        "tempC": 26.6,
+        "weatherCode": 1
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 13,
+        "windKmh": 1.7,
+        "tempC": 27.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 15,
+        "windKmh": 4.1,
+        "tempC": 28.7,
+        "weatherCode": 2
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 18,
+        "windKmh": 5.9,
+        "tempC": 29.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 24,
+        "windKmh": 6.9,
+        "tempC": 29.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.7,
+        "precipitationProbability": 36,
+        "windKmh": 6.6,
+        "tempC": 29.8,
+        "weatherCode": 95
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.7,
+        "precipitationProbability": 52,
+        "windKmh": 6,
+        "tempC": 29.3,
+        "weatherCode": 95
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.7,
+        "precipitationProbability": 66,
+        "windKmh": 5.4,
+        "tempC": 28.5,
+        "weatherCode": 95
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.7,
+        "precipitationProbability": 79,
+        "windKmh": 5.5,
+        "tempC": 27.7,
+        "weatherCode": 95
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.7,
+        "precipitationProbability": 91,
+        "windKmh": 6.1,
+        "tempC": 26.9,
+        "weatherCode": 95
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.7,
+        "precipitationProbability": 96,
+        "windKmh": 6.6,
+        "tempC": 26.4,
+        "weatherCode": 95
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 89,
+        "windKmh": 6.3,
+        "tempC": 26.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 74,
+        "windKmh": 5.5,
+        "tempC": 25.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 58,
+        "windKmh": 4.4,
+        "tempC": 25.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 42,
+        "windKmh": 3.2,
+        "tempC": 25.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 24,
+        "windKmh": 2.5,
+        "tempC": 25.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 12,
+        "windKmh": 2.3,
+        "tempC": 25.5,
+        "weatherCode": 51
+       }
+      ]
+     },
+     {
+      "date": "2026-10-06",
+      "precipitationMm": 22.2,
+      "precipitationProbability": 94,
+      "precipitationHours": 18,
+      "tempMaxC": 31,
+      "tempMinC": 24.8,
+      "windMaxKmh": 5.6,
+      "gustMaxKmh": 25.9,
+      "weatherCode": 96,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 7,
+        "windKmh": 2.4,
+        "tempC": 25.3,
+        "weatherCode": 51
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 8,
+        "windKmh": 2.5,
+        "tempC": 25.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 9,
+        "windKmh": 2.7,
+        "tempC": 24.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 11,
+        "windKmh": 2.7,
+        "tempC": 24.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 15,
+        "windKmh": 2.3,
+        "tempC": 24.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 18,
+        "windKmh": 1.9,
+        "tempC": 25.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 19,
+        "windKmh": 1,
+        "tempC": 25.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 18,
+        "windKmh": 0.9,
+        "tempC": 27,
+        "weatherCode": 3
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 19,
+        "windKmh": 2.2,
+        "tempC": 28.3,
+        "weatherCode": 3
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 20,
+        "windKmh": 3.7,
+        "tempC": 29.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 22,
+        "windKmh": 5,
+        "tempC": 30.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 27,
+        "windKmh": 5.6,
+        "tempC": 31,
+        "weatherCode": 3
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 1,
+        "precipitationProbability": 38,
+        "windKmh": 5.6,
+        "tempC": 31,
+        "weatherCode": 95
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 1,
+        "precipitationProbability": 52,
+        "windKmh": 5.2,
+        "tempC": 30.6,
+        "weatherCode": 95
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 1,
+        "precipitationProbability": 65,
+        "windKmh": 4.6,
+        "tempC": 29.9,
+        "weatherCode": 95
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 1,
+        "precipitationProbability": 78,
+        "windKmh": 3.6,
+        "tempC": 29.2,
+        "weatherCode": 95
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 1,
+        "precipitationProbability": 89,
+        "windKmh": 2.9,
+        "tempC": 28.4,
+        "weatherCode": 95
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 1,
+        "precipitationProbability": 94,
+        "windKmh": 2.2,
+        "tempC": 27.8,
+        "weatherCode": 95
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 2.6,
+        "precipitationProbability": 89,
+        "windKmh": 1.7,
+        "tempC": 27.3,
+        "weatherCode": 96
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 2.6,
+        "precipitationProbability": 77,
+        "windKmh": 1,
+        "tempC": 26.8,
+        "weatherCode": 95
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 2.6,
+        "precipitationProbability": 64,
+        "windKmh": 0.5,
+        "tempC": 26.4,
+        "weatherCode": 81
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 2.6,
+        "precipitationProbability": 51,
+        "windKmh": 0.4,
+        "tempC": 25.9,
+        "weatherCode": 81
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 2.6,
+        "precipitationProbability": 36,
+        "windKmh": 1.1,
+        "tempC": 25.5,
+        "weatherCode": 81
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 2.6,
+        "precipitationProbability": 25,
+        "windKmh": 1.6,
+        "tempC": 25.1,
+        "weatherCode": 81
+       }
+      ]
+     },
+     {
+      "date": "2026-10-07",
+      "precipitationMm": 7.2,
+      "precipitationProbability": 80,
+      "precipitationHours": 6,
+      "tempMaxC": 31,
+      "tempMinC": 23.6,
+      "windMaxKmh": 6.5,
+      "gustMaxKmh": 31.3,
+      "weatherCode": 95,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 20,
+        "windKmh": 2.3,
+        "tempC": 24.7,
+        "weatherCode": 3
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 18,
+        "windKmh": 3.1,
+        "tempC": 24.3,
+        "weatherCode": 2
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 17,
+        "windKmh": 4,
+        "tempC": 23.9,
+        "weatherCode": 2
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 17,
+        "windKmh": 4.5,
+        "tempC": 23.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 17,
+        "windKmh": 4.9,
+        "tempC": 23.6,
+        "weatherCode": 1
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 4.9,
+        "tempC": 23.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 13,
+        "windKmh": 4.1,
+        "tempC": 24.8,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 2.8,
+        "tempC": 26.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 1.9,
+        "tempC": 27.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 2.2,
+        "tempC": 29.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 3.2,
+        "tempC": 30.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 3.4,
+        "tempC": 31,
+        "weatherCode": 0
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 15,
+        "windKmh": 2.7,
+        "tempC": 30.8,
+        "weatherCode": 55
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 31,
+        "windKmh": 1.5,
+        "tempC": 30,
+        "weatherCode": 55
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 46,
+        "windKmh": 2,
+        "tempC": 28.9,
+        "weatherCode": 55
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 60,
+        "windKmh": 3.9,
+        "tempC": 27.6,
+        "weatherCode": 95
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 74,
+        "windKmh": 5.6,
+        "tempC": 26.5,
+        "weatherCode": 55
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 80,
+        "windKmh": 6.5,
+        "tempC": 25.8,
+        "weatherCode": 55
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 75,
+        "windKmh": 6.4,
+        "tempC": 25.4,
+        "weatherCode": 3
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 63,
+        "windKmh": 5.7,
+        "tempC": 25.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 50,
+        "windKmh": 4.5,
+        "tempC": 25.1,
+        "weatherCode": 3
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 36,
+        "windKmh": 3.5,
+        "tempC": 25.1,
+        "weatherCode": 3
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 21,
+        "windKmh": 2.9,
+        "tempC": 25.1,
+        "weatherCode": 3
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 2.9,
+        "tempC": 25,
+        "weatherCode": 3
+       }
+      ]
+     },
+     {
+      "date": "2026-10-08",
+      "precipitationMm": 5.4,
+      "precipitationProbability": 67,
+      "precipitationHours": 6,
+      "tempMaxC": 31.2,
+      "tempMinC": 24.3,
+      "windMaxKmh": 4.5,
+      "gustMaxKmh": 24.5,
+      "weatherCode": 95,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 2.9,
+        "tempC": 24.9,
+        "weatherCode": 2
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 3.1,
+        "tempC": 24.6,
+        "weatherCode": 2
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 3.3,
+        "tempC": 24.4,
+        "weatherCode": 2
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 7,
+        "windKmh": 3.6,
+        "tempC": 24.3,
+        "weatherCode": 2
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 3.8,
+        "tempC": 24.3,
+        "weatherCode": 1
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 3.6,
+        "tempC": 24.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 3.2,
+        "tempC": 25.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 2.7,
+        "tempC": 26.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 2.5,
+        "tempC": 28.2,
+        "weatherCode": 1
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 2.7,
+        "tempC": 29.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 3.3,
+        "tempC": 30.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 3.7,
+        "tempC": 31.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 17,
+        "windKmh": 3.7,
+        "tempC": 31.2,
+        "weatherCode": 53
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 29,
+        "windKmh": 3.5,
+        "tempC": 30.7,
+        "weatherCode": 53
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 40,
+        "windKmh": 3.1,
+        "tempC": 30,
+        "weatherCode": 53
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 51,
+        "windKmh": 2.9,
+        "tempC": 29.1,
+        "weatherCode": 95
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 61,
+        "windKmh": 2.9,
+        "tempC": 28.3,
+        "weatherCode": 95
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.9,
+        "precipitationProbability": 67,
+        "windKmh": 3.1,
+        "tempC": 27.7,
+        "weatherCode": 95
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 65,
+        "windKmh": 3.3,
+        "tempC": 27.2,
+        "weatherCode": 2
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 58,
+        "windKmh": 3.6,
+        "tempC": 26.9,
+        "weatherCode": 1
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 50,
+        "windKmh": 4,
+        "tempC": 26.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 41,
+        "windKmh": 4.3,
+        "tempC": 26.2,
+        "weatherCode": 1
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 32,
+        "windKmh": 4.5,
+        "tempC": 26,
+        "weatherCode": 0
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 24,
+        "windKmh": 4.5,
+        "tempC": 25.7,
+        "weatherCode": 0
+       }
+      ]
+     },
+     {
+      "date": "2026-10-09",
+      "precipitationMm": 7.2,
+      "precipitationProbability": 69,
+      "precipitationHours": 6,
+      "tempMaxC": 31.4,
+      "tempMinC": 24.6,
+      "windMaxKmh": 5.7,
+      "gustMaxKmh": 29.9,
+      "weatherCode": 55,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 19,
+        "windKmh": 4.4,
+        "tempC": 25.4,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 4.2,
+        "tempC": 25.1,
+        "weatherCode": 1
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 14,
+        "windKmh": 4.2,
+        "tempC": 24.8,
+        "weatherCode": 2
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 12,
+        "windKmh": 4.2,
+        "tempC": 24.6,
+        "weatherCode": 2
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 4.1,
+        "tempC": 24.6,
+        "weatherCode": 3
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 3.7,
+        "tempC": 24.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 2.9,
+        "tempC": 25.6,
+        "weatherCode": 3
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 3,
+        "windKmh": 1.8,
+        "tempC": 26.9,
+        "weatherCode": 3
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 1.5,
+        "tempC": 28.3,
+        "weatherCode": 2
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 2.7,
+        "tempC": 29.7,
+        "weatherCode": 2
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 4,
+        "tempC": 30.8,
+        "weatherCode": 1
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 4.9,
+        "tempC": 31.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 14,
+        "windKmh": 5.4,
+        "tempC": 31.4,
+        "weatherCode": 55
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 27,
+        "windKmh": 5.6,
+        "tempC": 30.9,
+        "weatherCode": 55
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 40,
+        "windKmh": 5.7,
+        "tempC": 30.2,
+        "weatherCode": 55
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 52,
+        "windKmh": 5.7,
+        "tempC": 29.3,
+        "weatherCode": 55
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 63,
+        "windKmh": 5.4,
+        "tempC": 28.5,
+        "weatherCode": 55
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 1.2,
+        "precipitationProbability": 69,
+        "windKmh": 5,
+        "tempC": 27.9,
+        "weatherCode": 55
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 66,
+        "windKmh": 4.3,
+        "tempC": 27.5,
+        "weatherCode": 1
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 57,
+        "windKmh": 3.6,
+        "tempC": 27.1,
+        "weatherCode": 2
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 47,
+        "windKmh": 3,
+        "tempC": 26.8,
+        "weatherCode": 2
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 37,
+        "windKmh": 2.9,
+        "tempC": 26.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 25,
+        "windKmh": 3.5,
+        "tempC": 26.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 3.8,
+        "tempC": 25.9,
+        "weatherCode": 3
+       }
+      ]
+     },
+     {
+      "date": "2026-10-10",
+      "precipitationMm": 2.4,
+      "precipitationProbability": 73,
+      "precipitationHours": 6,
+      "tempMaxC": 29.9,
+      "tempMinC": 24.8,
+      "windMaxKmh": 8.9,
+      "gustMaxKmh": 25.9,
+      "weatherCode": 51,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 11,
+        "windKmh": 4,
+        "tempC": 25.6,
+        "weatherCode": 3
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 3.9,
+        "tempC": 25.3,
+        "weatherCode": 3
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 7,
+        "windKmh": 3.8,
+        "tempC": 25,
+        "weatherCode": 3
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 3.6,
+        "tempC": 24.8,
+        "weatherCode": 3
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 5,
+        "windKmh": 3,
+        "tempC": 24.8,
+        "weatherCode": 3
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 2.1,
+        "tempC": 25,
+        "weatherCode": 3
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 2,
+        "windKmh": 0.6,
+        "tempC": 25.5,
+        "weatherCode": 3
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 1,
+        "windKmh": 1.3,
+        "tempC": 26.4,
+        "weatherCode": 3
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 3.6,
+        "tempC": 27.5,
+        "weatherCode": 2
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 5.8,
+        "tempC": 28.6,
+        "weatherCode": 2
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 0,
+        "windKmh": 7.5,
+        "tempC": 29.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 4,
+        "windKmh": 8.6,
+        "tempC": 29.9,
+        "weatherCode": 1
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 15,
+        "windKmh": 8.9,
+        "tempC": 29.9,
+        "weatherCode": 51
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 29,
+        "windKmh": 8.5,
+        "tempC": 29.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 43,
+        "windKmh": 7.9,
+        "tempC": 29.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 56,
+        "windKmh": 7,
+        "tempC": 28.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 68,
+        "windKmh": 6,
+        "tempC": 28.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 73,
+        "windKmh": 5.1,
+        "tempC": 27.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 68,
+        "windKmh": 4.2,
+        "tempC": 27.2,
+        "weatherCode": 1
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 57,
+        "windKmh": 3.1,
+        "tempC": 26.8,
+        "weatherCode": 1
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 44,
+        "windKmh": 2.6,
+        "tempC": 26.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 31,
+        "windKmh": 2.9,
+        "tempC": 26.1,
+        "weatherCode": 1
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 17,
+        "windKmh": 3.8,
+        "tempC": 25.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 6,
+        "windKmh": 4.6,
+        "tempC": 25.5,
+        "weatherCode": 1
+       }
+      ]
+     },
+     {
+      "date": "2026-10-11",
+      "precipitationMm": 3,
+      "precipitationProbability": 55,
+      "precipitationHours": 18,
+      "tempMaxC": 30.1,
+      "tempMinC": 24.7,
+      "windMaxKmh": 8.2,
+      "gustMaxKmh": 23.4,
+      "weatherCode": 95,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 2,
+        "windKmh": 5.1,
+        "tempC": 25.2,
+        "weatherCode": 51
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 1,
+        "windKmh": 5.3,
+        "tempC": 25,
+        "weatherCode": 51
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 1,
+        "windKmh": 5.4,
+        "tempC": 24.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 2,
+        "windKmh": 5.3,
+        "tempC": 24.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 3,
+        "windKmh": 5.2,
+        "tempC": 24.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 4,
+        "windKmh": 4.9,
+        "tempC": 25,
+        "weatherCode": 51
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 3,
+        "windKmh": 4.6,
+        "tempC": 25.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 1,
+        "windKmh": 4.5,
+        "tempC": 26.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 0,
+        "windKmh": 5.1,
+        "tempC": 27.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 0,
+        "windKmh": 5.7,
+        "tempC": 28.8,
+        "weatherCode": 51
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 0,
+        "windKmh": 6.6,
+        "tempC": 29.6,
+        "weatherCode": 51
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 2,
+        "windKmh": 6.9,
+        "tempC": 30.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 10,
+        "windKmh": 6.6,
+        "tempC": 30,
+        "weatherCode": 95
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 20,
+        "windKmh": 5.8,
+        "tempC": 29.7,
+        "weatherCode": 95
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0.4,
+        "precipitationProbability": 31,
+        "windKmh": 4.7,
+        "tempC": 29.1,
+        "weatherCode": 95
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0.3,
+        "precipitationProbability": 43,
+        "windKmh": 7,
+        "tempC": 29.1,
+        "weatherCode": 51
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0.2,
+        "precipitationProbability": 55,
+        "windKmh": 7.7,
+        "tempC": 29,
+        "weatherCode": 51
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0.1,
+        "precipitationProbability": 54,
+        "windKmh": 7.9,
+        "tempC": 28.7,
+        "weatherCode": 51
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 48,
+        "windKmh": 8.2,
+        "tempC": 28.2,
+        "weatherCode": 3
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 37,
+        "windKmh": 6.6,
+        "tempC": 27.4,
+        "weatherCode": 2
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 27,
+        "windKmh": 5.8,
+        "tempC": 26.7,
+        "weatherCode": 1
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 24,
+        "windKmh": 5.1,
+        "tempC": 26.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 22,
+        "windKmh": 4.2,
+        "tempC": 26.2,
+        "weatherCode": 1
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 19,
+        "windKmh": 3.9,
+        "tempC": 26,
+        "weatherCode": 1
+       }
+      ]
+     },
+     {
+      "date": "2026-10-12",
+      "precipitationMm": 0,
+      "precipitationProbability": 29,
+      "precipitationHours": 0,
+      "tempMaxC": 33.6,
+      "tempMinC": 24.3,
+      "windMaxKmh": 16.7,
+      "gustMaxKmh": 13.7,
+      "weatherCode": 1,
+      "hours": [
+       {
+        "hour": 0,
+        "precipitationMm": 0,
+        "precipitationProbability": 17,
+        "windKmh": 4.6,
+        "tempC": 25.7,
+        "weatherCode": 0
+       },
+       {
+        "hour": 1,
+        "precipitationMm": 0,
+        "precipitationProbability": 15,
+        "windKmh": 5.4,
+        "tempC": 25.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 2,
+        "precipitationMm": 0,
+        "precipitationProbability": 14,
+        "windKmh": 5.8,
+        "tempC": 25,
+        "weatherCode": 0
+       },
+       {
+        "hour": 3,
+        "precipitationMm": 0,
+        "precipitationProbability": 13,
+        "windKmh": 5.7,
+        "tempC": 24.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 4,
+        "precipitationMm": 0,
+        "precipitationProbability": 11,
+        "windKmh": 5.4,
+        "tempC": 24.3,
+        "weatherCode": 1
+       },
+       {
+        "hour": 5,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 5.4,
+        "tempC": 24.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 6,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 5.9,
+        "tempC": 25.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 7,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 6.2,
+        "tempC": 26.5,
+        "weatherCode": 0
+       },
+       {
+        "hour": 8,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 6.4,
+        "tempC": 27.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 9,
+        "precipitationMm": 0,
+        "precipitationProbability": 8,
+        "windKmh": 6.3,
+        "tempC": 29.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 10,
+        "precipitationMm": 0,
+        "precipitationProbability": 9,
+        "windKmh": 6.5,
+        "tempC": 32,
+        "weatherCode": 1
+       },
+       {
+        "hour": 11,
+        "precipitationMm": 0,
+        "precipitationProbability": 10,
+        "windKmh": 7.3,
+        "tempC": 33.4,
+        "weatherCode": 1
+       },
+       {
+        "hour": 12,
+        "precipitationMm": 0,
+        "precipitationProbability": 13,
+        "windKmh": 9.2,
+        "tempC": 33.6,
+        "weatherCode": 1
+       },
+       {
+        "hour": 13,
+        "precipitationMm": 0,
+        "precipitationProbability": 16,
+        "windKmh": 13.5,
+        "tempC": 33,
+        "weatherCode": 0
+       },
+       {
+        "hour": 14,
+        "precipitationMm": 0,
+        "precipitationProbability": 20,
+        "windKmh": 16.7,
+        "tempC": 32.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 15,
+        "precipitationMm": 0,
+        "precipitationProbability": 23,
+        "windKmh": 15.6,
+        "tempC": 31.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 16,
+        "precipitationMm": 0,
+        "precipitationProbability": 27,
+        "windKmh": 12.4,
+        "tempC": 30.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 17,
+        "precipitationMm": 0,
+        "precipitationProbability": 29,
+        "windKmh": 9.2,
+        "tempC": 29,
+        "weatherCode": 0
+       },
+       {
+        "hour": 18,
+        "precipitationMm": 0,
+        "precipitationProbability": 29,
+        "windKmh": 6.5,
+        "tempC": 28.1,
+        "weatherCode": 0
+       },
+       {
+        "hour": 19,
+        "precipitationMm": 0,
+        "precipitationProbability": 28,
+        "windKmh": 4,
+        "tempC": 27.3,
+        "weatherCode": 0
+       },
+       {
+        "hour": 20,
+        "precipitationMm": 0,
+        "precipitationProbability": 27,
+        "windKmh": 3.3,
+        "tempC": 26.6,
+        "weatherCode": 0
+       },
+       {
+        "hour": 21,
+        "precipitationMm": 0,
+        "precipitationProbability": 26,
+        "windKmh": 3.3,
+        "tempC": 26.2,
+        "weatherCode": 0
+       },
+       {
+        "hour": 22,
+        "precipitationMm": 0,
+        "precipitationProbability": 25,
+        "windKmh": 2.9,
+        "tempC": 25.9,
+        "weatherCode": 0
+       },
+       {
+        "hour": 23,
+        "precipitationMm": 0,
+        "precipitationProbability": 23,
+        "windKmh": 3,
+        "tempC": 25.7,
+        "weatherCode": 0
        }
       ]
      }
@@ -6700,7 +10017,7 @@
   "it_flight_out": "15.50,73.75",
   "it_pickup": "15.75,73.75",
   "it_villa": "15.50,73.75",
-  "it_scuba": "15.50,73.75",
+  "it_scuba": "15.50,74.00",
   "it_dinner": "15.50,73.75",
   "it_shacks": "15.50,73.75",
   "it_scooters": "15.50,73.75"
@@ -6732,17 +10049,17 @@
    "source": "openstreetmap",
    "ok": true,
    "configured": true,
-   "count": 24,
-   "note": "24 real places from OpenStreetMap (Photon search)",
-   "fetchedAt": 1790469044243
+   "count": 32,
+   "note": "32 real places from OpenStreetMap (Photon search)",
+   "fetchedAt": 1790472749992
   },
   {
    "source": "gdelt-news",
    "ok": false,
    "configured": true,
    "count": 0,
-   "note": "GDELT unavailable: HTTP 429: Please limit requests to one every 5 seconds or contact kalev.leetaru5@gmail.com for large",
-   "fetchedAt": 1790468956409
+   "note": "GDELT unavailable: fetch failed",
+   "fetchedAt": 1790472740604
   },
   {
    "source": "mastodon",
@@ -6750,7 +10067,7 @@
    "configured": true,
    "count": 0,
    "note": "No relevant public #candolim posts right now",
-   "fetchedAt": 1790468945485
+   "fetchedAt": 1790472730479
   },
   {
    "source": "wikivoyage",
@@ -6758,7 +10075,7 @@
    "configured": true,
    "count": 1,
    "note": "Travel guide: Candolim",
-   "fetchedAt": 1790468945685
+   "fetchedAt": 1790472732946
   },
   {
    "source": "wikipedia-pageviews",
@@ -6766,7 +10083,7 @@
    "configured": true,
    "count": 0,
    "note": "No nearby alternative has a Wikipedia article",
-   "fetchedAt": 1790469044243
+   "fetchedAt": 1790472749992
   },
   {
    "source": "google-places",
@@ -6774,7 +10091,7 @@
    "configured": false,
    "count": 0,
    "note": "Ratings & reviews need GOOGLE_PLACES_API_KEY (Places API New). Not configured — no ratings shown, none invented.",
-   "fetchedAt": 1790469044243
+   "fetchedAt": 1790472749992
   }
  ],
  "candidates": [
@@ -6896,6 +10213,23 @@
    "estimateBasis": "planning estimate for a museum (not a quoted price)",
    "source": "openstreetmap",
    "url": "https://www.openstreetmap.org/node/11207103948"
+  },
+  {
+   "id": "osm:node/14078632503",
+   "name": "Mario de Miranda Centenary Gallery",
+   "lat": 15.4969978,
+   "lon": 73.8306597,
+   "kind": "gallery",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 15000,
+   "estimateBasis": "planning estimate for a gallery (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/14078632503"
   },
   {
    "id": "osm:node/10752379573",
@@ -7177,9 +10511,128 @@
    "estimateBasis": "planning estimate for a mall (not a quoted price)",
    "source": "openstreetmap",
    "url": "https://www.openstreetmap.org/way/430058802"
+  },
+  {
+   "id": "osm:node/1633044071",
+   "name": "Church of the Rosary",
+   "lat": 15.5177986,
+   "lon": 73.7773909,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/1633044071"
+  },
+  {
+   "id": "osm:way/1349180244",
+   "name": "Church of St. John of God",
+   "lat": 15.5005584,
+   "lon": 73.9077689,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/1349180244"
+  },
+  {
+   "id": "osm:way/484344083",
+   "name": "Church of St Francis of Assisi",
+   "lat": 15.6492482,
+   "lon": 73.8306303,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/484344083"
+  },
+  {
+   "id": "osm:node/13607009069",
+   "name": "Church Of Santa Cristo",
+   "lat": 15.5453672,
+   "lon": 73.9122976,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/node/13607009069"
+  },
+  {
+   "id": "osm:way/1482874228",
+   "name": "Church of the Cross of Miracles",
+   "lat": 15.4924648,
+   "lon": 73.9135983,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/1482874228"
+  },
+  {
+   "id": "osm:way/1349252627",
+   "name": "Church of the Carmelites",
+   "lat": 15.5027146,
+   "lon": 73.9181583,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/1349252627"
+  },
+  {
+   "id": "osm:way/278775633",
+   "name": "Church of St. Lawrence",
+   "lat": 15.4254353,
+   "lon": 73.8978866,
+   "kind": "place_of_worship",
+   "tags": [
+    "culture",
+    "indoor"
+   ],
+   "indoor": true,
+   "free": false,
+   "estPerPersonPaise": 0,
+   "estimateBasis": "planning estimate for a place of worship (not a quoted price)",
+   "source": "openstreetmap",
+   "url": "https://www.openstreetmap.org/way/278775633"
   }
  ],
  "ratings": {},
- "weatherNote": "Open-Meteo forecast for 2 locations, 16-day horizon to 2026-10-12",
- "capturedAt": 1790469044243
+ "weatherNote": "Open-Meteo forecast for 3 locations, 16-day horizon to 2026-10-12",
+ "capturedAt": 1790472749992
 }
