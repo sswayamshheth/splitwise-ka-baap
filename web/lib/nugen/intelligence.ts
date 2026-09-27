@@ -172,9 +172,12 @@ export type ItineraryDoc = { text?: string; image?: { mediaType: string; data: s
  * and proposes it as plan items on the trip's own days. Proposal only — the user reviews and applies.
  */
 export async function importItineraryDoc(state: TripState, doc: ItineraryDoc, cfg = nugenConfig()): Promise<{ proposal: PlanProposal | null; meta: InferenceMeta }> {
-  const inputs = [doc.image ? "Uploaded photo" : "Uploaded document text", "Trip dates", "Current itinerary"];
+  const isPdf = doc.image?.mediaType === "application/pdf";
+  const inputs = [doc.image ? (isPdf ? "Uploaded PDF" : "Uploaded photo") : "Uploaded document text", "Trip dates", "Current itinerary"];
+  // Only the Gemini stand-in reads files; with another model, fall back to the browser's text when there is some.
   if (doc.image && cfg?.provider !== "gemini") {
-    return { proposal: null, meta: { task: "itinerary", engine: "deterministic", fallbackReason: cfg ? "This model can't read photos" : "No AI model configured to read photos", inputs } };
+    if (doc.text) doc = { ...doc, image: undefined };
+    else return { proposal: null, meta: { task: "itinerary", engine: "deterministic", fallbackReason: cfg ? "This model can't read files" : "No AI model configured to read files", inputs } };
   }
   const plan = state.itinerary.filter((i) => i.status !== "cancelled").map((i) => ({ title: i.title, date: i.date, category: i.category }));
   const prompt = [
@@ -183,7 +186,7 @@ export async function importItineraryDoc(state: TripState, doc: ItineraryDoc, cf
     "Skip items already in the current itinerary. estimateRupees = total for the whole group in INR; use 0 when the document gives no price (never guess a price).",
     `Schema: {"summary":"one line on what you read","ops":[{"op":"add","title":"...","category":one of ${JSON.stringify(EXPENSE_CATEGORIES)},"date":"YYYY-MM-DD","estimateRupees":number,"reason":"the source line"}]}`,
     `CURRENT ITINERARY: ${JSON.stringify(plan)}`,
-    doc.text ? `DOCUMENT (${doc.name ?? "upload"}):\n${doc.text.slice(0, 15_000)}` : `DOCUMENT: the attached photo (${doc.name ?? "photo"}).`,
+    doc.image ? `DOCUMENT: the attached ${isPdf ? "PDF" : "photo"} (${doc.name ?? "upload"}).` : `DOCUMENT (${doc.name ?? "upload"}):\n${(doc.text ?? "").slice(0, 15_000)}`,
   ].join("\n");
   const content: ChatMessage["content"] = doc.image
     ? [

@@ -80,9 +80,24 @@ export function PlanAssistantSheet({ open, onClose }: { open: boolean; onClose: 
         document = { name: file.name, image: { mediaType: file.type === "image/jpg" ? "image/jpeg" : file.type, data } };
       } else {
         const bytes = new Uint8Array(await file.arrayBuffer());
-        const text = looksLikePdf(bytes) ? extractPdfText(bytes) : new TextDecoder().decode(bytes);
-        if (!text.trim()) throw new Error("No text found in that file — if it's a scanned PDF, upload a photo of it instead");
-        document = { name: file.name, text: text.slice(0, 20_000) };
+        if (looksLikePdf(bytes)) {
+          if (file.size > 6_000_000) throw new Error("That PDF is too large — try one under ~6 MB");
+          // The AI reads the PDF itself (scanned pages and Word/Docs/Canva font encodings included);
+          // whatever text the browser can pull out goes along as a backup for the built-in parser.
+          let text = "";
+          try {
+            text = extractPdfText(bytes);
+          } catch {
+            text = "";
+          }
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+          document = { name: file.name, text: text.replace(/\s+/g, " ").trim().length > 40 ? text.slice(0, 20_000) : undefined, image: { mediaType: "application/pdf", data: btoa(bin) } };
+        } else {
+          const text = new TextDecoder().decode(bytes);
+          if (!text.trim()) throw new Error("That file is empty");
+          document = { name: file.name, text: text.slice(0, 20_000) };
+        }
       }
       const res = await api<Proposal>(`/api/trips/${trip.tripId}/plan-ai`, { body: { document } });
       setProposal(res);

@@ -66,8 +66,8 @@ export const POST = route(async (req: Request, { params }: { params: { id: strin
   if (body.document) {
     const d = body.document;
     const text = typeof d.text === "string" ? d.text.slice(0, 20_000) : undefined;
-    const img = d.image && typeof d.image.data === "string" && /^image\/(png|jpe?g|webp|heic|heif)$/.test(d.image.mediaType ?? "") ? { mediaType: d.image.mediaType!, data: d.image.data } : undefined;
-    if (img && img.data.length > 6_000_000) throw new HttpError(413, "That photo is too large — try a smaller one (under ~4 MB)");
+    const img = d.image && typeof d.image.data === "string" && /^(image\/(png|jpe?g|webp|heic|heif)|application\/pdf)$/.test(d.image.mediaType ?? "") ? { mediaType: d.image.mediaType!, data: d.image.data } : undefined;
+    if (img && img.data.length > 8_500_000) throw new HttpError(413, "That file is too large — try one under ~6 MB");
     if (!text?.trim() && !img) throw new HttpError(400, "Couldn't read anything from that file");
     const name = typeof d.name === "string" ? d.name.slice(0, 80) : undefined;
     const gti = nugenConfig();
@@ -75,7 +75,7 @@ export const POST = route(async (req: Request, { params }: { params: { id: strin
       const r = await importItineraryDoc(state, { text, image: img, name }, gti);
       if (r.proposal && r.proposal.ops.length) return NextResponse.json({ ...r.proposal, source: "ai", model: providerLabel(gti) });
     }
-    if (!text) throw new HttpError(503, "Reading a photo needs the AI model, which isn't available right now — upload a PDF or text file instead");
+    if (!text) throw new HttpError(503, img?.mediaType === "application/pdf" ? "This PDF has no readable text (it looks scanned) and the AI model that reads it isn't available right now — try again in a moment" : "Reading a photo needs the AI model, which isn't available right now — upload a PDF or text file instead");
     // Built-in parser fallback for text: "Day N" lines land on the trip's own days.
     const parsed = parseItineraryText(text);
     const ops: PlanOp[] = parsed.items.map((it) => ({
