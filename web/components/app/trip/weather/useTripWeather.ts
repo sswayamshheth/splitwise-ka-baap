@@ -49,7 +49,31 @@ async function locate(items: PlanItemInput[], destination: Place): Promise<{ sto
   return { stops, unlocated };
 }
 
-export function useTripWeather(trip: { tripId: string; destination: string; startDate: string; endDate: string; items: PlanItemInput[] }): TripWeatherState {
+/**
+ * Place candidates for a destination typed as text (older trips): the full text first, then the
+ * town alone ("Candolim, North Goa" → "Candolim"), preferring matches in the state/country the text names.
+ */
+async function findDestination(text: string): Promise<Place[]> {
+  const parts = text.split(",").map((s) => s.trim()).filter(Boolean);
+  let places = uniqueByLabel(await geocode(text));
+  if (!places.length && parts.length > 1) places = uniqueByLabel(await geocode(parts[0]));
+  const hints = parts.slice(1).flatMap((p) => p.toLowerCase().split(/\s+/)).filter((w) => w.length >= 3 && !["north", "south", "east", "west", "the"].includes(w));
+  if (hints.length && places.length > 1) {
+    const hinted = places.filter((p) => hints.some((h) => `${p.admin1 ?? ""} ${p.country ?? ""}`.toLowerCase().includes(h)));
+    if (hinted.length) places = [...hinted, ...places.filter((p) => !hinted.includes(p))];
+  }
+  return places;
+}
+
+export function useTripWeather(trip: {
+  tripId: string;
+  destination: string;
+  /** Exact coordinates picked from the destination search — used as-is, no name lookup. */
+  place?: { lat: number; lon: number; name: string; admin?: string; country?: string };
+  startDate: string;
+  endDate: string;
+  items: PlanItemInput[];
+}): TripWeatherState {
   const [destinations, setDestinations] = useState<Place[]>([]);
   const [autoPick, setAutoPick] = useState<Place | null>(null);
   const [choice, setChoice] = useState<string | null>(null);
@@ -64,7 +88,14 @@ export function useTripWeather(trip: { tripId: string; destination: string; star
     let alive = true;
     setLoading(true);
     void (async () => {
-      const places = uniqueByLabel(await geocode(trip.destination));
+      // A picked destination has exact coordinates: use them, never a name lookup ("Manali" alone is also a town in Tamil Nadu).
+      if (trip.place) {
+        const exact: Place = { name: trip.place.name, admin1: trip.place.admin, country: trip.place.country, lat: trip.place.lat, lon: trip.place.lon };
+        setDestinations([exact]);
+        setAutoPick(exact);
+        return;
+      }
+      const places = await findDestination(trip.destination);
       if (!alive) return;
       setDestinations(places);
       if (!places.length) {
@@ -86,9 +117,9 @@ export function useTripWeather(trip: { tripId: string; destination: string; star
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trip.destination]);
+  }, [trip.destination, trip.place?.lat, trip.place?.lon]);
 
-  const destination = useMemo(() => destinations.find((p) => placeLabel(p) === choice) ?? autoPick, [destinations, choice, autoPick]);
+  const destination = useMemo(() => (trip.place ? autoPick : (destinations.find((p) => placeLabel(p) === choice) ?? autoPick)), [destinations, choice, autoPick, trip.place]);
 
   useEffect(() => {
     if (!destination) return;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { parseForecast } from "@/lib/forecast/openMeteo";
+import { metnoUrl, METNO_UA, parseMetno } from "@/lib/weather/metno";
 import type { DailyForecast } from "@/lib/forecast/rules";
 import { requireUserId, route } from "@/lib/server/trips";
 
@@ -32,16 +33,30 @@ export const GET = route(async (req: Request) => {
       `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=16`,
       { signal: ctrl.signal, cache: "no-store" },
     ).finally(() => clearTimeout(timer));
+    let days: DailyForecast[];
     if (!res.ok) {
-      console.error("[forecast] open-meteo:", res.status);
-      return NextResponse.json({ days: null });
+      console.error("[forecast] open-meteo:", res.status, "— trying MET Norway");
+      days = await metnoDays(lat, lon);
+    } else {
+      days = parseForecast(await res.json());
     }
-    const days = parseForecast(await res.json());
     if (!days.length) return NextResponse.json({ days: null });
     cache.set(key, { at: Date.now(), days });
     return NextResponse.json({ days });
   } catch {
-    console.error("[forecast] open-meteo: unreachable");
-    return NextResponse.json({ days: null });
+    console.error("[forecast] open-meteo: unreachable — trying MET Norway");
+    const days = await metnoDays(lat, lon).catch(() => []);
+    if (!days.length) return NextResponse.json({ days: null });
+    cache.set(key, { at: Date.now(), days });
+    return NextResponse.json({ days });
   }
 });
+
+/** MET Norway (api.met.no) daily summary in the Plan page's DailyForecast shape. */
+async function metnoDays(lat: number, lon: number): Promise<DailyForecast[]> {
+  const url = metnoUrl({ lat, lon });
+  const res = await fetch(url, { headers: { "user-agent": METNO_UA, accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(10_000) });
+  if (!res.ok) return [];
+  const f = parseMetno(await res.json(), "", { lat, lon }, url);
+  return f.daily.map((d) => ({ date: d.date, code: d.weatherCode, tMaxC: d.tempMaxC, tMinC: d.tempMinC, rainMm: d.precipitationMm, rainProbability: null, windKmh: d.windMaxKmh }));
+}

@@ -77,7 +77,7 @@ export default function PlanPage() {
     () => state.itinerary.map((i) => ({ id: i.id, title: i.title, category: i.category, date: i.date, location: i.location, vendor: i.vendor, status: i.status })),
     [state.itinerary],
   );
-  const w = useTripWeather({ tripId: trip.tripId, destination: state.trip.destination, startDate: state.trip.startDate, endDate: state.trip.endDate, items: weatherItems });
+  const w = useTripWeather({ tripId: trip.tripId, destination: state.trip.destination, place: state.trip.place, startDate: state.trip.startDate, endDate: state.trip.endDate, items: weatherItems });
   const weatherNotes = useWeatherNotes(w.weather);
   const dayWeather = (date: string) => (w.weather?.status === "ok" ? w.weather.days.find((d) => d.date === date) : undefined);
   const itemRisk = (id: string) => (w.weather?.status === "ok" ? w.weather.itemRisk[id] : undefined);

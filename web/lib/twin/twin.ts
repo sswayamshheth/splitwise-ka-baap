@@ -608,7 +608,7 @@ export function buildTwin(state: TripState, events: LedgerEvent[], world: TwinWo
           ? "Forecasts only look ahead, so past days are not assessed."
           : covered.length
             ? `${covered.length} of ${items.length} plan items are inside the ${src} forecast window; none is at risk.`
-            : `Open-Meteo forecasts 16 days ahead — your trip starts ${state.trip.startDate}. Current conditions are shown; use What-If to stress-test the plan.`,
+            : `${world.forecasts.find((f) => f.forecast)?.forecast?.source === "met-norway" ? "MET Norway (backup source) forecasts about 9 days ahead" : "Open-Meteo forecasts 16 days ahead"} — your trip starts ${state.trip.startDate}. Current conditions are shown; use What-If to stress-test the plan.`,
       level: "Low",
       normal: true,
     };

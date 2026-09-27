@@ -39,7 +39,8 @@ export type Forecast = {
   grid: LatLon;
   timezone: string;
   fetchedAt: number;
-  source: "open-meteo";
+  /** Open-Meteo normally; MET Norway when Open-Meteo refuses (quota / outage). */
+  source: "open-meteo" | "met-norway";
   sourceUrl: string;
   current: WeatherCurrent | null;
   daily: WeatherDay[];

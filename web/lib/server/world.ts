@@ -9,6 +9,7 @@ import { overpassQuery, parseOverpass, parsePhoton, photonSearches, photonUrl, t
 import { gdeltProvider, googlePlacesProvider, mastodonProvider, mergeRatings, pageviewsProvider, wikivoyageProvider, type PlaceContext } from "@/lib/signals/providers";
 import type { ProviderStatus, PublicSignal } from "@/lib/signals/types";
 import type { PlacePin, TwinWorld, WorldForecast } from "@/lib/twin/twin";
+import { metnoUrl, METNO_UA, parseMetno } from "@/lib/weather/metno";
 import { distanceKm, forecastUrl, parseForecast, parseGeocode, parseNominatim, type GeoPlace, type LatLon } from "@/lib/weather/openmeteo";
 
 /**
@@ -282,7 +283,13 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
         try {
           return { key, point: c.point, label: c.label, forecast: parseForecast(await getJson(url, {}, 10_000), c.label, c.point, url) };
         } catch (e) {
-          return { key, point: c.point, label: c.label, forecast: null, error: (e as Error).message };
+          // Open-Meteo refused (e.g. its free daily quota is used up on this network): use MET Norway instead.
+          const backup = metnoUrl(c.point);
+          try {
+            return { key, point: c.point, label: c.label, forecast: parseMetno(await getJson(backup, { headers: { "user-agent": METNO_UA } }, 10_000), c.label, c.point, backup) };
+          } catch {
+            return { key, point: c.point, label: c.label, forecast: null, error: `${(e as Error).message}; MET Norway backup also failed` };
+          }
         }
       }),
     ),
@@ -332,7 +339,11 @@ async function assemble(tripId: string, state: TripState, cacheKey: string): Pro
     providers,
     candidates,
     ratings: mergeRatings(views.ratings, google.ratings),
-    weatherNote: okWeather.length ? `Open-Meteo forecast for ${okWeather.length} location${okWeather.length === 1 ? "" : "s"}, 16-day horizon to ${okWeather[0].forecast!.daily.at(-1)?.date ?? "?"}` : `Weather unavailable: ${forecasts[0]?.error ?? "unknown error"}`,
+    weatherNote: okWeather.length
+      ? okWeather[0].forecast!.source === "met-norway"
+        ? `MET Norway forecast (backup — Open-Meteo refused this network) for ${okWeather.length} location${okWeather.length === 1 ? "" : "s"}, to ${okWeather[0].forecast!.daily.at(-1)?.date ?? "?"}`
+        : `Open-Meteo forecast for ${okWeather.length} location${okWeather.length === 1 ? "" : "s"}, 16-day horizon to ${okWeather[0].forecast!.daily.at(-1)?.date ?? "?"}`
+      : `Weather unavailable: ${forecasts[0]?.error ?? "unknown error"}`,
   };
   worldCache.set(cacheKey, { at: Date.now(), world });
   // Only complete captures are recorded, so a replay always has weather AND places.
